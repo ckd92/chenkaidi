@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:tns="http://www.activiti.org/test" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="detailed" id="m1479976731727" name="">
+  <message id="MSG_1"></message>
+  <message id="MSG_2"></message>
+  <message id="MSG_3"></message>
+  <message id="MSG_4"></message>
+  <process id="timeProcess1" name="个人账户申报" isExecutable="true" isClosed="false" processType="None">
+    <startEvent id="startevent1" name="Start"></startEvent>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <serviceTask id="collectTask" name="系统数据校验" activiti:delegateExpression="${grzhFlowService}"></serviceTask>
+    <userTask id="collectTask2" name="数据补录" activiti:assignee="zhangsan">
+      <documentation>{argvalues: '提交审核:commit',handleEntry:'/fitech/web/lcgl/grzh/grzh', completeEntry:'/fitech/web/lcgl/grzh/grzh',isAssign:true}</documentation>
+    </userTask>
+    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="collectTask"></sequenceFlow>
+    <sequenceFlow id="flow2" sourceRef="collectTask" targetRef="collectTask2"></sequenceFlow>
+    <userTask id="checkTask" name="数据审核" activiti:assignee="lisi">
+      <documentation>{argname:'input',argvalues: '审核通过:approval,审核拒绝:refuse',handleEntry:'/fitech/web/lcgl/grzh/grzhSh', completeEntry:''}</documentation>
+    </userTask>
+    <sequenceFlow id="flow3" sourceRef="collectTask2" targetRef="checkTask"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow4" sourceRef="checkTask" targetRef="exclusivegateway1"></sequenceFlow>
+    <userTask id="reportTask" name="数据上报" activiti:assignee="zhangsan">
+      <documentation>{argvalues: '数据上报:reported',handleEntry:'/fitech/web/lcgl/grzh/grzhSb', completeEntry:''}</documentation>
+    </userTask>
+    <sequenceFlow id="flow5" name="审核通过" sourceRef="exclusivegateway1" targetRef="reportTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${input=='approval'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow7" name="审核拒绝" sourceRef="exclusivegateway1" targetRef="collectTask2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${input=='refuse'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow8" sourceRef="reportTask" targetRef="endevent1"></sequenceFlow>
+    <serviceTask id="servicetask1" name="超时提醒" activiti:class="com.fitechsoft.service.grzh.impl.TimeProcess"></serviceTask>
+    <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="collectTask2" cancelActivity="false">
+      <timerEventDefinition>
+        <timeDuration>PT10S</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <boundaryEvent id="boundarytimer2" name="Timer" attachedToRef="checkTask" cancelActivity="false">
+      <timerEventDefinition>
+        <timeDuration>PT20S</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="flow9" sourceRef="boundarytimer1" targetRef="servicetask1"></sequenceFlow>
+    <sequenceFlow id="flow10" sourceRef="boundarytimer2" targetRef="servicetask1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_timeProcess1">
+    <bpmndi:BPMNPlane bpmnElement="timeProcess1" id="BPMNPlane_timeProcess1">
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="5.0" y="150.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="645.0" y="270.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="collectTask" id="BPMNShape_collectTask">
+        <omgdc:Bounds height="95.0" width="105.0" x="90.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="collectTask2" id="BPMNShape_collectTask2">
+        <omgdc:Bounds height="95.0" width="105.0" x="230.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="boundarytimer1" id="BPMNShape_boundarytimer1">
+        <omgdc:Bounds height="30.0" width="30.0" x="305.0" y="200.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="checkTask" id="BPMNShape_checkTask">
+        <omgdc:Bounds height="95.0" width="105.0" x="380.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="boundarytimer2" id="BPMNShape_boundarytimer2">
+        <omgdc:Bounds height="30.0" width="30.0" x="450.0" y="200.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="535.0" y="150.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reportTask" id="BPMNShape_reportTask">
+        <omgdc:Bounds height="95.0" width="105.0" x="610.0" y="120.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
+        <omgdc:Bounds height="55.0" width="105.0" x="312.0" y="304.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="40.0" y="167.0"></omgdi:waypoint>
+        <omgdi:waypoint x="90.0" y="167.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="195.0" y="167.0"></omgdi:waypoint>
+        <omgdi:waypoint x="230.0" y="167.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="335.0" y="167.0"></omgdi:waypoint>
+        <omgdi:waypoint x="380.0" y="167.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="485.0" y="167.0"></omgdi:waypoint>
+        <omgdi:waypoint x="535.0" y="170.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="575.0" y="170.0"></omgdi:waypoint>
+        <omgdi:waypoint x="610.0" y="167.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="559.0" y="148.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
+        <omgdi:waypoint x="555.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="550.0" y="60.0"></omgdi:waypoint>
+        <omgdi:waypoint x="441.0" y="60.0"></omgdi:waypoint>
+        <omgdi:waypoint x="282.0" y="60.0"></omgdi:waypoint>
+        <omgdi:waypoint x="282.0" y="120.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="48.0" x="370.0" y="61.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8">
+        <omgdi:waypoint x="662.0" y="215.0"></omgdi:waypoint>
+        <omgdi:waypoint x="662.0" y="270.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
+        <omgdi:waypoint x="320.0" y="230.0"></omgdi:waypoint>
+        <omgdi:waypoint x="364.0" y="304.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
+        <omgdi:waypoint x="465.0" y="230.0"></omgdi:waypoint>
+        <omgdi:waypoint x="364.0" y="304.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
