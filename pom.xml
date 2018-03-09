@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>com.fitech.framework</groupId>
         <artifactId>fitech-base</artifactId>
         <version>1.0.1-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
+
     <groupId>com.fitech.account</groupId>
     <artifactId>fitech-account</artifactId>
     <packaging>pom</packaging>
@@ -19,9 +22,6 @@
     <properties>
         <account-repository>1.0.1-SNAPSHOT</account-repository>
         <account-service>1.0.1-SNAPSHOT</account-service>
-        <fitech-domain>1.0.1-SNAPSHOT</fitech-domain>
-        <system-service>1.0.1-SNAPSHOT</system-service>
-        <ledger-repository>1.0.1-SNAPSHOT</ledger-repository>
     </properties>
     <!-- 设置 私服仓库地址-->
     <repositories>
@@ -31,12 +31,6 @@
             <url>http://120.27.212.57:8081/content/groups/public/</url>
         </repository>
     </repositories>
-    <scm>
-		<connection>scm:git:git@gitee.com:fitech/fitech-account.git</connection>
-        <url>git@gitee.com:fitech/fitech-account</url>
-        <developerConnection>scm:git:git@gitee.com:fitech/fitech-account.git</developerConnection>
-	  	<tag>HEAD</tag>
-  	</scm>
     <!-- account模块JAR依赖 -->
     <dependencies>
         <dependency>
@@ -84,12 +78,12 @@
         <dependency>
             <groupId>com.fitech.system</groupId>
             <artifactId>system-service</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.ledger</groupId>
             <artifactId>ledger-repository</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     </dependencyManagement>

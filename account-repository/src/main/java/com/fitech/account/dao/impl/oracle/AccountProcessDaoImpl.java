@@ -200,7 +200,7 @@ public class AccountProcessDaoImpl extends NamedParameterJdbcDaoSupport implemen
         if(null != vo.getCategory()){
         	sql.append(" and task.category_='" + vo.getCategory() + "'");
         }
-        sql.append(" order by o.id");
+        sql.append(" order by term desc,templateid,institutionid");
         Page<Object[]> page = accountBaseDao.findPageBySql(sql, null, vo.getPageSize(), vo.getPageNum());
         List<AccountProcessVo> vos = new ArrayList<>();
         //循环拼凑
