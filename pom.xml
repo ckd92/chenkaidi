@@ -78,12 +78,12 @@
         <dependency>
             <groupId>com.fitech.system</groupId>
             <artifactId>system-service</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.ledger</groupId>
             <artifactId>ledger-repository</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     </dependencyManagement>
