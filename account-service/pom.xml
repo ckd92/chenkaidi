@@ -16,22 +16,18 @@
         <dependency>
             <groupId>com.fitech.account</groupId>
             <artifactId>account-repository</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.domain</groupId>
             <artifactId>fitech-domain</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.ledger</groupId>
             <artifactId>ledger-repository</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.system</groupId>
             <artifactId>system-service</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

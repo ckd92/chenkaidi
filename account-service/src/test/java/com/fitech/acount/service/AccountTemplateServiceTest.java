@@ -1,17 +1,18 @@
 package com.fitech.acount.service;
 
-import com.fitech.account.service.AccountTemplateService;
-import com.fitech.domain.account.AccountField;
-import com.fitech.domain.account.AccountTemplate;
-import com.fitech.domain.account.SqlType;
-import com.fitech.domain.report.BusSystem;
-import com.fitech.framework.core.junit.JunitCase;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.fitech.account.service.AccountTemplateService;
+import com.fitech.domain.account.AccountField;
+import com.fitech.domain.account.AccountTemplate;
+import com.fitech.domain.report.BusSystem;
+import com.fitech.enums.SqlTypeEnum;
+import com.fitech.framework.core.junit.JunitCase;
 
 /**
  * Created by wangxw on 2017/7/25.
@@ -37,7 +38,7 @@ public class AccountTemplateServiceTest extends JunitCase {
         AccountField accountField = new AccountField();
         accountField.setItemType("VARCHAR");
         accountField.setItemCode("NBJGH");
-        accountField.setSqlType(SqlType.VARCHAR);
+        accountField.setSqlType(SqlTypeEnum.VARCHAR);
         accountField.setLength("20");
         accountFields.add(accountField);
         accountTemplate.setAccountFields(accountFields);

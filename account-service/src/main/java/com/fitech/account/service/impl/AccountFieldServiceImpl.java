@@ -1,20 +1,30 @@
 package com.fitech.account.service.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fitech.account.repository.AccountFieldRepository;
 import com.fitech.account.repository.AccountTemplateRepository;
 import com.fitech.account.repository.DictionaryRepository;
 import com.fitech.account.service.AccountFieldService;
 import com.fitech.account.util.AccountFieldUtil;
 import com.fitech.constant.ExceptionCode;
-import com.fitech.domain.account.*;
+import com.fitech.domain.account.AccountField;
+import com.fitech.domain.account.AccountTemplate;
+import com.fitech.domain.account.CodeField;
+import com.fitech.domain.account.DateField;
+import com.fitech.domain.account.DecimalField;
+import com.fitech.domain.account.Dictionary;
+import com.fitech.domain.account.DoubleField;
+import com.fitech.domain.account.IntegerField;
+import com.fitech.domain.account.StringField;
+import com.fitech.enums.SqlTypeEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Created by wangxw on 2017/8/10.
@@ -78,7 +88,7 @@ public class AccountFieldServiceImpl implements AccountFieldService {
             codeLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             codeLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             codeLedgerItem.setSearchable(ledgerItem.isSearchable());
-            codeLedgerItem.setSqlType(SqlType.VARCHAR);
+            codeLedgerItem.setSqlType(SqlTypeEnum.VARCHAR);
             codeLedgerItem.setPkable(ledgerItem.isPkable());
             codeLedgerItem.setEditable(ledgerItem.isEditable());
             codeLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -102,7 +112,7 @@ public class AccountFieldServiceImpl implements AccountFieldService {
             doubleLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             doubleLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             doubleLedgerItem.setSearchable(ledgerItem.isSearchable());
-            doubleLedgerItem.setSqlType(SqlType.DOUBLE);
+            doubleLedgerItem.setSqlType(SqlTypeEnum.DOUBLE);
             doubleLedgerItem.setPkable(ledgerItem.isPkable());
             doubleLedgerItem.setEditable(ledgerItem.isEditable());
             doubleLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -120,7 +130,7 @@ public class AccountFieldServiceImpl implements AccountFieldService {
             integerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             integerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             integerItem.setSearchable(ledgerItem.isSearchable());
-            integerItem.setSqlType(SqlType.INTEGER);
+            integerItem.setSqlType(SqlTypeEnum.INTEGER);
             integerItem.setPkable(ledgerItem.isPkable());
             integerItem.setEditable(ledgerItem.isEditable());
             integerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -138,7 +148,7 @@ public class AccountFieldServiceImpl implements AccountFieldService {
             dateLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             dateLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             dateLedgerItem.setSearchable(ledgerItem.isSearchable());
-            dateLedgerItem.setSqlType(SqlType.DATE);
+            dateLedgerItem.setSqlType(SqlTypeEnum.DATE);
             dateLedgerItem.setPkable(ledgerItem.isPkable());
             dateLedgerItem.setEditable(ledgerItem.isEditable());
             dateLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -156,7 +166,7 @@ public class AccountFieldServiceImpl implements AccountFieldService {
             stringLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             stringLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             stringLedgerItem.setSearchable(ledgerItem.isSearchable());
-            stringLedgerItem.setSqlType(SqlType.VARCHAR);
+            stringLedgerItem.setSqlType(SqlTypeEnum.VARCHAR);
             stringLedgerItem.setPkable(ledgerItem.isPkable());
             stringLedgerItem.setEditable(ledgerItem.isEditable());
             stringLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -174,7 +184,7 @@ public class AccountFieldServiceImpl implements AccountFieldService {
             decimalLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             decimalLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             decimalLedgerItem.setSearchable(ledgerItem.isSearchable());
-            decimalLedgerItem.setSqlType(SqlType.DECIMAL);
+            decimalLedgerItem.setSqlType(SqlTypeEnum.DECIMAL);
             decimalLedgerItem.setPkable(ledgerItem.isPkable());
             decimalLedgerItem.setEditable(ledgerItem.isEditable());
             decimalLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());

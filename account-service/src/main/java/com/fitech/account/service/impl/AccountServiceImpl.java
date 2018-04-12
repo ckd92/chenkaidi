@@ -1,22 +1,17 @@
 package com.fitech.account.service.impl;
 
 import java.io.InputStream;
-import java.util.*;
-
-import com.fitech.account.repository.*;
-import com.fitech.domain.account.*;
-import com.fitech.domain.report.ValidateStatus;
-import com.fitech.domain.system.SysLog;
-import com.fitech.validate.domain.ObjectValidateRule;
-import com.fitech.validate.domain.ValidateAnalyzeResult;
-import com.fitech.validate.domain.ValidateBatch;
-import com.fitech.validate.domain.ValidateResult;
-import com.fitech.validate.service.ObjectValidateRuleService;
-import com.fitech.validate.service.ValidateAnalyzeResultService;
-import com.fitech.validate.service.ValidateResultService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.map.HashedMap;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,22 +23,45 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fitech.account.dao.AccountBaseDao;
 import com.fitech.account.dao.AccountDataDao;
 import com.fitech.account.dao.AccountProcessDao;
+import com.fitech.account.repository.AccountEditLogItemRepository;
+import com.fitech.account.repository.AccountEditLogRepository;
+import com.fitech.account.repository.AccountProcessRepository;
+import com.fitech.account.repository.AccountRepository;
+import com.fitech.account.repository.AccountTemplateRepository;
+import com.fitech.account.repository.DictionaryItemRepository;
 import com.fitech.account.service.AccountEditLogService;
 import com.fitech.account.service.AccountFieldService;
 import com.fitech.account.service.AccountService;
 import com.fitech.account.util.ExcelUtils;
 import com.fitech.constant.ExceptionCode;
+import com.fitech.domain.account.Account;
+import com.fitech.domain.account.AccountEditLog;
+import com.fitech.domain.account.AccountField;
+import com.fitech.domain.account.AccountLine;
+import com.fitech.domain.account.AccountTemplate;
+import com.fitech.domain.account.DictionaryItem;
 import com.fitech.domain.system.FieldPermission;
 import com.fitech.domain.system.Role;
 import com.fitech.domain.system.User;
+import com.fitech.enums.SqlTypeEnum;
+import com.fitech.enums.ValidateStatusEnum;
+import com.fitech.enums.account.AccountEditEnum;
+import com.fitech.enums.account.LogSourceEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
+import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.ExcelUtil;
-import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.util.StringUtil;
 import com.fitech.system.repository.AccountFieldPermissionRepository;
 import com.fitech.system.repository.UserRepository;
+import com.fitech.validate.domain.ObjectValidateRule;
+import com.fitech.validate.domain.ValidateAnalyzeResult;
+import com.fitech.validate.domain.ValidateBatch;
+import com.fitech.validate.domain.ValidateResult;
+import com.fitech.validate.service.ObjectValidateRuleService;
+import com.fitech.validate.service.ValidateAnalyzeResultService;
+import com.fitech.validate.service.ValidateResultService;
 import com.fitech.vo.account.AccountProcessVo;
 
 /**
@@ -439,8 +457,8 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 
                     }
                     AccountEditLog accountEditLog = new AccountEditLog();
-                    accountEditLog.setAccountEditType(AccountEditType.INSERT);
-                    accountEditLog.setLogSource(LogSource.OFFLINE);
+                    accountEditLog.setAccountEditType(AccountEditEnum.INSERT);
+                    accountEditLog.setLogSource(LogSourceEnum.OFFLINE);
                     accountEditLog.setEditLineNum(size);
                     accountEditLogService.saveAccoutnEditLog(account, userId, accountEditLog);
                 } else {
@@ -542,8 +560,8 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                     accountDataDao.insertData(accountLines.get(0), account);
 
                     AccountEditLog accountEditLog = new AccountEditLog();
-                    accountEditLog.setAccountEditType(AccountEditType.INSERT);
-                    accountEditLog.setLogSource(LogSource.ONLINE);
+                    accountEditLog.setAccountEditType(AccountEditEnum.INSERT);
+                    accountEditLog.setLogSource(LogSourceEnum.ONLINE);
                     accountEditLog.setEditLineNum(1);
                     accountEditLogService.saveAccoutnEditLog(account, accountProcessVo.getUserId(), accountEditLog);
                 }
@@ -645,8 +663,8 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 
                 //记录台账修改痕迹
                 AccountEditLog accountEditLog = new AccountEditLog();
-                accountEditLog.setAccountEditType(AccountEditType.UPDATE);
-                accountEditLog.setLogSource(LogSource.ONLINE);
+                accountEditLog.setAccountEditType(AccountEditEnum.UPDATE);
+                accountEditLog.setLogSource(LogSourceEnum.ONLINE);
                 accountEditLog.setEditLineNum(1);
                 accountEditLog = accountEditLogService.saveAccoutnEditLog(account, accountProcessVo.getUserId(), accountEditLog);
                 //保证修改的记录进去，没修改的不记录
@@ -658,7 +676,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                 		if(ab.getItemCode().equals(af.getItemCode())){
                 			String before=String.valueOf(ab.getValue());
             				String after=String.valueOf(af.getValue());
-                			if(af.getSqlType().equals(com.fitech.domain.account.SqlType.DATE)){
+                			if(af.getSqlType().equals(SqlTypeEnum.DATE)){
                 				before=before.substring(0,10);
                 			}
                 			if(before.equals(after)){
@@ -747,14 +765,14 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                     if (list.size() > 0) {
                     	result.setSuccess(false);
                         result.setMessage("校验不通过");
-                        account.setValidateStatus(ValidateStatus.FAIL);
+                        account.setValidateStatus(ValidateStatusEnum.FAIL);
                         accountRepository.save(account);
                     }else{
-                    	account.setValidateStatus(ValidateStatus.SUCCESS);
+                    	account.setValidateStatus(ValidateStatusEnum.SUCCESS);
                     	accountRepository.save(account);
                     }
                 }else{
-                    account.setValidateStatus(ValidateStatus.SUCCESS);
+                    account.setValidateStatus(ValidateStatusEnum.SUCCESS);
                     accountRepository.save(account);
                 }
                 
@@ -960,8 +978,8 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                     accountDataDao.batchUpdateData(accountLine, account, lineIds);
                     for(Long id:lineIds){
                     	AccountEditLog accountEditLog = new AccountEditLog();
-                    	accountEditLog.setAccountEditType(AccountEditType.UPDATE);
-                    	accountEditLog.setLogSource(LogSource.ONLINE);
+                    	accountEditLog.setAccountEditType(AccountEditEnum.UPDATE);
+                    	accountEditLog.setLogSource(LogSourceEnum.ONLINE);
                     	accountEditLog.setEditLineNum(1);
                     	accountEditLog = accountEditLogService.saveAccoutnEditLog(account, accountProcessVo.getUserId(), accountEditLog);
                     	accountEditLogService.saveAccoutnEditLogItem(accountEditLog, accountLine.getAccountFields(), account);

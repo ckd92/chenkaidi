@@ -1,5 +1,21 @@
 package com.fitech.account.service.impl;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.activiti.engine.RuntimeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fitech.account.dao.AccountBaseDao;
 import com.fitech.account.dao.AccountProcessDao;
 import com.fitech.account.repository.AccountProcessRepository;
@@ -11,12 +27,17 @@ import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountField;
 import com.fitech.domain.account.AccountProcess;
-import com.fitech.domain.account.AccountState;
 import com.fitech.domain.account.AccountTask;
 import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.ledger.LedgerProcess;
-import com.fitech.domain.report.ValidateStatus;
-import com.fitech.domain.system.*;
+import com.fitech.domain.system.FieldPermission;
+import com.fitech.domain.system.Institution;
+import com.fitech.domain.system.ProcessConfig;
+import com.fitech.domain.system.ReportPermission;
+import com.fitech.domain.system.Role;
+import com.fitech.domain.system.User;
+import com.fitech.enums.ValidateStatusEnum;
+import com.fitech.enums.account.AccountState;
 import com.fitech.framework.activiti.service.FFInstance;
 import com.fitech.framework.activiti.service.ProcessService;
 import com.fitech.framework.activiti.service.TodoTaskService;
@@ -38,15 +59,6 @@ import com.fitech.validate.service.ValidateAnalyzeResultService;
 import com.fitech.validate.service.ValidateResultService;
 import com.fitech.vo.account.AccountProcessVo;
 import com.fitech.vo.ledger.LedgerProcessVo;
-
-import org.activiti.engine.RuntimeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 
 /**
@@ -372,16 +384,16 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                     
                   //3对数据库校验结果进行修改
                     if(false==valValidateRule){
-                    	ac.setValidateStatus(ValidateStatus.FAIL);
+                    	ac.setValidateStatus(ValidateStatusEnum.FAIL);
                     	accountRepository.save(ac);
                     }else{
-                    	ac.setValidateStatus(ValidateStatus.SUCCESS);
+                    	ac.setValidateStatus(ValidateStatusEnum.SUCCESS);
                     	accountRepository.save(ac);
                     }
                 }
                                             
                 //对校验结果进行判断
-                if(ac.getValidateStatus()!=ValidateStatus.SUCCESS){              	
+                if(ac.getValidateStatus()!=ValidateStatusEnum.SUCCESS){              	
                 	result.setRestCode(ExceptionCode.SYSTEM_ERROR);
                     result.setMessage("commit account ValidateStatus is not sucess !");
                     result.setSuccess(false);

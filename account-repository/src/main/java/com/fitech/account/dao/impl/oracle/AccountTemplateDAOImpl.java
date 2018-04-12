@@ -1,15 +1,21 @@
 package com.fitech.account.dao.impl.oracle;
 
-import com.fitech.account.dao.AccountTemplateDAO;
-import com.fitech.domain.account.AccountField;
-import com.fitech.domain.account.AccountTemplate;
-import com.fitech.domain.ledger.TableNameType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
-import java.util.*;
+import com.fitech.account.dao.AccountTemplateDAO;
+import com.fitech.domain.account.AccountField;
+import com.fitech.domain.account.AccountTemplate;
+import com.fitech.enums.TableNameEnum;
 
 /**
  * Created by SunBojun on 2017/2/28.
@@ -28,7 +34,7 @@ public class AccountTemplateDAOImpl extends NamedParameterJdbcDaoSupport impleme
     public void createTemplate(AccountTemplate accountTemplate) {
     	String tableName = accountTemplate.getTableName().toUpperCase();
 //        String history = tableName + "_" + TableNameType.HISTORY.getTableName().toUpperCase();
-        String standard = tableName + "_" + TableNameType.STANDARD.getTableName().toUpperCase();
+        String standard = tableName + "_" + TableNameEnum.STANDARD.getTableName().toUpperCase();
 //        String origin = tableName + "_" + TableNameType.ORIGIN.getTableName().toUpperCase();
 //        String zipper = tableName + "_" + TableNameType.ZIPPER.getTableName().toUpperCase();
         
@@ -447,7 +453,7 @@ public class AccountTemplateDAOImpl extends NamedParameterJdbcDaoSupport impleme
     public void dropAllTemplate(AccountTemplate accountTemplate) {
         String tableName = accountTemplate.getTableName().toUpperCase();
 //        String history = tableName + "_" + TableNameType.HISTORY.getTableName().toUpperCase();
-        String standard = tableName + "_" + TableNameType.STANDARD.getTableName().toUpperCase();
+        String standard = tableName + "_" + TableNameEnum.STANDARD.getTableName().toUpperCase();
 //        String origin = tableName + "_" + TableNameType.ORIGIN.getTableName().toUpperCase();
 //        String zipper = tableName + "_" + TableNameType.ZIPPER.getTableName().toUpperCase();
         dropTemplate(tableName);

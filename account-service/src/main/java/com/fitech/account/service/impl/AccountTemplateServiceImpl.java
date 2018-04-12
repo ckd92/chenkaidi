@@ -1,5 +1,26 @@
 package com.fitech.account.service.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fitech.account.dao.AccountFieldDAO;
 import com.fitech.account.dao.AccountTemplateDAO;
 import com.fitech.account.repository.AccountFieldRepository;
@@ -9,7 +30,6 @@ import com.fitech.account.service.AccountTemplateService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.AccountField;
 import com.fitech.domain.account.AccountTemplate;
-import com.fitech.domain.ledger.TableNameType;
 import com.fitech.domain.report.BusSystem;
 import com.fitech.domain.system.FieldPermission;
 import com.fitech.domain.system.InstituteLevelType;
@@ -25,22 +45,6 @@ import com.fitech.framework.lang.util.StringUtil;
 import com.fitech.system.repository.FieldPermissionRepository;
 import com.fitech.system.repository.ProcessConfigRepository;
 import com.fitech.system.repository.ReportPermissionRepository;
-import com.fitech.system.service.ReportPermissionService;
-
-import org.apache.poi.ss.formula.functions.Odd;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.*;
 
 /**
  * Created by wangxw on 2017/7/25.

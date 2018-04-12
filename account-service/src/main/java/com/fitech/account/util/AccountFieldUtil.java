@@ -1,6 +1,14 @@
 package com.fitech.account.util;
 
-import com.fitech.domain.account.*;
+import com.fitech.domain.account.AccountField;
+import com.fitech.domain.account.CodeField;
+import com.fitech.domain.account.DateField;
+import com.fitech.domain.account.DecimalField;
+import com.fitech.domain.account.Dictionary;
+import com.fitech.domain.account.DoubleField;
+import com.fitech.domain.account.IntegerField;
+import com.fitech.domain.account.StringField;
+import com.fitech.enums.SqlTypeEnum;
 
 /**
  * Created by wangxw on 2017/8/10.
@@ -14,7 +22,7 @@ public class AccountFieldUtil {
             codeLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             codeLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             codeLedgerItem.setSearchable(ledgerItem.isSearchable());
-            codeLedgerItem.setSqlType(SqlType.VARCHAR);
+            codeLedgerItem.setSqlType(SqlTypeEnum.VARCHAR);
             codeLedgerItem.setPkable(ledgerItem.isPkable());
             codeLedgerItem.setEditable(ledgerItem.isEditable());
             codeLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -38,7 +46,7 @@ public class AccountFieldUtil {
             doubleLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             doubleLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             doubleLedgerItem.setSearchable(ledgerItem.isSearchable());
-            doubleLedgerItem.setSqlType(SqlType.DOUBLE);
+            doubleLedgerItem.setSqlType(SqlTypeEnum.DOUBLE);
             doubleLedgerItem.setPkable(ledgerItem.isPkable());
             doubleLedgerItem.setEditable(ledgerItem.isEditable());
             doubleLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -56,7 +64,7 @@ public class AccountFieldUtil {
             integerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             integerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             integerItem.setSearchable(ledgerItem.isSearchable());
-            integerItem.setSqlType(SqlType.INTEGER);
+            integerItem.setSqlType(SqlTypeEnum.INTEGER);
             integerItem.setPkable(ledgerItem.isPkable());
             integerItem.setEditable(ledgerItem.isEditable());
             integerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -74,7 +82,7 @@ public class AccountFieldUtil {
             dateLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             dateLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             dateLedgerItem.setSearchable(ledgerItem.isSearchable());
-            dateLedgerItem.setSqlType(SqlType.DATE);
+            dateLedgerItem.setSqlType(SqlTypeEnum.DATE);
             dateLedgerItem.setPkable(ledgerItem.isPkable());
             dateLedgerItem.setEditable(ledgerItem.isEditable());
             dateLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -92,7 +100,7 @@ public class AccountFieldUtil {
             stringLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             stringLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             stringLedgerItem.setSearchable(ledgerItem.isSearchable());
-            stringLedgerItem.setSqlType(SqlType.VARCHAR);
+            stringLedgerItem.setSqlType(SqlTypeEnum.VARCHAR);
             stringLedgerItem.setPkable(ledgerItem.isPkable());
             stringLedgerItem.setEditable(ledgerItem.isEditable());
             stringLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
@@ -110,7 +118,7 @@ public class AccountFieldUtil {
             decimalLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
             decimalLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
             decimalLedgerItem.setSearchable(ledgerItem.isSearchable());
-            decimalLedgerItem.setSqlType(SqlType.DECIMAL);
+            decimalLedgerItem.setSqlType(SqlTypeEnum.DECIMAL);
             decimalLedgerItem.setPkable(ledgerItem.isPkable());
             decimalLedgerItem.setEditable(ledgerItem.isEditable());
             decimalLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());

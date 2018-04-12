@@ -1,28 +1,29 @@
 package com.fitech.account.service.impl;
 
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fitech.account.repository.AccountRepository;
 import com.fitech.account.service.AccountProcessService;
 import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
-import com.fitech.domain.account.AccountState;
 import com.fitech.domain.account.AccountTemplate;
-import com.fitech.domain.account.SubmitStateType;
 import com.fitech.domain.system.Institution;
 import com.fitech.domain.system.ProcessConfig;
+import com.fitech.enums.SubmitStateEnum;
+import com.fitech.enums.account.AccountState;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.ledger.dao.BaseDao;
 import com.fitech.system.repository.InstitutionRepository;
 import com.fitech.system.repository.ProcessConfigRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 
 /**
@@ -51,7 +52,7 @@ public class AccountReportServiceImpl implements AccountReportService {
     @Transactional
     public void startProcess(Account account){
         //根据报文期数获取待开启的报文实例
-        Collection<Account> ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(), SubmitStateType.NOTSUBMIT);
+        Collection<Account> ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(), SubmitStateEnum.NOTSUBMIT);
         for (Account report : ledgerReportList) {
             try {
                 //获取报文对应的流程配置信息
@@ -59,7 +60,7 @@ public class AccountReportServiceImpl implements AccountReportService {
                 if (null != processConfig) {
                     //开启流程
                     accountProcessService.processStart(processConfig, report);
-                    report.setSubmitStateType(SubmitStateType.SUBMITING);
+                    report.setSubmitStateType(SubmitStateEnum.SUBMITING);
                     report.setAccountState(AccountState.DBL);
                     this.modify(report);
                 }

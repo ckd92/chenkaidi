@@ -1,20 +1,9 @@
 package com.fitech.account.service.impl;
 
-import com.fitech.account.dao.AccountTemplateDAO;
-import com.fitech.account.repository.AccountRepository;
-import com.fitech.account.service.AccountsService;
-import com.fitech.constant.ExceptionCode;
-import com.fitech.domain.account.Account;
-import com.fitech.domain.account.AccountState;
-import com.fitech.domain.account.AccountTemplate;
-import com.fitech.domain.system.Institution;
-import com.fitech.framework.core.trace.ServiceTrace;
-import com.fitech.framework.lang.common.AppException;
-import com.fitech.framework.lang.util.StringUtil;
-import com.fitech.vo.account.AccountVo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -23,11 +12,22 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import com.fitech.account.dao.AccountTemplateDAO;
+import com.fitech.account.repository.AccountRepository;
+import com.fitech.account.service.AccountsService;
+import com.fitech.constant.ExceptionCode;
+import com.fitech.domain.account.Account;
+import com.fitech.domain.account.AccountTemplate;
+import com.fitech.domain.system.Institution;
+import com.fitech.framework.core.trace.ServiceTrace;
+import com.fitech.framework.lang.common.AppException;
+import com.fitech.framework.lang.util.StringUtil;
+import com.fitech.vo.account.AccountVo;
 
 @Service
 @ServiceTrace

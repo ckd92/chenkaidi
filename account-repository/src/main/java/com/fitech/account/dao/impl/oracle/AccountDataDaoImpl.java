@@ -5,6 +5,7 @@ import antlr.StringUtils;
 import com.fitech.account.dao.AccountDataDao;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.*;
+import com.fitech.enums.SqlTypeEnum;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.ExcelUtil;
@@ -255,10 +256,10 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                 		}
                 	}
                 	
-                    if (field.getSqlType().equals(com.fitech.domain.account.SqlType.VARCHAR)) {
+                    if (field.getSqlType().equals(SqlTypeEnum.VARCHAR)) {
                         insertValueStr.append("'" + tempValue + "'");
                         field.setValue(tempValue);
-                    } else if(field.getSqlType().equals(com.fitech.domain.account.SqlType.DATE)) {
+                    } else if(field.getSqlType().equals(SqlTypeEnum.DATE)) {
                     	if("".equals(tempValue)){
                     		insertValueStr.append("NULL");
                     		field.setValue(tempValue);
@@ -266,11 +267,11 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                     		insertValueStr.append("to_date('" + tempValue + "','yyyy-mm-dd')");
                         	field.setValue(tempValue);
                     	}	
-                    }else if(field.getSqlType().equals(com.fitech.domain.account.SqlType.INTEGER)||
-                    		field.getSqlType().equals(com.fitech.domain.account.SqlType.DECIMAL)||
-                    		field.getSqlType().equals(com.fitech.domain.account.SqlType.DOUBLE)||
-                    		field.getSqlType().equals(com.fitech.domain.account.SqlType.INT)||
-                    		field.getSqlType().equals(com.fitech.domain.account.SqlType.BIGINT)) {
+                    }else if(field.getSqlType().equals(SqlTypeEnum.INTEGER)||
+                    		field.getSqlType().equals(SqlTypeEnum.DECIMAL)||
+                    		field.getSqlType().equals(SqlTypeEnum.DOUBLE)||
+                    		field.getSqlType().equals(SqlTypeEnum.INT)||
+                    		field.getSqlType().equals(SqlTypeEnum.BIGINT)) {
                     	if("".equals(tempValue)){
                     		insertValueStr.append("NULL");
                     		field.setValue(tempValue);
@@ -354,11 +355,11 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             if (item.getValue() == null) {
                 sql = sql + "null,";
             } else {
-                if (com.fitech.domain.account.SqlType.DATE.equals(item.getSqlType())) {
+                if (SqlTypeEnum.DATE.equals(item.getSqlType())) {
                     sql = sql + "to_date('" + item.getValue() + "', 'yyyy-MM-dd') ,";
-                } else if(SqlType.INTEGER.equals(item.getSqlType())){
+                } else if(SqlTypeEnum.INTEGER.equals(item.getSqlType())){
                     sql = sql + "'" + Integer.parseInt(item.getValue()+"") + "',";
-                }else if(SqlType.DOUBLE.equals(item.getSqlType())){
+                }else if(SqlTypeEnum.DOUBLE.equals(item.getSqlType())){
                     sql = sql + "'" + Double.parseDouble(item.getValue()+"") + "',";
                 }else{
                     sql = sql + "'" + item.getValue() + "',";
@@ -388,12 +389,12 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                 if (StringUtil.isEmpty(String.valueOf(item.getValue()))) {
                     sql = sql + item.getItemCode() + "=null,";
                 } else {
-                    if (com.fitech.domain.account.SqlType.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
+                    if (SqlTypeEnum.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
 //                        String date = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(item.getValue().toString()));
                         sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
-                    } else if(SqlType.INTEGER.equals(item.getSqlType())){
+                    } else if(SqlTypeEnum.INTEGER.equals(item.getSqlType())){
                         sql = sql+item.getItemCode()+"="+ "'" + Integer.parseInt(item.getValue()+"") + "',";
-                    }else if(SqlType.DOUBLE.equals(item.getSqlType())){
+                    }else if(SqlTypeEnum.DOUBLE.equals(item.getSqlType())){
                         sql = sql +item.getItemCode()+"="+ "'" + Double.parseDouble(item.getValue()+"") + "',";
                     }else{
                         sql = sql+item.getItemCode()+"="+ "'" + item.getValue() + "',";
@@ -415,7 +416,7 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                 if (StringUtil.isEmpty(String.valueOf(item.getValue()))) {
                     sql = sql + item.getItemCode() + "=null,";
                 } else {
-                    if (com.fitech.domain.account.SqlType.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
+                    if (SqlTypeEnum.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
 //                        String date = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(item.getValue().toString()));
                         sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
                     } else{
