@@ -10,20 +10,10 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>account-service</artifactId>
     <version>1.0.1-SNAPSHOT</version>
-
-
     <dependencies>
         <dependency>
             <groupId>com.fitech.account</groupId>
             <artifactId>account-repository</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fitech.domain</groupId>
-            <artifactId>fitech-domain</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fitech.ledger</groupId>
-            <artifactId>ledger-repository</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fitech.system</groupId>

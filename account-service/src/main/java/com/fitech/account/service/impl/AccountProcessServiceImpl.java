@@ -37,7 +37,7 @@ import com.fitech.domain.system.ReportPermission;
 import com.fitech.domain.system.Role;
 import com.fitech.domain.system.User;
 import com.fitech.enums.ValidateStatusEnum;
-import com.fitech.enums.account.AccountState;
+import com.fitech.enums.account.AccountStateEnum;
 import com.fitech.framework.activiti.service.FFInstance;
 import com.fitech.framework.activiti.service.ProcessService;
 import com.fitech.framework.activiti.service.TodoTaskService;
@@ -418,7 +418,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                     ac.setAccountState(account.getAccountState());
                     accountRepository.save(ac);
                     
-                    if(accountProcessVo.getAccount().getAccountState() == AccountState.SHTTG){
+                    if(accountProcessVo.getAccount().getAccountState() == AccountStateEnum.SHTTG){
 
                         accountProcessRepository.save(ap);
                     }
@@ -449,7 +449,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
 
                     accountRepository.save(ac);
 
-                    if(account.getAccountState() == AccountState.SHTG){
+                    if(account.getAccountState() == AccountStateEnum.SHTG){
 
                         ap.setEndTime(new Date());
 

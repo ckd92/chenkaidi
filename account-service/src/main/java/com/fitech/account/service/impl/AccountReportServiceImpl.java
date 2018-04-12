@@ -18,7 +18,7 @@ import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.system.Institution;
 import com.fitech.domain.system.ProcessConfig;
 import com.fitech.enums.SubmitStateEnum;
-import com.fitech.enums.account.AccountState;
+import com.fitech.enums.account.AccountStateEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.ledger.dao.BaseDao;
@@ -61,7 +61,7 @@ public class AccountReportServiceImpl implements AccountReportService {
                     //开启流程
                     accountProcessService.processStart(processConfig, report);
                     report.setSubmitStateType(SubmitStateEnum.SUBMITING);
-                    report.setAccountState(AccountState.DBL);
+                    report.setAccountState(AccountStateEnum.DBL);
                     this.modify(report);
                 }
             } catch (Exception e) {
