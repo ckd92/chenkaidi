@@ -465,6 +465,36 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         return result;
     }
 
+    
+    //删除流程下所有实例(hx)
+    public void deleteProcessBL(String reportId){
+    	StringBuffer sb = new StringBuffer();   	
+        sb.append(" select p.id lpid, p.procinsetid lpproc, r.id lrid ");
+        sb.append(" from account r ");
+        sb.append(" left join accountprocess p ");
+        sb.append(" on p.account_id = r.id ");
+        sb.append(" where r.processconfig = ");
+        sb.append(reportId);
+        Map<String,String > map=new HashMap<>();
+        List<Object[]> list=accountBaseDao.findBySql(sb, map);
+        if (list != null && (!list.isEmpty())) {
+            for (Object[] object : list) {
+            	if(object[0]!=null){
+            		String procid=String.valueOf(object[1]);
+                	//捕捉改流程activity已被其他流程删除
+                	processService.deleteProcInstance(procid, null);
+                	Long lpid=Long.valueOf(String.valueOf(object[0]));
+                	accountProcessRepository.delete(lpid);
+            	}else{
+            		Long lrid=Long.valueOf(String.valueOf(object[2]));
+            		accountRepository.delete(lrid);
+            		System.out.println("改任务还未进入流程");
+            	}
+            }
+        }
+        System.out.println("-------------该方法已执行完成--------------");
+    }
+    
     public Boolean isMultiInstanceTaskExecOver(String proInstId){
         boolean result = true;
         if(StringUtil.isNotEmpty(proInstId)){

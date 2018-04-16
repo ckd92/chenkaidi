@@ -26,6 +26,9 @@ public interface AccountProcessService {
      */
     public Page<AccountProcessVo> findPageAccountProcessList(AccountProcessVo where);
     
+    
+    public void deleteProcessBL(String reportId);
+    
     public Page<AccountProcessVo> findPageAccounts(AccountProcessVo where);
     
     public String downLoadAccounts(String where);

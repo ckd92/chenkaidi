@@ -1,10 +1,29 @@
 package com.fitech.account.controller;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.fitech.account.service.AccountProcessService;
 import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountProcess;
+import com.fitech.domain.system.ProcessConfig;
 import com.fitech.framework.activiti.service.ProcessRegistryService;
 import com.fitech.framework.activiti.service.TodoTaskService;
 import com.fitech.framework.activiti.vo.TaskVo;
@@ -14,17 +33,6 @@ import com.fitech.framework.security.util.TokenUtils;
 import com.fitech.system.service.ProcessConfigService;
 import com.fitech.system.service.SysLogService;
 import com.fitech.vo.account.AccountProcessVo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
 
 
 /**
@@ -188,6 +196,27 @@ public class AccountProcessController {
         return result;
     }
 
+    /**
+     * 删除流程所建的所有流程任务实例(hx)
+     *
+     * @return
+     */
+    @PostMapping(value = "ShanChu/{reportid}")
+    public GenericResult<Object> ShanChuProcess(@PathVariable String reportid,HttpServletRequest request) {
+    	GenericResult<Object> result = new GenericResult<Object>();
+		try {
+            ProcessConfig pi=processConfigService.findById(Long.valueOf(reportid));
+            this.accountProcessService.deleteProcessBL(reportid);
+            result.setSuccess(true);
+    		System.out.println("--------------成功删除流程下所有代办任务-----------------");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        }finally {        	
+            sysLogService.addOperateLog("删除流程下所有代办任务",request);
+        }
+        return result;
+    }
     /**
      * 转发
      */
