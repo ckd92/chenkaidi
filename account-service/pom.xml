@@ -19,5 +19,13 @@
             <groupId>com.fitech.system</groupId>
             <artifactId>system-service</artifactId>
         </dependency>
+        <dependency>
+			<groupId>com.fitech.validate</groupId>
+			<artifactId>validate-service</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>com.fitech.ledger</groupId>
+		    <artifactId>ledger-service</artifactId>
+		</dependency>
     </dependencies>
 </project>

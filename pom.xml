@@ -76,6 +76,16 @@
             <artifactId>system-service</artifactId>
             <version>1.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+			<groupId>com.fitech.validate</groupId>
+			<artifactId>validate-service</artifactId>
+			<version>1.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.fitech.ledger</groupId>
+		    <artifactId>ledger-service</artifactId>
+		    <version>1.0.1-SNAPSHOT</version>
+		</dependency>
     </dependencies>
     </dependencyManagement>
 </project>

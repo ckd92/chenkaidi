@@ -22,7 +22,6 @@ import com.fitech.enums.account.AccountStateEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.ledger.dao.BaseDao;
-import com.fitech.system.repository.InstitutionRepository;
 import com.fitech.system.repository.ProcessConfigRepository;
 
 
@@ -32,19 +31,12 @@ import com.fitech.system.repository.ProcessConfigRepository;
 @Service
 @ServiceTrace
 public class AccountReportServiceImpl implements AccountReportService {
-
-    //@Autowired
-    //private ProcessConfigService processConfigService;
     @Autowired
     private ProcessConfigRepository processConfigRepository;
     @Autowired
     private AccountProcessService accountProcessService;
     @Autowired
-    private InstitutionRepository institutionRepository;
-
-    @Autowired
     private AccountRepository accountRepository;
-
     @Autowired
     private BaseDao baseDao;
 
