@@ -23,9 +23,9 @@
 			<groupId>com.fitech.validate</groupId>
 			<artifactId>validate-service</artifactId>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 		    <groupId>com.fitech.ledger</groupId>
 		    <artifactId>ledger-service</artifactId>
-		</dependency>
+		</dependency> -->
     </dependencies>
 </project>

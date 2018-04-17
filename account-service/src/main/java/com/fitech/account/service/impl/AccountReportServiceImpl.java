@@ -21,7 +21,7 @@ import com.fitech.enums.SubmitStateEnum;
 import com.fitech.enums.account.AccountStateEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
-import com.fitech.ledger.dao.BaseDao;
+import com.fitech.system.dao.BaseDao;
 import com.fitech.system.repository.ProcessConfigRepository;
 
 
