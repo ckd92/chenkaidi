@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.fitech.account.repository.AccountTemplateRepository;
 import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.report.BusSystem;
-import com.fitech.system.service.AccountModelService;
+import com.fitech.system.service.SAccountModelService;
 
 /**
  * 补录系统模块外部对接接口实现类
@@ -16,7 +16,7 @@ import com.fitech.system.service.AccountModelService;
  *
  */
 @Service
-public class AccountModelServiceImpl implements AccountModelService {
+public class SAccountModelServiceImpl implements SAccountModelService {
 
 	@Autowired
 	private AccountTemplateRepository accountTemplateRepository;
