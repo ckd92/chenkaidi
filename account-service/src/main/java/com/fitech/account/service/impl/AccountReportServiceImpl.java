@@ -15,13 +15,13 @@ import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountTemplate;
+import com.fitech.domain.report.ReportTemplate;
 import com.fitech.domain.system.Institution;
 import com.fitech.domain.system.ProcessConfig;
 import com.fitech.enums.SubmitStateEnum;
 import com.fitech.enums.account.AccountStateEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
-import com.fitech.system.dao.BaseDao;
 import com.fitech.system.repository.ProcessConfigRepository;
 
 
@@ -37,8 +37,6 @@ public class AccountReportServiceImpl implements AccountReportService {
     private AccountProcessService accountProcessService;
     @Autowired
     private AccountRepository accountRepository;
-    @Autowired
-    private BaseDao baseDao;
 
     @Override
     @Transactional
@@ -65,12 +63,12 @@ public class AccountReportServiceImpl implements AccountReportService {
 
     private ProcessConfig findByAccountReport(Account account) throws Exception {
         //报文模板
-        List<AccountTemplate> accountTemplateList = new ArrayList<>();
+        List<ReportTemplate> accountTemplateList = new ArrayList<>();
         accountTemplateList.add(account.getAccountTemplate());
         //报文所属机构
         List<Institution> institutionList = new ArrayList<Institution>();
         institutionList.add(account.getInstitution());
-        List<ProcessConfig> processConfigList = processConfigRepository.findByOrgsAndSjblRptsAndEnabledOrderByIdDesc(institutionList, accountTemplateList,true);
+        List<ProcessConfig> processConfigList = processConfigRepository.findByOrgsAndReportTemplateAndEnabledOrderByIdDesc(institutionList, accountTemplateList,true);
         if(null!=processConfigList && processConfigList.size()>0){
             return processConfigList.get(0);
         }

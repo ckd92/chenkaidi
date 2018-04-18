@@ -31,6 +31,7 @@ import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.AccountField;
 import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.report.BusSystem;
+import com.fitech.domain.report.ReportTemplate;
 import com.fitech.domain.system.FieldPermission;
 import com.fitech.domain.system.InstituteLevelType;
 import com.fitech.domain.system.OperationType;
@@ -322,10 +323,10 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                 		if(flag.equals("process")){
                 			break;
                 		}
-                		Collection<AccountTemplate> aTemplates = processConfig.getSjblRpts();
-                		 Iterator<AccountTemplate> it = aTemplates.iterator();
+                		Collection<ReportTemplate> aTemplates = processConfig.getReportTemplate();
+                		 Iterator<ReportTemplate> it = aTemplates.iterator();
                 	     while(it.hasNext()){
-                	    	 AccountTemplate template = it.next();
+                	    	 ReportTemplate template = it.next();
                 	    	 if(accountTemplate.getId().equals(template.getId())){
                 	    		 flag = "process";
                 	    	 }
