@@ -8,20 +8,22 @@
         <version>1.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>com.fitech.account</groupId>
     <artifactId>fitech-account</artifactId>
     <packaging>pom</packaging>
     <name>fitech-account</name>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
     <description>数据补录模块</description>
     <modules>
         <module>account-repository</module>
         <module>account-service</module>
     </modules>
     <properties>
-        <account-repository>1.0.1-SNAPSHOT</account-repository>
-        <account-service>1.0.1-SNAPSHOT</account-service>
+        <account-repository>1.1.1-SNAPSHOT</account-repository>
+        <account-service>1.1.1-SNAPSHOT</account-service>
+        <fitech-domain>1.1.1-SNAPSHOT</fitech-domain>
+        <system-service>1.1.1-SNAPSHOT</system-service>
+        <validate-service>1.0.1-SNAPSHOT</validate-service>
     </properties>
     <!-- 设置 私服仓库地址-->
     <repositories>
@@ -69,22 +71,17 @@
         <dependency>
             <groupId>com.fitech.domain</groupId>
             <artifactId>fitech-domain</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>${fitech-domain}</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.system</groupId>
             <artifactId>system-service</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>${system-service}</version>
         </dependency>
         <dependency>
 			<groupId>com.fitech.validate</groupId>
 			<artifactId>validate-service</artifactId>
-			<version>1.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.fitech.ledger</groupId>
-		    <artifactId>ledger-service</artifactId>
-		    <version>1.0.1-SNAPSHOT</version>
+			<version>${validate-service}</version>
 		</dependency>
     </dependencies>
     </dependencyManagement>
