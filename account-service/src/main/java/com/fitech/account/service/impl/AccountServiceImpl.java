@@ -153,7 +153,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                     FieldPermission fp = its.next();
                     // 如果字段权限的模板id是该模板id则将该模板权限添加到已配置的字段权限集合中
                     if (r.getSubSystem().getSubKey().equals("sjbl")) {
-                        if (fp.getAccountTemplate().getId().equals(accountt.getAccountTemplate().getId())) {
+                        if (fp.getReportTemplate().getId().equals(accountt.getAccountTemplate().getId())) {
                             rrfps.add(fp);
                         }
                     }
@@ -1013,8 +1013,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                 FieldPermission fp = its.next();
                 // 如果字段权限的模板id是该模板id则将该模板权限添加到已配置的字段权限集合中
                 if (r.getSubSystem().getSubKey().equals("sjbl")) {
-                    if (fp.getAccountTemplate().getId().equals(id)) {
-                        // if (fp.getAccountTemplate().getId().equals(5940L)) {
+                    if (fp.getReportTemplate().getId().equals(id)) {
                         rrfps.add(fp);
                     }
                 }

@@ -434,7 +434,7 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
         //最新的报文字段
         Collection<AccountField> ledgerItems=accountTemplate.getAccountFields();
         //数据库中已有的报文权限数据
-        Collection<FieldPermission> hasPermission = fieldPermissionRepository.findByAccountTemplate(accountTemplate);
+        Collection<FieldPermission> hasPermission = fieldPermissionRepository.findByReportTemplate(accountTemplate);
         List<Long> hasPermissionId = new ArrayList<Long>();
         for (FieldPermission permission : hasPermission) {
             //对 没有权限的字段 进行权限初始化分配
@@ -452,12 +452,12 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                 if(!hasPermissionId.contains(ledgerItem.getId())){
                     FieldPermission fieldPermission=new FieldPermission();
                     fieldPermission.setAccountField(ledgerItem);
-                    fieldPermission.setAccountTemplate(accountTemplate);
+                    fieldPermission.setReportTemplate(accountTemplate);
                     fieldPermission.setOperationType(OperationType.LOOK);
                     FieldPermission operateFieldPermission=new FieldPermission();
                     operateFieldPermission.setOperationType(OperationType.OPERATE);
                     operateFieldPermission.setAccountField(ledgerItem);
-                    operateFieldPermission.setAccountTemplate(accountTemplate);
+                    operateFieldPermission.setReportTemplate(accountTemplate);
                     fieldPermissions.add(operateFieldPermission);
                     fieldPermissions.add(fieldPermission);
                     break;
@@ -465,12 +465,12 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
             }else{
                 FieldPermission fieldPermission=new FieldPermission();
                 fieldPermission.setAccountField(ledgerItem);
-                fieldPermission.setAccountTemplate(accountTemplate);
+                fieldPermission.setReportTemplate(accountTemplate);
                 fieldPermission.setOperationType(OperationType.LOOK);
                 FieldPermission operateFieldPermission=new FieldPermission();
                 operateFieldPermission.setOperationType(OperationType.OPERATE);
                 operateFieldPermission.setAccountField(ledgerItem);
-                operateFieldPermission.setAccountTemplate(accountTemplate);
+                operateFieldPermission.setReportTemplate(accountTemplate);
                 fieldPermissions.add(operateFieldPermission);
                 fieldPermissions.add(fieldPermission);
             }
@@ -487,7 +487,7 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
             for(int j=0;j<3;j++){
                 ReportPermission rp=new ReportPermission();
                 rp.setBusSystem(busSystem);
-                rp.setAccountTemplate(accountTemplate);
+                rp.setReportTemplate(accountTemplate);
                 if(i==0){
                     rp.setOperationType(OperationType.LOOK);
                 }else if(i==1){
@@ -710,7 +710,7 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
 
 	@Override
 	public void delBatch(AccountTemplate accountTemplate) {
-		Collection<FieldPermission> rps=reportPermissionRepository.findByAccountTemplate(accountTemplate);
+		Collection<FieldPermission> rps=reportPermissionRepository.findByReportTemplate(accountTemplate);
         if (rps!=null && rps.size()>0){
             reportPermissionRepository.delete(rps);
         }
@@ -718,7 +718,7 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
 
 	@Override
 	public void delFieldBatch(AccountTemplate accountTemplate) {
-		 Collection<FieldPermission> rfps=fieldPermissionRepository.findByAccountTemplate(accountTemplate);
+		 Collection<FieldPermission> rfps=fieldPermissionRepository.findByReportTemplate(accountTemplate);
 		 if (rfps!=null && rfps.size()>0){
 			 fieldPermissionRepository.delete(rfps);
 		 }
