@@ -5,15 +5,17 @@ import com.fitech.domain.account.AccountField;
 import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.report.BusSystem;
 import com.fitech.domain.system.FieldPermission;
-import com.fitech.domain.system.OperationType;
+import com.fitech.enums.system.OperationEnum;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.system.service.FieldPermissionService;
 import com.fitech.vo.system.FieldPermissionVo;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -32,7 +34,7 @@ public class AccountTemplateController {
         AccountTemplate accountTemplate = new AccountTemplate();
         accountTemplate.setId(accountTemplateId);
         FieldPermission fieldPermission=new FieldPermission();
-        fieldPermission.setOperationType(OperationType.LOOK);
+        fieldPermission.setOperationType(OperationEnum.LOOK);
         //所有的字段权限vo集合
         Collection<FieldPermissionVo> fieldPermissionVos=fieldPermissionService.findFieldAccountPermissionVo(accountTemplate,fieldPermission);
         GenericResult<Collection<FieldPermissionVo>> result=new GenericResult<Collection<FieldPermissionVo>>();
@@ -46,7 +48,7 @@ public class AccountTemplateController {
         AccountTemplate accountTemplate = new AccountTemplate();
         accountTemplate.setId(accountTemplateId);
         FieldPermission fieldPermission=new FieldPermission();
-        fieldPermission.setOperationType(OperationType.OPERATE);
+        fieldPermission.setOperationType(OperationEnum.OPERATE);
         //所有的字段权限vo集合
         Collection<FieldPermissionVo> fieldPermissionVos=fieldPermissionService.findFieldAccountPermissionVo(accountTemplate,fieldPermission);
         GenericResult<Collection<FieldPermissionVo>> result=new GenericResult<Collection<FieldPermissionVo>>();

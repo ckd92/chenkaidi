@@ -33,11 +33,11 @@ import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.report.BusSystem;
 import com.fitech.domain.report.ReportTemplate;
 import com.fitech.domain.system.FieldPermission;
-import com.fitech.domain.system.InstituteLevelType;
-import com.fitech.domain.system.OperationType;
 import com.fitech.domain.system.ProcessConfig;
 import com.fitech.domain.system.ReportPermission;
 import com.fitech.domain.system.SubSystem;
+import com.fitech.enums.system.InstituteLevelEnum;
+import com.fitech.enums.system.OperationEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.result.GenericResult;
@@ -453,9 +453,9 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                     FieldPermission fieldPermission=new FieldPermission();
                     fieldPermission.setAccountField(ledgerItem);
                     fieldPermission.setReportTemplate(accountTemplate);
-                    fieldPermission.setOperationType(OperationType.LOOK);
+                    fieldPermission.setOperationType(OperationEnum.LOOK);
                     FieldPermission operateFieldPermission=new FieldPermission();
-                    operateFieldPermission.setOperationType(OperationType.OPERATE);
+                    operateFieldPermission.setOperationType(OperationEnum.OPERATE);
                     operateFieldPermission.setAccountField(ledgerItem);
                     operateFieldPermission.setReportTemplate(accountTemplate);
                     fieldPermissions.add(operateFieldPermission);
@@ -466,9 +466,9 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                 FieldPermission fieldPermission=new FieldPermission();
                 fieldPermission.setAccountField(ledgerItem);
                 fieldPermission.setReportTemplate(accountTemplate);
-                fieldPermission.setOperationType(OperationType.LOOK);
+                fieldPermission.setOperationType(OperationEnum.LOOK);
                 FieldPermission operateFieldPermission=new FieldPermission();
-                operateFieldPermission.setOperationType(OperationType.OPERATE);
+                operateFieldPermission.setOperationType(OperationEnum.OPERATE);
                 operateFieldPermission.setAccountField(ledgerItem);
                 operateFieldPermission.setReportTemplate(accountTemplate);
                 fieldPermissions.add(operateFieldPermission);
@@ -489,19 +489,19 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                 rp.setBusSystem(busSystem);
                 rp.setReportTemplate(accountTemplate);
                 if(i==0){
-                    rp.setOperationType(OperationType.LOOK);
+                    rp.setOperationType(OperationEnum.LOOK);
                 }else if(i==1){
-                    rp.setOperationType(OperationType.OPERATE);
+                    rp.setOperationType(OperationEnum.OPERATE);
                 }else{
-                    rp.setOperationType(OperationType.CHECK);
+                    rp.setOperationType(OperationEnum.CHECK);
                 }
 
                 if(j==0){
-                    rp.setInstituteLevel(InstituteLevelType.CURRENT);
+                    rp.setInstituteLevel(InstituteLevelEnum.CURRENT);
                 }else if(j==1){
-                    rp.setInstituteLevel(InstituteLevelType.NEXT);
+                    rp.setInstituteLevel(InstituteLevelEnum.NEXT);
                 }else{
-                    rp.setInstituteLevel(InstituteLevelType.NEXTALL);
+                    rp.setInstituteLevel(InstituteLevelEnum.NEXTALL);
                 }
                 rps.add(rp);
             }
