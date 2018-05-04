@@ -29,7 +29,6 @@ import com.fitech.domain.account.AccountField;
 import com.fitech.domain.account.AccountProcess;
 import com.fitech.domain.account.AccountTask;
 import com.fitech.domain.account.AccountTemplate;
-import com.fitech.domain.ledger.LedgerProcess;
 import com.fitech.domain.system.FieldPermission;
 import com.fitech.domain.system.Institution;
 import com.fitech.domain.system.ProcessConfig;
@@ -206,39 +205,39 @@ public class AccountProcessServiceImpl implements AccountProcessService {
      * @param lp
      * @return
      */
-    private LedgerProcessVo objectChange(LedgerProcess lp){
-        try {
-            if (lp != null) {
-                LedgerProcessVo lpVo = new LedgerProcessVo();
-                //设置机构ID
-                lpVo.setInstitutionId(lp.getLedgerReport().getInstitution().getInstitutionId());
-                //设置机构名称
-                lpVo.setInstitutionName(lp.getLedgerReport().getInstitution().getInstitutionName());
-                //报文编号
-                lpVo.setReportTemplateId(lp.getLedgerReport().getLedgerReportTemplate().getTemplateCode());
-                // 报表名称
-                lpVo.setReportTemplateName(lp.getLedgerReport().getLedgerReportTemplate().getTemplateName());
-                //设置频度
-                lpVo.setFreq(lp.getLedgerReport().getFreq());
-                //设置期数
-                lpVo.setTerm(lp.getLedgerReport().getTerm());
-                //校验状态
-                lpVo.setValidateStatus(lp.getLedgerReport().getValidateStatus().getValidateStatus());
-                //根据流程实例ID 查询流程名称
-                List<TaskVo> taskList = todoTaskService.getTasksByProcInstId(lp.getProcInsetId());
-                lpVo.setProcessId(lp.getProcInsetId());
-                if (taskList != null && taskList.size() > 0) {
-                    lpVo.setProcessName(taskList.get(0).getTaskName());
-                    lpVo.setTaskId(taskList.get(0).getTaskId());
-                }
-                return lpVo;
-            }
-            return null;
-        }catch (Exception e){
-            e.printStackTrace();
-            throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
-        }
-    }
+//    private LedgerProcessVo objectChange(LedgerProcess lp){
+//        try {
+//            if (lp != null) {
+//                LedgerProcessVo lpVo = new LedgerProcessVo();
+//                //设置机构ID
+//                lpVo.setInstitutionId(lp.getLedgerReport().getInstitution().getInstitutionId());
+//                //设置机构名称
+//                lpVo.setInstitutionName(lp.getLedgerReport().getInstitution().getInstitutionName());
+//                //报文编号
+//                lpVo.setReportTemplateId(lp.getLedgerReport().getLedgerReportTemplate().getTemplateCode());
+//                // 报表名称
+//                lpVo.setReportTemplateName(lp.getLedgerReport().getLedgerReportTemplate().getTemplateName());
+//                //设置频度
+//                lpVo.setFreq(lp.getLedgerReport().getFreq());
+//                //设置期数
+//                lpVo.setTerm(lp.getLedgerReport().getTerm());
+//                //校验状态
+//                lpVo.setValidateStatus(lp.getLedgerReport().getValidateStatus().getValidateStatus());
+//                //根据流程实例ID 查询流程名称
+//                List<TaskVo> taskList = todoTaskService.getTasksByProcInstId(lp.getProcInsetId());
+//                lpVo.setProcessId(lp.getProcInsetId());
+//                if (taskList != null && taskList.size() > 0) {
+//                    lpVo.setProcessName(taskList.get(0).getTaskName());
+//                    lpVo.setTaskId(taskList.get(0).getTaskId());
+//                }
+//                return lpVo;
+//            }
+//            return null;
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
+//        }
+//    }
 
     
     @Transactional
