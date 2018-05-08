@@ -47,6 +47,7 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
+import com.fitech.framework.security.util.TokenUtils;
 import com.fitech.system.activiti.ProcessStartListener;
 import com.fitech.system.repository.AccountFieldPermissionRepository;
 import com.fitech.system.repository.InstitutionRepository;
@@ -426,7 +427,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                 
                 //调用流程引擎提交任务
                 String[] taskIds = accountProcessVo.getTaskId().split(",");
-                todoTaskService.batchComplete(taskIds, action);
+                todoTaskService.batchComplete(taskIds, action,userId);
 
                 for (String taskId : taskIds) {
                     //记录业务流程轨迹数据
