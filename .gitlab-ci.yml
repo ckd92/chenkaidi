@@ -11,8 +11,8 @@ test:
   only:
     - statistics
   script:
-    - mvn clean install -Dmaven.test.skip=true
-    - mvn deploy -e -Dmaven.test.skip=true
+    - mvn clean install
+    - mvn deploy -e
 
 test_send_job:
   stage: build
