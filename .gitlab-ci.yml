@@ -21,7 +21,7 @@ test_send_job:
   only:
     - statistics
   script:
-    - curl 'https://oapi.dingtalk.com/robot/send?access_token=9d4b39a627fce7292bd53013cadf9c8167bdbc2747ab5da88e8e92e9242929c8'
+    - curl 'https://oapi.dingtalk.com/robot/send?access_token=4055a7fd58d03bef49d305fa48512ae5ca75bcaea7114d12927c9be5ce0a07fe'
        -i -X POST
        -H 'Content-Type:application/json'
        -d '
