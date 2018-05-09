@@ -26,7 +26,7 @@ test_send_job:
        -H 'Content-Type:application/json'
        -d '
       { "msgtype":"markdown",
-        "markdown":{"title":"自动部署","text":"#### '$GITLAB_USER_NAME' 自动部署失败  \n > [错误详情](http://gitlab.fitech.tech:10002/platform/fitech-reportDesign/pipelines/'$CI_PIPELINE_ID')：编译失败，请解决错误后重新提交代码！\n\n###### @'$GITLAB_USER_NAME'"},
+        "markdown":{"title":"自动部署","text":"#### '$GITLAB_USER_NAME' '$CI_PROJECT_PATH'自动部署失败  \n > [错误详情](http://gitlab.fitech.tech:10002/platform/fitech-reportDesign/pipelines/'$CI_PIPELINE_ID')：编译失败，请解决错误后重新提交代码！\n\n###### @'$GITLAB_USER_NAME'"},
         "at":{
            "atMobiles":["$GITLAB_USER_NAME"],
            "isAtAll":false
