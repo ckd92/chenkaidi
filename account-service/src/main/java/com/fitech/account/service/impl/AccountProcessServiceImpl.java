@@ -223,7 +223,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                 //设置期数
                 lpVo.setTerm(lp.getLedgerReport().getTerm());
                 //校验状态
-                lpVo.setValidateStatus(lp.getLedgerReport().getValidateStatus().getValidateStatus());
+                lpVo.setValidateStatus(lp.getLedgerReport().getValidateStatus());
                 //根据流程实例ID 查询流程名称
                 List<TaskVo> taskList = todoTaskService.getTasksByProcInstId(lp.getProcInsetId());
                 lpVo.setProcessId(lp.getProcInsetId());

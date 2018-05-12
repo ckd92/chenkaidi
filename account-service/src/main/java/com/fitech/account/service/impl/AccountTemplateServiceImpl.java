@@ -487,7 +487,7 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
             for(int j=0;j<3;j++){
                 ReportPermission rp=new ReportPermission();
                 rp.setBusSystem(busSystem);
-                rp.setReportTemplate(accountTemplate);
+                rp.setReportTemplateId(accountTemplate.getId());
                 if(i==0){
                     rp.setOperationType(OperationEnum.LOOK);
                 }else if(i==1){
@@ -710,7 +710,7 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
 
 	@Override
 	public void delBatch(AccountTemplate accountTemplate) {
-		Collection<FieldPermission> rps=reportPermissionRepository.findByReportTemplate(accountTemplate);
+		Collection<FieldPermission> rps=reportPermissionRepository.findByReportTemplateId(accountTemplate.getId());
         if (rps!=null && rps.size()>0){
             reportPermissionRepository.delete(rps);
         }
