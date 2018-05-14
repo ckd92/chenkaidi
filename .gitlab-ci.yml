@@ -1,0 +1,44 @@
+stages:
+  - test
+  - build
+#  - build
+
+test:
+  stage: test
+  image: registry.fitech.tech/maven:3.5.3
+  tags:
+    - build-in-docker
+  only:
+    - master
+  script:
+    - mvn clean install -Dmaven.test.skip=true
+    - mvn deploy -e -Dmaven.test.skip=true
+
+test_send_job:
+  stage: build
+  tags:
+    - build-as-docker
+  only:
+    - master
+  script:
+    - curl 'https://oapi.dingtalk.com/robot/send?access_token=4055a7fd58d03bef49d305fa48512ae5ca75bcaea7114d12927c9be5ce0a07fe'
+       -i -X POST
+       -H 'Content-Type:application/json'
+       -d '
+      { "msgtype":"markdown",
+        "markdown":{"title":"自动部署","text":"#### '$GITLAB_USER_NAME' '$CI_PROJECT_PATH'自动部署失败  \n > [错误详情](http://gitlab.fitech.tech:10002/'$CI_PROJECT_PATH'/pipelines/'$CI_PIPELINE_ID')：编译失败，请解决错误后重新提交代码！\n\n###### @'$GITLAB_USER_NAME'"},
+        "at":{
+           "atMobiles":["$GITLAB_USER_NAME"],
+           "isAtAll":false
+         }
+      }'
+  when: on_failure
+
+#build:
+#  stage: build
+#  tags:
+#    - build-as-docker
+#  only:
+#    - master
+#  script:
+#    - curl -X POST -F token=36f951ac0c631e35fadb5fd57449e9 -F ref=statistics http://gitlab.fitech.tech/api/v4/projects/18/trigger/pipeline
