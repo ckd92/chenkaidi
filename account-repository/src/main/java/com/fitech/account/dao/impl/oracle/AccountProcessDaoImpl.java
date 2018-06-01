@@ -138,7 +138,7 @@ public class AccountProcessDaoImpl extends NamedParameterJdbcDaoSupport implemen
                 " ");
         sql.append(" from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID");
         sql.append(" inner join Institution it on it.id=lr.institution_id");
-        sql.append(" inner join ACCOUNTTEMPLATE lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID");
+        sql.append(" inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID");
         sql.append(" inner join BusSystem bs on bs.id = lrt.busSystem_id");
         sql.append(" inner join ACT_RU_TASK task on task.proc_inst_id_=o.procInsetId");
         sql.append(" inner join sysuser_role ur on ur.roles_id=task.ASSIGNEE_");
@@ -275,7 +275,7 @@ public class AccountProcessDaoImpl extends NamedParameterJdbcDaoSupport implemen
         sql.append("select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ USING CHAR_CS),lr.validateStatus,Translate(task.id_ USING CHAR_CS),task.end_time_,lr.freq  ");
         sql.append(" from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID");
         sql.append(" inner join Institution it on it.id=lr.institution_id");
-        sql.append(" inner join ACCOUNTTEMPLATE lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID");
+        sql.append(" inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID");
         sql.append(" inner join BusSystem bs on bs.id = lrt.busSystem_id");
         sql.append(" inner join ACT_HI_TASKINST task on task.proc_inst_id_=o.procInsetId");
         sql.append(" inner join sysuser_role ur on ur.roles_id=task.ASSIGNEE_");
