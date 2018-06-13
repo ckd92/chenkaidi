@@ -405,7 +405,7 @@ public class AccountTemplateDAOImpl extends NamedParameterJdbcDaoSupport impleme
         StringBuffer sb = new StringBuffer();
         sb.append("select count(*) from ReportPermission f,Role_ReportPermission r ");
         sb.append(" where f.id=r.reportPermission_id");
-        sb.append(" and f.accounttemplate_id=" + id);
+        sb.append(" and f.reporttemplateid=" + id);
         List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sb.toString(), new HashMap<String, Object>());
         if (!"0".equals(resultList.get(0).get("count(*)").toString())) {
             flag = false;
