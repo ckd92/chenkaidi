@@ -31,6 +31,7 @@ import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.AccountField;
 import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.report.BusSystem;
+import com.fitech.domain.report.RepFreq;
 import com.fitech.domain.report.ReportTemplate;
 import com.fitech.domain.system.FieldPermission;
 import com.fitech.domain.system.ProcessConfig;
@@ -131,8 +132,10 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                     if (StringUtil.isNotEmpty(accountTemplate.getTemplateCode())) {
                         list.add(cb.like(root.get("templateCode").as(String.class), "%" + accountTemplate.getTemplateCode()+ "%"));
                     }
-                    if (StringUtil.isNotEmpty(accountTemplate.getFreq())) {
-                        list.add(cb.like(root.get("freq").as(String.class), accountTemplate.getFreq()));
+                    
+                    RepFreq freq = accountTemplate.getRepFreq();
+                    if (null != freq) {
+                        list.add(cb.equal(root.get("repFreq").as(RepFreq.class), freq));
                     }
                 }
                 query.orderBy(cb.desc(root.get("id")));
@@ -158,8 +161,9 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                     if (StringUtil.isNotEmpty(accountTemplate.getTemplateCode())) {
                         list.add(cb.equal(root.get("templateCode").as(String.class), accountTemplate.getTemplateCode()));
                     }
-                    if (StringUtil.isNotEmpty(accountTemplate.getFreq())) {
-                        list.add(cb.equal(root.get("freq").as(String.class), accountTemplate.getFreq()));
+                    RepFreq freq = accountTemplate.getRepFreq();
+                    if (null != freq) {
+                        list.add(cb.equal(root.get("repFreq").as(RepFreq.class), freq));
                     }
                 }
                 query.orderBy(cb.desc(root.get("id")));
