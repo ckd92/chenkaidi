@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.activiti.engine.RuntimeService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -537,4 +538,27 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         }
         return permesionss;
     }
+
+	@Override
+	public List<Long> getReceiverIdList(String term, String freq) {
+		StringBuffer sb = new StringBuffer();
+		sb.append("select distinct  t3.sysuser_id as userId from account t  \n");
+		sb.append("inner join accountprocess t1 on t.id = t1.account_id \n");
+		sb.append("inner join act_ru_task t2 on t1.procinsetid = t2.proc_inst_id_ \n");
+		sb.append("inner join sysuser_role t3 on t2.assignee_ = t3.roles_id \n");
+		sb.append("where 1=1 \n");
+		if(StringUtils.isNotEmpty(freq)){
+			sb.append("and t.term = '"+term+"' \n");
+		}
+		if(StringUtils.isNotEmpty(term)){
+			sb.append("and t.freq = '"+freq+"' \n");
+		}
+		List<Object[]> list=accountBaseDao.findBySql(sb, null);
+		List<Long> receiverIdList = new ArrayList<Long>();
+		for(Object[] obj : list){
+			receiverIdList.add(Long.parseLong(obj[0].toString()));
+		}
+		return receiverIdList;
+		
+	}
 }

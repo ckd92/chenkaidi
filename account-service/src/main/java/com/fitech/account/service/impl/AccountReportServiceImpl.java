@@ -17,12 +17,16 @@ import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.report.ReportTemplate;
 import com.fitech.domain.system.Institution;
+import com.fitech.domain.system.NoticeScene;
 import com.fitech.domain.system.ProcessConfig;
 import com.fitech.enums.SubmitStateEnum;
 import com.fitech.enums.account.AccountStateEnum;
+import com.fitech.enums.system.NoticeSceneEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.system.repository.ProcessConfigRepository;
+import com.fitech.system.service.NoticeWaysService;
+import com.fitech.vo.system.NoticeSceneVo;
 
 
 /**
@@ -37,7 +41,9 @@ public class AccountReportServiceImpl implements AccountReportService {
     private AccountProcessService accountProcessService;
     @Autowired
     private AccountRepository accountRepository;
-
+    @Autowired(required=false)
+	private NoticeWaysService noticeWaysService;
+    
     @Override
     @Transactional
     public void startProcess(Account account){
@@ -59,6 +65,9 @@ public class AccountReportServiceImpl implements AccountReportService {
                 throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
             }
         }
+      //通过流程id和期数查询出生成待办任务第一节点的用户
+        List<Long> receiverIdList = accountProcessService.getReceiverIdList(account.getTerm(), "");
+        sendNotice(receiverIdList);
     }
 
     private ProcessConfig findByAccountReport(Account account) throws Exception {
@@ -85,4 +94,12 @@ public class AccountReportServiceImpl implements AccountReportService {
             throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
         }
     }
+    private void sendNotice(List<Long> receiverIdList){
+		NoticeSceneVo noticeSceneVo = new NoticeSceneVo();
+		noticeSceneVo.setReceiverIdList(receiverIdList);
+    	NoticeScene noticeScene = new NoticeScene();
+    	noticeScene.setUnum(NoticeSceneEnum.ActivitiStart002);
+    	noticeSceneVo.setNoticeScene(noticeScene);
+    	noticeWaysService.noticeSend(noticeSceneVo);
+	}
 }

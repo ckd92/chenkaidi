@@ -7,6 +7,7 @@ import com.fitech.domain.system.ProcessConfig;
 import com.fitech.domain.system.User;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.vo.account.AccountProcessVo;
+
 import org.springframework.data.domain.Page;
 
 import java.util.Collection;
@@ -67,5 +68,7 @@ public interface AccountProcessService {
      * @return
      */
     public List<Long> queryAccountTaskPermission(Long userId);
+    
+    public List<Long> getReceiverIdList(String term,String freq);
 
 }
