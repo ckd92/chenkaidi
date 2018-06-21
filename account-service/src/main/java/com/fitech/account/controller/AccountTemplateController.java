@@ -72,6 +72,12 @@ public class AccountTemplateController {
         return result;
     }
 
+    /**
+     * 高级查询
+     * @param accountTemplate
+     * @param request
+     * @return
+     */
     @PostMapping("/accountTemplates")
     public GenericResult<Page<AccountTemplate>> findAll(@RequestBody  AccountTemplate accountTemplate,
                                                         HttpServletRequest request) {
@@ -87,6 +93,12 @@ public class AccountTemplateController {
         return result;
     }
 
+    /**
+     * 新增补录模板
+     * @param accountTemplate
+     * @param request
+     * @return
+     */
     @PostMapping("/accountTemplate")
     public GenericResult<Boolean> saveAccountTemplate(@RequestBody  AccountTemplate accountTemplate,
                                                         HttpServletRequest request) {

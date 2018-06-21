@@ -39,6 +39,7 @@ import com.fitech.domain.system.Role;
 import com.fitech.domain.system.User;
 import com.fitech.enums.ValidateStatusEnum;
 import com.fitech.enums.account.AccountStateEnum;
+import com.fitech.framework.activiti.lang.ProcessStartConst;
 import com.fitech.framework.activiti.service.FFInstance;
 import com.fitech.framework.activiti.service.ProcessService;
 import com.fitech.framework.activiti.service.TodoTaskService;
@@ -49,7 +50,6 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
-import com.fitech.system.activiti.ProcessStartListener;
 import com.fitech.system.repository.AccountFieldPermissionRepository;
 import com.fitech.system.repository.InstitutionRepository;
 import com.fitech.system.repository.UserRepository;
@@ -247,8 +247,8 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         try {
             //获取流程定义ID和流程配置ID，方便获取流程开启配置节点参数
             Map<String, Object> variables = new HashMap<String, Object>();
-            variables.put(ProcessStartListener.config_key, processConfig.getId());
-            variables.put(ProcessStartListener.report_key, rpt.getId());
+            variables.put(ProcessStartConst.config_key, processConfig.getId());
+            variables.put(ProcessStartConst.report_key, rpt.getId());
             //流程开启
             FFInstance processInstance = processService.startInstance(processConfig.getProcessDefId(), variables);
             //保存业务流程关联数据

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.fitech.account.repository.AccountRepository;
 import com.fitech.domain.account.Account;
 import com.fitech.enums.SubmitStateEnum;
-import com.fitech.system.activiti.ProcessStartListener;
+import com.fitech.framework.activiti.lang.ProcessStartConst;
 
 @Service
 public class AccountData implements JavaDelegate{
@@ -20,7 +20,7 @@ public class AccountData implements JavaDelegate{
 	public void execute(DelegateExecution execution) throws Exception {
 		Account account = new Account();
 		//获取accountId
-		Long accountId = Long.parseLong(String.valueOf(execution.getVariable(ProcessStartListener.report_key)));
+		Long accountId = Long.parseLong(String.valueOf(execution.getVariable(ProcessStartConst.report_key)));
 		account = accountRepository.findById(accountId);
 		//修改状态为已上报成功
 		account.setSubmitStateType(SubmitStateEnum.SUCCESS);
