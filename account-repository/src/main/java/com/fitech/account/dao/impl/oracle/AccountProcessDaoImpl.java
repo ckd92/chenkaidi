@@ -84,7 +84,7 @@ public class AccountProcessDaoImpl extends NamedParameterJdbcDaoSupport implemen
         //拼凑sql
         //id,机构ID,机构名称,报表编号,频度,期数,提交人,校验状态，完成时间,节点名称
         //sql.append("select o.id,it.institutionId,it.institutionName,lrt.id as templateId,lrt.templateName,lr.term,Translate(task.name_ USING CHAR_CS),lr.validateStatus,Translate(task.id_ USING CHAR_CS),o.ledgerReport_id,Translate(task.description_ USING CHAR_CS),lr.freq,o.procInsetId  ");
-        sql.append(" select ac.id,it.institutionname,to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,ap.templatename from account ac INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN ACCOUNTTEMPLATE ap ON  ");
+        sql.append(" select ac.id,it.institutionname,to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,ap.templatename from account ac INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN reporttemplate ap ON  ");
         sql.append(" ac.ACCOUNTTEMPLATE_ID=ap.id where ac.accountstate=2");
         //期数
         if (!StringUtil.isEmpty(vo.getTerm())) {
@@ -99,6 +99,7 @@ public class AccountProcessDaoImpl extends NamedParameterJdbcDaoSupport implemen
             sql.append(" and it.institutionname like '%" + vo.getInstitutionName() + "%'");
         }
         sql.append(" order by ac.id");
+        System.out.println(sql);
         Page<Object[]> page = accountBaseDao.findPageBySql(sql, null, vo.getPageSize(), vo.getPageNum());
         List<AccountProcessVo> vos = new ArrayList<>();
         //循环拼凑
