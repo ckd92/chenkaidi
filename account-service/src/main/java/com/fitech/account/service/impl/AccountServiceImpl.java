@@ -473,7 +473,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             }
         }catch(UncategorizedSQLException e){
         	 result.setSuccess(false);
-             result.setMessage(e.getCause().toString());
+             result.setMessage("载入失败，数据错误或者模板不正确");
              return result;
        } catch (Exception e) {
             e.printStackTrace();
