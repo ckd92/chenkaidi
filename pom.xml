@@ -23,7 +23,7 @@
         <account-service>1.1.1-SNAPSHOT</account-service>
         <fitech-domain>1.1.1-SNAPSHOT</fitech-domain>
         <system-service>1.1.1-SNAPSHOT</system-service>
-        <validate-service>1.0.1-SNAPSHOT</validate-service>
+        <validate-service>1.1.1-SNAPSHOT</validate-service>
     </properties>
     <!-- 设置 私服仓库地址-->
     <repositories>
