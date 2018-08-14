@@ -25,6 +25,14 @@ public interface AccountDataDao {
 	 * @return
 	 */
 	public Page<AccountLine> findDataByCondition(AccountProcessVo accountProcessVo);
+	
+	
+	/**
+	 * 下载台账数据
+	 * @param accountProcessVo
+	 * @return
+	 */
+	public List<AccountLine> downLoadDataByCondition(AccountProcessVo accountProcessVo);
 
 	/**
 	 * 查询总数量

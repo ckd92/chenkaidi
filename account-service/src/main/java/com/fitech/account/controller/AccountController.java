@@ -75,6 +75,36 @@ public class AccountController {
         }
         return result;
     }
+    
+    
+    /**
+     * 下载台账数据
+     * @param accountProcessVo
+     * @param request
+     * @return
+     */
+    @PostMapping("Account/downloaddatas")
+    public GenericResult<AccountProcessVo> downLoadPageAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
+        GenericResult<AccountProcessVo> result=new GenericResult<>();
+        try {
+        	accountProcessVo.setUserId(TokenUtils.getLoginId(request));
+            String filename = accountService.downLoadPageAccounData(accountProcessVo);
+            if(filename.indexOf("/")!=-1){
+            	String[] name = filename.split("/");
+                filename=name[name.length-1];
+            }else if(filename.indexOf("\\")!=-1){
+            	String[] name = filename.split("\\\\");
+                filename=name[name.length-1];
+            }            
+            result.setSuccess(true);
+            result.setMessage(filename);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setSuccess(false);
+        }finally {
+        }
+        return result;
+    }
     /**
      * 高级查询台账数据、数据查询中的查看,不需要权限的字段查询(hx)
      * @param accountProcessVo

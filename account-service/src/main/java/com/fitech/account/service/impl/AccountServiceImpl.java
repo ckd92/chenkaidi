@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -235,6 +236,104 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 		}
 
 		return result;
+	}
+	
+	//下载数据
+	@Override
+	public String downLoadPageAccounData(AccountProcessVo accountProcessVo) {
+		try {
+			if (accountProcessVo == null || accountProcessVo.getAccount() == null) {
+				return "falseone";
+			}
+			if (accountProcessVo.getAccount().getId() == null) {
+				return "falsetwo";
+			}
+			Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
+
+			// 获取模板id
+			Account accountt = accountRepository.findById(accountProcessVo.getAccount().getId());
+			// 根据userid获取该用户的角色集合
+			Collection<Role> c = userRepository.findById(accountProcessVo.getUserId()).getRoles();
+			// 该报文已经配置的字段权限
+			Collection<FieldPermission> rrfps = new ArrayList<FieldPermission>();
+			// 迭代该用户的角色集合
+			Iterator<Role> it = c.iterator();
+			while (it.hasNext()) {
+				Role role = it.next();
+				Role r = accountFieldPermissionRepository.findById(role.getId());
+				Collection<FieldPermission> rfps = r.getFieldPermission();
+				// 迭代字段权限集合
+				Iterator<FieldPermission> its = rfps.iterator();
+				while (its.hasNext()) {
+					FieldPermission fp = its.next();
+					// 如果字段权限的模板id是该模板id则将该模板权限添加到已配置的字段权限集合中
+					if (r.getSubSystem().getSubKey().equals("sjbl")) {
+						if (fp.getReportTemplate().getId().equals(accountt.getAccountTemplate().getId())) {
+							rrfps.add(fp);
+						}
+					}
+				}
+			}
+			Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
+			Iterator<AccountField> itaf = accountField.iterator();
+			while (itaf.hasNext()) {
+				AccountField af = itaf.next();
+				if (af.getItemType().equals("CODELIB")) {
+					af.setDictionaryItems(dictionaryItemRepository.findByDictionaryId(Long.valueOf(af.getDicId())));
+				}
+				Iterator<FieldPermission> itfp = rrfps.iterator();
+				String allfp = "";
+				while (itfp.hasNext()) {
+					FieldPermission fp = itfp.next();
+					if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId())) {
+						allfp += fp.getOperationType().toString();
+						allfp += ",";
+					}
+				}
+				if (!allfp.equals("")) {
+					allfp = allfp.substring(0, allfp.lastIndexOf(","));
+				}
+				af.setFieldPermission(allfp);
+			}
+
+			Account ac = accountProcessVo.getAccount();
+
+			ac.setAccountTemplate(account.getAccountTemplate());
+			//accountLines是查询出来的数据
+			List<AccountLine> accountLines = accountDataDao.downLoadDataByCondition(accountProcessVo);
+			//accountFields是用户可以查看的字段
+			List<AccountField> accountFields = new ArrayList<>();
+            for(AccountField accountFieldnew : account.getAccountTemplate().getAccountFields()){
+                if(accountFieldnew.isVisible()){
+                    accountFields.add(accountFieldnew);
+                }
+            }
+            String sheetName = "BuLuData-";
+//        	UUID uuid = UUID.randomUUID();
+            long time = new Date().getTime();
+            sheetName += String.valueOf(time);
+            List<List<String>> hList = new ArrayList<>();
+            List<String> lineFirst = new ArrayList<>();
+			for(AccountField accountFieldnew :accountFields){
+				lineFirst.add(accountFieldnew.getItemName());
+			}
+			hList.add(lineFirst);
+			for(AccountLine accline:accountLines){
+				List<String> lineone = new ArrayList<>();
+				for(AccountField accf:accline.getAccountFields()){
+					for(AccountField accountFieldnew :accountFields){
+						if(accountFieldnew.getItemCode().equals(accf.getItemCode())){
+							lineone.add(accf.getValue().toString());
+						}
+					}
+				}
+				hList.add(lineone);
+			}
+			return ExcelUtil.createExcel(hList, sheetName, CommonConst.getProperties("template_path"),sheetName);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+		}
 	}
 
 	// 数据查询中查询数据，无权限(hx)

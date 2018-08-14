@@ -102,6 +102,7 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map1 = new HashMap<>();
         List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql.toString(),map);
+        System.out.println(sql.toString());
 //        List<Map<String, Object>> totalList = this.getNamedParameterJdbcTemplate().queryForList(totalsum.toString(),map1);
         int totalList = this.getNamedParameterJdbcTemplate().queryForObject(
         		totalsum.toString(), map1, Integer.class);
@@ -148,6 +149,102 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         account.setAccountLine(ledgerLinePage);
 
         return  ledgerLinePage;
+    }
+    //用于下载
+    @Override
+    public List<AccountLine> downLoadDataByCondition(AccountProcessVo accountProcessVo) {
+        Account account = accountProcessVo.getAccount();
+
+        AccountTemplate accountTemplate = account.getAccountTemplate();
+
+        Collection<AccountField> collection = accountTemplate.getAccountFields();
+        List<String> list = new ArrayList<>();
+        StringBuffer sql = new StringBuffer();
+        sql.append("select id,reportId,");
+        list.add("id");
+        list.add("reportId");
+        for (AccountField item : collection) {
+            sql.append(item.getItemCode() + ",");
+            list.add(item.getItemCode());
+        }
+        sql.deleteCharAt(sql.length() - 1);
+        sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
+        //没有查询条件 查询所有
+
+        accountTemplate.setAccountFields(null);
+        Collection<AccountField> serachFileds = account.getAccountSearchs();
+        if(null != serachFileds && !serachFileds.isEmpty()){
+        	//将itemtype赋值
+        	for(AccountField afl:serachFileds){
+            	for(AccountField afd:collection){
+            		if(afl.getItemCode().equals(afd.getItemCode())&&"DATE".equals(afd.getItemType())&&(!"".equals(afl.getValue()))){
+            			afl.setItemType(afd.getItemType());
+            		}
+            	}
+            }
+        	//进行循环
+            for (AccountField item : serachFileds) {
+                String code = item.getItemCode();
+                if (item.getValue() != null) {
+                    sql.append("and " + code);
+                    if (item instanceof IntegerField || item instanceof DoubleField) {
+                        sql.append(" = " + item.getValue() + " ");
+                    } else if (item instanceof CodeField) {
+                        sql.append(" = '" + item.getValue() + "' ");
+                    } else if ("DATE".equals(item.getItemType())) {
+                        sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
+                    }else {
+                        sql.append(" like '%" + item.getValue() + "%' ");
+                    }
+                }
+            }
+        }
+        accountTemplate.setAccountFields(collection);
+        
+        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map1 = new HashMap<>();
+        List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql.toString(),map);
+//        List<Map<String, Object>> totalList = this.getNamedParameterJdbcTemplate().queryForList(totalsum.toString(),map1);
+        List<AccountLine> lineList = new ArrayList<>();
+        for (Map<String, Object> ledgerLineMap : resultList) {
+            AccountLine ledgerLine = new AccountLine();
+            Collection<AccountField> set = new ArrayList<>();
+            for (String s : ledgerLineMap.keySet()) {
+                AccountField item = new AccountField();
+                if ("id".equals(s)) {
+                    ledgerLine.setId(Long.parseLong(String.valueOf(ledgerLineMap.get(s))));
+                    continue;
+                }
+                item.setItemCode(s);
+                String value=String.valueOf(ledgerLineMap.get(s));
+                if(value.indexOf("\"")!=-1){
+                	value=value.replaceAll("\"", "&#34;");
+                	item.setValue(value);
+                }else if(value.indexOf("\t")!=-1){
+                	value=value.replaceAll("\t", "");
+                	item.setValue(value);
+                }else{
+                	item.setValue(ledgerLineMap.get(s));
+                }       
+                set.add(item);
+            }
+            ledgerLine.setAccountFields(set);
+            lineList.add(ledgerLine);
+        }
+        //将sqltype从template复制到accountline
+        for(AccountLine a:lineList){
+        	for(AccountField af:a.getAccountFields()){
+        		for(AccountField ac:collection){
+        			if(af.getItemCode().equals(ac.getItemCode())){
+        				af.setSqlType(ac.getSqlType());
+                        af.setItemType(ac.getItemType());
+        			}
+        		}
+        	}
+        }
+//        long totalNum = findMaxNumDataByCondition(accountProcessVo);
+        
+        return  lineList;
     }
 
     @Override
