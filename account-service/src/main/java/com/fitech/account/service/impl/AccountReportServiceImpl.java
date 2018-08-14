@@ -14,7 +14,6 @@ import com.fitech.account.service.AccountProcessService;
 import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
-import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.report.ReportTemplate;
 import com.fitech.domain.system.Institution;
 import com.fitech.domain.system.NoticeScene;

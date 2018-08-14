@@ -16,7 +16,6 @@ import org.apache.commons.collections.map.HashedMap;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +53,7 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
-import com.fitech.system.repository.AccountFieldPermissionRepository;
+import com.fitech.system.repository.RoleRepository;
 import com.fitech.system.repository.UserRepository;
 import com.fitech.validate.domain.ObjectValidateRule;
 import com.fitech.validate.domain.ValidateAnalyzeResult;
@@ -100,7 +99,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 	private AccountEditLogService accountEditLogService;
 
 	@Autowired
-	private AccountFieldPermissionRepository accountFieldPermissionRepository;
+	private RoleRepository<Role> roleRepository;
 
 	@Autowired
 	private UserRepository<User> userRepository;
@@ -146,7 +145,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			Iterator<Role> it = c.iterator();
 			while (it.hasNext()) {
 				Role role = it.next();
-				Role r = accountFieldPermissionRepository.findById(role.getId());
+				Role r = roleRepository.findById(role.getId());
 				Collection<FieldPermission> rfps = r.getFieldPermission();
 				// 迭代字段权限集合
 				Iterator<FieldPermission> its = rfps.iterator();
@@ -260,7 +259,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			Iterator<Role> it = c.iterator();
 			while (it.hasNext()) {
 				Role role = it.next();
-				Role r = accountFieldPermissionRepository.findById(role.getId());
+				Role r = roleRepository.findById(role.getId());
 				Collection<FieldPermission> rfps = r.getFieldPermission();
 				// 迭代字段权限集合
 				Iterator<FieldPermission> its = rfps.iterator();
@@ -409,7 +408,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			Iterator<Role> it = c.iterator();
 			while (it.hasNext()) {
 				Role role = it.next();
-				Role r = accountFieldPermissionRepository.findById(role.getId());
+				Role r = roleRepository.findById(role.getId());
 				Collection<FieldPermission> rfps = r.getFieldPermission();
 				// 迭代字段权限集合
 				Iterator<FieldPermission> its = rfps.iterator();
@@ -1136,7 +1135,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 		Iterator<Role> it = c.iterator();
 		while (it.hasNext()) {
 			Role role = it.next();
-			Role r = accountFieldPermissionRepository.findById(role.getId());
+			Role r = roleRepository.findById(role.getId());
 			Collection<FieldPermission> rfps = r.getFieldPermission();
 			// 迭代字段权限集合
 			Iterator<FieldPermission> its = rfps.iterator();
