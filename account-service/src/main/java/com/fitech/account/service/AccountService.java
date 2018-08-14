@@ -21,6 +21,11 @@ public interface AccountService {
      * @return
      */
     public GenericResult<AccountProcessVo> findPageAccounData(AccountProcessVo accountProcessVo);
+    
+    /**
+     下载数据
+     */
+    public String downLoadPageAccounData(AccountProcessVo accountProcessVo);
 
     /**
      * 支持高级搜索分页查询台账数据,无权限(hx)
