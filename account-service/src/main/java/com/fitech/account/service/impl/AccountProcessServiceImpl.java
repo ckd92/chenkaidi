@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.fitech.report.dao.AccountProcDao;
 import org.activiti.engine.RuntimeService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,8 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     
     @Autowired
     private DictionaryItemRepository dictionaryItemRepository;
+    @Autowired
+    private AccountProcDao accountProcDao;
 
     @Override
     public AccountProcess findProcessById(Long id) {
@@ -479,10 +482,11 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         if (list != null && (!list.isEmpty())) {
             for (Object[] object : list) {
             	if(object[0]!=null){
+                    Long lpid=Long.valueOf(String.valueOf(object[0]));
+                    accountProcDao.deleteAccTaskByAccProcId(lpid);
             		String procid=String.valueOf(object[1]);
                 	//捕捉改流程activity已被其他流程删除
                 	processService.deleteProcInstance(procid, null);
-                	Long lpid=Long.valueOf(String.valueOf(object[0]));
                 	accountProcessRepository.delete(lpid);
             	}else{
             		Long lrid=Long.valueOf(String.valueOf(object[2]));

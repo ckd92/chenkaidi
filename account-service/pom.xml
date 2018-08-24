@@ -22,5 +22,11 @@
 			<groupId>com.fitech.validate</groupId>
 			<artifactId>validate-service</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>com.fitech.report</groupId>
+            <artifactId>report-repository</artifactId>
+            <version>1.1.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>
