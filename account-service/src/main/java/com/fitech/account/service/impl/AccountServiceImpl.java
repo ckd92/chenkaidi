@@ -170,15 +170,31 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				String allfp = "";
 				while (itfp.hasNext()) {
 					FieldPermission fp = itfp.next();
-
-					if (af.isPkable() == false && !(af.getId().equals(fp.getAccountField().getId())) ) {
+					if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId()) ) {
 						allfp += fp.getOperationType().toString();
 						allfp += ",";
 					}
+
 				}
 				//allfp不为空，去掉末尾的逗号
 				if (!allfp.equals("")) {
 					allfp = allfp.substring(0, allfp.lastIndexOf(","));
+				}
+				//权限转换，实际有的操作权限没有存放数据库，数据库存放的权限实际没有
+				switch (allfp){
+					case "LOOK":
+						allfp = "OPERATE";
+						break;
+					case "OPERATE":
+						allfp = "LOOK";
+						break;
+					case "":
+						allfp = "LOOK,OPERATE";
+						break;
+					default:
+						allfp = "";
+						break;
+
 				}
 				af.setFieldPermission(allfp);
 			}
