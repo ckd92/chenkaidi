@@ -530,14 +530,17 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 					AccountTemplate accountTemplate = account.getAccountTemplate();
 
 					Sheet sheet = ExcelUtil.getExcelSheet(inputStream, fileName);
-					Integer size = accountDataDao.loadDataByTemplate(accountId, accountTemplate, sheet, account);
 
-					if (size == -1) {
-						result.setMessage("addAccountData pk is exist!");
-						result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+					List<String> resultList = accountDataDao.loadDataByTemplate(accountId, accountTemplate, sheet, account);
+					//返回false,载入失败，返回重复行号
+					if (resultList.get(0).equals("false")) {
+						result.setSuccess(false);
+						result.setMessage("第"+resultList.get(1)+"行数据主键重复");
+						result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
 						return result;
 					}
-
+					//否则返回成功，size变量存储成功条数
+					Integer size = Integer.getInteger(resultList.get(1));
 					// 业务条线：表名
 					String[] operateFieldArr = operateFieldStr.split("\\|"); // 待校验字段
 					String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem()
