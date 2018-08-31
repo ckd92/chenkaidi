@@ -306,6 +306,21 @@ public class AccountController {
 				if(!allfp.equals("")){
 					allfp = allfp.substring(0,allfp.lastIndexOf(","));
 				}
+                //权限转换，实际有的操作权限没有存放数据库，数据库存放的权限实际没有
+                switch (allfp){
+                    case "LOOK":
+                        allfp = "OPERATE";
+                        break;
+                    case "OPERATE":
+                        allfp = "LOOK";
+                        break;
+                    case "":
+                        allfp = "LOOK,OPERATE";
+                        break;
+                    default:
+                        allfp = "";
+                        break;
+                }
 				af.setFieldPermission(allfp);
 			}
         }catch (Exception e){
