@@ -327,7 +327,9 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				}
 				hList.add(lineone);
 			}
-			return ExcelUtil.createExcel(hList, sheetName, CommonConst.getProperties("template_path"),sheetName);
+			Boolean flag = true;
+			String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("template_path"),sheetName);
+			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
@@ -494,7 +496,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			hList.add(itemCode);
 			hList.add(itemDesc);
 
-			ExcelUtils.createExcel(hList, sheetName, CommonConst.getProperties("template_path"), downRows, downData);
+			ExcelUtils.createExcel2007(hList, sheetName, CommonConst.getProperties("template_path"), downRows, downData);
 			return sheetName;
 		}
 		return null;
