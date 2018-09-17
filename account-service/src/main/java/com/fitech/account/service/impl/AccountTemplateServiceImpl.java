@@ -1,13 +1,6 @@
 package com.fitech.account.service.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -565,6 +558,65 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
         return result;
     }
 
+    /**
+     * 判断是否可以直接修改，只修改  （查询，修改，只读 ，字段描述）  部分时，可以直接修改
+     * @param acField
+     * @param oldAcField
+     * @return  key值表示是否可以修改，value表示修改的AccountField
+     */
+    private Map<Boolean,AccountField> valiAccountTemplateIsUpdate(Collection<AccountField> acField, Collection<AccountField> oldAcField ){
+        Map<Boolean,AccountField> result = new HashMap<>();
+        Boolean flag = false;
+        AccountField resultAccountField = null;
+        for(AccountField accountField:acField){
+            for(AccountField accountField1:oldAcField){
+                if(accountField.getId().equals(accountField1.getId())){
+                    //先判断 查询，修改，只读 是否被修改
+                    if(
+                            accountField.isVisible() != accountField1.isVisible() ||
+                            accountField.isEditable() != accountField1.isEditable() ||
+                            accountField.isSearchable() != accountField1.isSearchable() ||
+                            (accountField.getItemDescription() == null ? "" : accountField.getItemDescription() ).equals( (accountField1.getItemDescription() == null ? "" : accountField1.getItemDescription() ) )
+                    ){
+                        if( accountField.getItemType().equals( accountField1.getItemType() ) ){
+                            //再判断字段类型是否字典项
+                            //if(
+                            //        accountField.getItemType().equals("CODELIB")
+                            //){
+                                //再判断其他属性没有被修改
+                                if(
+                                        accountField.getItemCode().equals( accountField1.getItemCode() ) &&
+                                        accountField.getItemName().equals( accountField1.getItemName() ) &&
+                                        (accountField.getLength() == null ? "" : accountField.getLength() ).equals( (accountField1.getLength() == null ? "" : accountField1.getLength() ) ) &&
+                                        accountField.getOrderNumber() == accountField1.getOrderNumber()  &&
+                                        accountField.isRequire() == accountField1.isRequire()  &&
+                                        accountField.isPkable() == accountField1.isPkable()
+                                        //accountField.getDictionaryItems() == accountField1.getDictionaryItems()
+                                ){
+                                    flag = true;
+                                    accountField1.setVisible(accountField.isVisible());
+                                    accountField1.setEditable(accountField.isEditable());
+                                    accountField1.setSearchable(accountField.isSearchable());
+                                    accountField1.setItemDescription(accountField.getItemDescription());
+                                    resultAccountField = accountField1;
+
+                                }else{
+                                    flag = false;
+                                }
+
+                            //}
+                        }else{
+                            flag = false;
+                        }
+
+                    }
+                }
+            }
+        }
+        result.put(flag,resultAccountField);
+        return result;
+    }
+
     @Override
     @Transactional
     public GenericResult<Boolean> modifyAccountTemplateField(AccountTemplate accountTemplate) {
@@ -572,19 +624,28 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
 		try {
 			//获取修改的字段集合
 			Collection<AccountField> acField = accountTemplate.getAccountFields();
+            //获取原本该模板
+            AccountTemplate acTemplate = accountTemplateRepository.findById(accountTemplate.getId());
+            //原本的字段集合
+            Collection<AccountField> oldAcField = acTemplate.getAccountFields();
+
+            Map<Boolean,AccountField> map = this.valiAccountTemplateIsUpdate(acField,oldAcField);
+            //key为true的值不为空，说明可以直接修改
+            if(map.get(true) != null){
+                this.accountFieldRepository.save(map.get(true));
+                return result;
+            }
+
 			String flag = valiAccountTemplateIsDelete(accountTemplate.getId());
         	if(!flag.equals("true")){
 				result.setSuccess(false);
 				result.setMessage(flag + "，不可修改");;
 				return result;
 			}
-			//获取原本该模板
-			AccountTemplate acTemplate = accountTemplateRepository.findById(accountTemplate.getId());
+
 			//如果报文模板对应的数据表没有数据,则可以修改此报文下的字段信息
             Boolean f = accountTemplateDAO.dataIsExist(acTemplate);
             if (!f) {
-    			//原本的字段集合
-    			Collection<AccountField> oldAcField = acTemplate.getAccountFields();
     			//迭代修改字段集合
     			Iterator<AccountField> itaf = acField.iterator();
     			Long oid = null;

@@ -292,9 +292,9 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
     }
 
     @Override
-    public Integer loadDataByTemplate(Long accountId, AccountTemplate accountTemplate, Sheet sheet,Account account) {
-    	
-    	GenericResult<Boolean> result = new GenericResult<>();
+    public List<String> loadDataByTemplate(Long accountId, AccountTemplate accountTemplate, Sheet sheet,Account account) {
+        List<String> resultList = new ArrayList<>();
+
     	String tableName = accountTemplate.getTableName();
         //获取EXCEL表头
         List<String> columnHeaderlist = ExcelUtil.getColumnHeader(sheet);
@@ -324,7 +324,46 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         insertField.append("ID, ");
         insertField.append("REPORTID");
         insertField.append(") values ( ");
-        //递归数据列
+
+        //集合存放复合主键的值，用于对比是否有重复数据
+        List<String> pkValueStr = new ArrayList<>();
+        //通过主键判断数据是否有重复（联合主键）
+        for( int i = 0; i < datas.size(); i++ ){
+            //取出一行值
+            List<String> values = datas.get(i);
+            //存放主键的在columnHeaderlist中的index
+            List<Integer> listFlag = new ArrayList<>();
+            Iterator pkIterator = pkMap.keySet().iterator();
+            if( pkIterator.hasNext() ){
+                String pk = (String)pkIterator.next();
+                //如果columnHeaderlist中有主键，记录其位置
+                Integer index = columnHeaderlist.indexOf( pk );
+                if(columnHeaderlist.indexOf( pk ) != -1){
+                    listFlag.add( index );
+                }
+            }
+
+            //拼接每条数据的复合主键
+            String str = "";
+            for(int j=0;j<listFlag.size();j++){
+                str += values.get(listFlag.get(j));
+            }
+            //判断该复合主键是否存在，不存在加入pkValueStr，存在就返回提示
+            if(pkValueStr.contains(str)){
+                //失败返回重复数据的行号
+                resultList.add("false");
+                resultList.add(String.valueOf(i+1+2));
+                return resultList;
+            }else{
+                pkValueStr.add(str);
+            }
+
+        }
+
+        String deleteSql = "delete from "+tableName;
+        this.getNamedParameterJdbcTemplate().update(deleteSql,new HashMap<String, String>());
+
+        //递归数据行
         for (int i = 0; i < datas.size(); i++) {
             StringBuilder insertValueStr = new StringBuilder(500);
 //            StringBuilder updateValueStr = new StringBuilder(500);
@@ -400,17 +439,21 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             insertValueStr.append("SEQ_FITECH.NEXTVAL" + ","+accountId+")");   
             AccountLine accountline=new AccountLine();
             accountline.setAccountFields(affs);
-            if(this.queryDataisExist(accountline,account)){
-                return -1;
-            }
+//            if(this.queryDataisExist(accountline,account)){
+//                return -1;
+//            }
 
             String insertsql =  insertField.toString() + insertValueStr.toString();
             System.out.println("insert:sql="+insertsql);
 
             this.getNamedParameterJdbcTemplate().update(insertsql, new HashMap<String, String>());
         }
-        return size;
+        //成功返回加载条数
+        resultList.add("true");
+        resultList.add(String.valueOf(size));
+        return resultList;
     }
+
 
     /**
      * 构建主键MAP

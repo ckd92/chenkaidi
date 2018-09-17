@@ -170,13 +170,31 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				String allfp = "";
 				while (itfp.hasNext()) {
 					FieldPermission fp = itfp.next();
-					if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId())) {
+					if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId()) ) {
 						allfp += fp.getOperationType().toString();
 						allfp += ",";
 					}
+
 				}
+				//allfp不为空，去掉末尾的逗号
 				if (!allfp.equals("")) {
 					allfp = allfp.substring(0, allfp.lastIndexOf(","));
+				}
+				//权限转换，实际有的操作权限没有存放数据库，数据库存放的权限实际没有
+				switch (allfp){
+					case "LOOK":
+						allfp = "OPERATE";
+						break;
+					case "OPERATE":
+						allfp = "LOOK";
+						break;
+					case "":
+						allfp = "LOOK,OPERATE";
+						break;
+					default:
+						allfp = "";
+						break;
+
 				}
 				af.setFieldPermission(allfp);
 			}
@@ -186,26 +204,6 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			ac.setAccountTemplate(account.getAccountTemplate());
 
 			Page<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo);
-
-			// 如果是codelib字典类型，value传字典名称
-			// String dicItemName="";
-			// for(AccountLine accountline:accountLines.getContent()){
-			// for(AccountField accountField1:accountline.getAccountFields()){
-			// if("CODELIB".equals(accountField1.getItemType())&&accountField1.getValue()!=null){
-			// try{
-			// dicItemName
-			// =dictionaryItemRepository.findById(Long.parseLong(accountField1.getValue().toString())).getDicItemName();
-			// if(StringUtils.isEmpty(dicItemName)){
-			// dicItemName = accountField1.getValue().toString();
-			// }
-			// }catch(Exception e){
-			// dicItemName = accountField1.getValue().toString();
-			// }
-			//
-			// accountField1.setValue((Object)dicItemName);
-			// }
-			// }
-			// }
 
 			account.setAccountLine(accountLines);
 
@@ -284,7 +282,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				String allfp = "";
 				while (itfp.hasNext()) {
 					FieldPermission fp = itfp.next();
-					if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId())) {
+					if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId()) ) {
 						allfp += fp.getOperationType().toString();
 						allfp += ",";
 					}
@@ -303,7 +301,8 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			//accountFields是用户可以查看的字段
 			List<AccountField> accountFields = new ArrayList<>();
             for(AccountField accountFieldnew : account.getAccountTemplate().getAccountFields()){
-                if(accountFieldnew.isVisible()){
+            	//fieldPermission沒有OPERATE，则有操作权限
+                if(accountFieldnew.getFieldPermission().indexOf("OPERATE") == -1){
                     accountFields.add(accountFieldnew);
                 }
             }
@@ -328,7 +327,9 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				}
 				hList.add(lineone);
 			}
-			return ExcelUtil.createExcel(hList, sheetName, CommonConst.getProperties("template_path"),sheetName);
+			Boolean flag = true;
+			String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("template_path"),sheetName);
+			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
@@ -408,14 +409,14 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			Iterator<Role> it = c.iterator();
 			while (it.hasNext()) {
 				Role role = it.next();
-				Role r = roleRepository.findById(role.getId());
-				Collection<FieldPermission> rfps = r.getFieldPermission();
+				//Role r = roleRepository.findById(role.getId());
+				Collection<FieldPermission> rfps = role.getFieldPermission();
 				// 迭代字段权限集合
 				Iterator<FieldPermission> its = rfps.iterator();
 				while (its.hasNext()) {
 					FieldPermission fp = its.next();
 					// 如果字段权限的模板id是该模板id则将该模板权限添加到已配置的字段权限集合中
-					if (r.getSubSystem().getSubKey().equals("sjbl")) {
+					if (role.getSubSystem().getSubKey().equals("sjbl")) {
 						rrfps.add(fp);
 					}
 				}
@@ -433,7 +434,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				String allfp = "";
 				while (itfp.hasNext()) {
 					FieldPermission fp = itfp.next();
-					if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId())) {
+					if (af.isPkable() == false &&  af.getId().equals(fp.getAccountField().getId())  ) {
 						allfp += fp.getOperationType().toString();
 						allfp += ",";
 					}
@@ -445,8 +446,6 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			}
 
 			AccountTemplate accountTemplate = account.getAccountTemplate();
-			// AccountTemplate accountTemplate =
-			// accountTemplateRepository.findOne(templateId);
 
 			String sheetName = accountTemplate.getTableName();
 
@@ -476,7 +475,8 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				if (accoutnfield.isPkable()) {
 					itemDesc.add(accoutnfield.getItemName());
 					itemCode.add(accoutnfield.getItemCode());
-				} else if (accoutnfield.getFieldPermission().indexOf("OPERATE") != -1) {
+					//fieldPermission中没有OPERATE，表示有操作权限
+				} else if ( accoutnfield.getFieldPermission().indexOf("OPERATE") == -1 ) {
 					itemDesc.add(accoutnfield.getItemName());
 					itemCode.add(accoutnfield.getItemCode());
 				}
@@ -496,10 +496,9 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 			hList.add(itemCode);
 			hList.add(itemDesc);
 
-			ExcelUtils.createExcel(hList, sheetName, CommonConst.getProperties("template_path"), downRows, downData);
+			ExcelUtils.createExcel2007(hList, sheetName, CommonConst.getProperties("template_path"), downRows, downData);
 			return sheetName;
 		}
-
 		return null;
 	}
 
@@ -533,14 +532,17 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 					AccountTemplate accountTemplate = account.getAccountTemplate();
 
 					Sheet sheet = ExcelUtil.getExcelSheet(inputStream, fileName);
-					Integer size = accountDataDao.loadDataByTemplate(accountId, accountTemplate, sheet, account);
 
-					if (size == -1) {
-						result.setMessage("addAccountData pk is exist!");
-						result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+					List<String> resultList = accountDataDao.loadDataByTemplate(accountId, accountTemplate, sheet, account);
+					//返回false,载入失败，返回重复行号
+					if (resultList.get(0).equals("false")) {
+						result.setSuccess(false);
+						result.setMessage("第"+resultList.get(1)+"行数据主键重复");
+						result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
 						return result;
 					}
-
+					//否则返回成功，size变量存储成功条数
+					Integer size = Integer.getInteger(resultList.get(1));
 					// 业务条线：表名
 					String[] operateFieldArr = operateFieldStr.split("\\|"); // 待校验字段
 					String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem()

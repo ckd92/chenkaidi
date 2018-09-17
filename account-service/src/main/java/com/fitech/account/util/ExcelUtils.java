@@ -13,11 +13,11 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.DataValidationConstraint;
-import org.apache.poi.ss.usermodel.DataValidationHelper;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelUtils<T> {
 	
@@ -67,6 +67,72 @@ public class ExcelUtils<T> {
 
 			fout = new FileOutputStream(path);
 			wb.write(fout);
+			fout.close();
+		} catch (Exception arg23) {
+			arg23.printStackTrace();
+		} finally {
+			try {
+				if (inStream != null) {
+					((FileInputStream) inStream).close();
+				}
+
+				if (fout != null) {
+					fout.close();
+				}
+			} catch (IOException arg22) {
+				arg22.printStackTrace();
+			}
+
+		}
+
+		return path;
+	}
+
+	public static String createExcel2007(List<List<String>> columheader,
+									 String sheetName, String templatePath,
+									 List<Integer> downRows,List<List<String>> downData) {
+		String path = templatePath;
+		Object inStream = null;
+		FileOutputStream fout = null;
+		File file = null;
+		XSSFWorkbook xwb = null;
+		try {
+			createDir(path);
+			path = path + sheetName + ".xlsx";
+			xwb = new XSSFWorkbook();
+			XSSFSheet e = xwb.createSheet(sheetName);
+			int rowNum = 0;
+
+			for(int r=0;r<downRows.size();r++){
+				String[] dlData = new String[downData.get(r).size()];//获取下拉对象
+				for(int i=0;i<downData.get(r).size();i++){
+					dlData[i] = downData.get(r).get(i);
+				}
+				int rownum = downRows.get(r);
+				e.addValidationData(setDataValidation(e, dlData, 2, 500, rownum ,rownum)); //超过255个报错
+			}
+
+			for (Iterator arg10 = columheader.iterator(); arg10.hasNext(); ++rowNum) {
+				List colums = (List) arg10.next();
+				Row row = e.createRow(rowNum);
+				CellStyle style = xwb.createCellStyle();
+				style.setAlignment((short)2);
+				Cell cell = null;
+
+				for (int i = 0; i < colums.size(); ++i) {
+					cell = row.createCell(i);
+					cell.setCellValue((String) colums.get(i));
+					cell.setCellStyle(style);
+				}
+			}
+
+			file = new File(path);
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			fout = new FileOutputStream(path);
+			xwb.write(fout);
 			fout.close();
 		} catch (Exception arg23) {
 			arg23.printStackTrace();
