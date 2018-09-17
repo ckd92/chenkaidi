@@ -48,6 +48,7 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
+import com.fitech.system.dao.UserDataDao;
 import com.fitech.system.repository.InstitutionRepository;
 import com.fitech.system.repository.RoleRepository;
 import com.fitech.system.repository.UserRepository;
@@ -108,6 +109,8 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     
     @Autowired
     private DictionaryItemRepository dictionaryItemRepository;
+    @Autowired
+    private UserDataDao userDataDao;
 
     @Override
     public AccountProcess findProcessById(Long id) {
@@ -123,7 +126,8 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         	//查询用户
             User user = null;
             if (vo.getUserId() != null) {
-                user = this.userRepository.findById(vo.getUserId());
+//                user = this.userRepository.findById(vo.getUserId());
+                user = userDataDao.findUserById(vo.getUserId());
             }
             return accountProcessDao.findTodoTaskBySql(vo, user);
         }catch (Exception e){
@@ -177,7 +181,8 @@ public class AccountProcessServiceImpl implements AccountProcessService {
             //查询用户
             User user = null;
             if (vo.getUserId() != null) {
-                user = this.userRepository.findById(vo.getUserId());
+//                user = this.userRepository.findById(vo.getUserId());
+                user = userDataDao.findUserById(vo.getUserId());
             }
             return accountProcessDao.findDoneTaskBySql(vo, user);
         }catch (Exception e){
