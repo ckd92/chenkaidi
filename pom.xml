@@ -23,6 +23,7 @@
         <account-service>1.1.1-SNAPSHOT</account-service>
         <fitech-domain>1.1.1-SNAPSHOT</fitech-domain>
         <system-service>1.1.1-SNAPSHOT</system-service>
+        <report-service>1.1.1-SNAPSHOT</report-service>
         <validate-service>1.1.1-SNAPSHOT</validate-service>
     </properties>
     <!-- 设置 私服仓库地址-->
@@ -72,6 +73,11 @@
             <groupId>com.fitech.domain</groupId>
             <artifactId>fitech-domain</artifactId>
             <version>${fitech-domain}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fitech.report</groupId>
+            <artifactId>report-service</artifactId>
+            <version>${report-service}</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.system</groupId>

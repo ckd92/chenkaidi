@@ -19,6 +19,11 @@
             <artifactId>system-service</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.fitech.report</groupId>
+            <artifactId>report-service</artifactId>
+        </dependency>
+        
+        <dependency>
 			<groupId>com.fitech.validate</groupId>
 			<artifactId>validate-service</artifactId>
 		</dependency>
