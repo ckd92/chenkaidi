@@ -79,12 +79,12 @@ public class AccountTemplateController {
      * @return
      */
     @PostMapping("/accountTemplates")
-    public GenericResult<Page<AccountTemplate>> findAll(@RequestBody  AccountTemplate accountTemplate,
+    public GenericResult<List<AccountTemplate>> findAll(@RequestBody  AccountTemplate accountTemplate,
                                                         HttpServletRequest request) {
-        GenericResult<Page<AccountTemplate>> result = new GenericResult<>();
+        GenericResult<List<AccountTemplate>> result = new GenericResult<>();
         try {
-            Page<AccountTemplate> collection = accountTemplateService.findAccountTemplateByPage(accountTemplate);
-            result.setData(collection);
+            List<AccountTemplate> list = accountTemplateService.findAllAccountTemplate();
+            result.setData(list);
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();
