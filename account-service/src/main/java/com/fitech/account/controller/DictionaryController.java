@@ -26,10 +26,10 @@ public class DictionaryController {
 
 	//条件分页字典
 	@PostMapping("/dictionarys")
-	public GenericResult<Page<Dictionary>> findAll(@RequestBody Dictionary dictionary,HttpServletRequest request) {
-		GenericResult<Page<Dictionary>> result = new GenericResult<>();
+	public GenericResult<List<Dictionary>> findAll(@RequestBody Dictionary dictionary,HttpServletRequest request) {
+		GenericResult<List<Dictionary>> result = new GenericResult<>();
 		try {
-			Page<Dictionary> collection = dictionaryService.findDictionary(dictionary);
+			List<Dictionary> collection = dictionaryService.findDictionary(dictionary);
 			result.setData(collection);
 		} catch (Exception e) {
 			result.setSuccess(false);

@@ -43,9 +43,9 @@ public class DictionaryServiceImpl implements DictionaryService {
 	 * 动态条件查询
 	 */
 	@Override
-	public Page<Dictionary> findDictionary(Dictionary dictionary) {
+	public List<Dictionary> findDictionary(Dictionary dictionary) {
 		try{
-			return dictionaryRepository.findAll(buildSpecification(dictionary),buildPageRequest(dictionary));
+			return dictionaryRepository.findAll();
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());

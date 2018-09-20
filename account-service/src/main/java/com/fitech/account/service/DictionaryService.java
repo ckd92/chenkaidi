@@ -2,13 +2,10 @@ package com.fitech.account.service;
 
 
 
-import com.fitech.domain.account.Dictionary;
-import com.fitech.framework.lang.result.GenericResult;
-
-
 import java.util.List;
 
-import org.springframework.data.domain.Page;
+import com.fitech.domain.account.Dictionary;
+import com.fitech.framework.lang.result.GenericResult;
 
 
 
@@ -21,7 +18,7 @@ public interface DictionaryService {
      * @param dictionary
      * @return
      */
-    public Page<Dictionary> findDictionary(Dictionary dictionary);
+    public List<Dictionary> findDictionary(Dictionary dictionary);
 	
     
     /**
