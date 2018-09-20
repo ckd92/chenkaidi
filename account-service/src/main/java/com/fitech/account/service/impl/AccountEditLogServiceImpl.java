@@ -317,7 +317,12 @@ public class AccountEditLogServiceImpl implements AccountEditLogService {
                     accountEditLog1.setAccountName((String) objects1[2]);
                     accountEditLog1.setTerm((String) objects1[3]);
                     accountEditLog1.setInstitutionName((String) objects1[4]);
-                    accountEditLog1.setEditLineNum(Integer.valueOf(objects1[5].toString()));;
+                    if(null != objects1[5]){
+                    	accountEditLog1.setEditLineNum(Integer.valueOf(String.valueOf(objects1[5])));;
+                    }else{
+                    	accountEditLog1.setEditLineNum(1);;
+                    }
+                    
                     accountEditLogs.add(accountEditLog1);
                 }
             }
