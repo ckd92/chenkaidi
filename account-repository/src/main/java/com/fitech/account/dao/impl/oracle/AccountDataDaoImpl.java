@@ -349,7 +349,7 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                 str += values.get(listFlag.get(j));
             }
             //判断该复合主键是否存在，不存在加入pkValueStr，存在就返回提示
-            if(pkValueStr.contains(str)){
+            if(StringUtil.isNotEmpty(str) && pkValueStr.contains(str)){
                 //失败返回重复数据的行号
                 resultList.add("false");
                 resultList.add(String.valueOf(i+1+2));
