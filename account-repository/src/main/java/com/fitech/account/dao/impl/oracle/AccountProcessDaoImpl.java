@@ -279,7 +279,7 @@ public class AccountProcessDaoImpl extends NamedParameterJdbcDaoSupport implemen
         sql.append(" inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID");
         sql.append(" inner join BusSystem bs on bs.id = lrt.busSystem_id");
         sql.append(" inner join ACT_HI_TASKINST task on task.proc_inst_id_=o.procInsetId");
-        sql.append(" inner join sysuser_role ur on ur.roles_id=task.ASSIGNEE_");
+        sql.append(" inner join sysuser_role ur on to_char(ur.roles_id)=task.ASSIGNEE_");
         sql.append(" where 1=1 ");
         //台账编号
         if (!StringUtil.isEmpty(vo.getReportTemplateId())) {
