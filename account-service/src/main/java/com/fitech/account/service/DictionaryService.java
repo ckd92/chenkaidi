@@ -14,40 +14,43 @@ import com.fitech.framework.lang.result.GenericResult;
  */
 public interface DictionaryService {
 	/**
+     * 查询所有字典
+     * @return
+     */
+    public List<Dictionary> findAllDictionary();
+	/**
      * 查询字典，多条件搜索
      * @param dictionary
      * @return
      */
     public List<Dictionary> findDictionary(Dictionary dictionary);
-	
-    
     /**
      * 根据id查询单个字典
      * @param id
      * @return
      */
-    public Dictionary findOne (Long id);
-    
+    public Dictionary findOne(Long id);
+
     /**
      * 保存字典
      * @param dictionary
      * @return
      */
-    public GenericResult<Boolean> saveDictionary(Dictionary dictionary);
+    public GenericResult<Boolean> save(Dictionary dictionary);
    
     /**
      * 删除字典
      * @param idList
      * @return
      */
-    public GenericResult<Boolean> deleteDictionary(Long id);
+    public GenericResult<Boolean> delete(Long id);
        
     /**
      * 更新字典
      * @param dictionary
      * @return
      */
-    public GenericResult<Boolean> updateDictionary(Long id,Dictionary dictionary);
+    public GenericResult<Boolean> update(Long id,Dictionary dictionary);
     
     /**
      * 验证字典名称是否存在
@@ -56,18 +59,4 @@ public interface DictionaryService {
      */
     public GenericResult<Boolean> valiDictionaryNameIsExist(Long id,Dictionary dictionary);
     
-    /**
-     * 验证字典是否可以删除
-     * @param accountTemplate
-     * @return
-     */
-    public Boolean valiDictionaryIsDelete(Dictionary dictionary);
-    
-    /**
-     * 查询所有字典
-     * @return
-     */
-    public List<Dictionary> findAllDictionary();
-
-
 }

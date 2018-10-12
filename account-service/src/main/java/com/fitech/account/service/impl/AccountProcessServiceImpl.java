@@ -72,7 +72,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     @Autowired
     private UserRepository<User> userRepository;
     @Autowired
-    private InstitutionRepository<Institution> institutionInstitutionRepository;
+    private InstitutionRepository institutionInstitutionRepository;
 
     @Autowired
     private TodoTaskService todoTaskService;

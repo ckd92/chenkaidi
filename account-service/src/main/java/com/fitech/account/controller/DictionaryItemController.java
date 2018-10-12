@@ -20,11 +20,15 @@ import com.fitech.framework.lang.result.GenericResult;
  */
 @RestController
 public class DictionaryItemController {
-
     @Autowired
     private DictionaryItemService dictionaryItemService;
 
-    //根据字典id条件查询字典项
+    /**
+     * 根据字典id条件查询字典项
+     * @param id
+     * @param dictionaryItem
+     * @return
+     */
     @PostMapping("/dictionaryItem/{id}")
     public GenericResult<List<DictionaryItem>> getDictionaryItemByDicItemName(@PathVariable("id") Long id, @RequestBody DictionaryItem dictionaryItem) {
         GenericResult<List<DictionaryItem>> result = new GenericResult<List<DictionaryItem>>();
@@ -39,7 +43,11 @@ public class DictionaryItemController {
         return result;
     }
 
-    //根据字典id查询字典项
+    /**
+     * 根据字典id查询字典项
+     * @param id
+     * @return
+     */
     @GetMapping("/dictionaryItems/{id}")
     public GenericResult<List<DictionaryItem>> getDictionaryItemByDictionaryId(@PathVariable("id") Long id) {
         GenericResult<List<DictionaryItem>> result = new GenericResult<List<DictionaryItem>>();
@@ -54,8 +62,11 @@ public class DictionaryItemController {
         return result;
     }
 
-
-    //查询字典项
+    /**
+     * 查询字典项
+     * @param dictionaryItem
+     * @return
+     */
     @GetMapping("/dictionaryItem")
     public GenericResult<List<DictionaryItem>> getAllDictionaryItem(DictionaryItem dictionaryItem) {
         GenericResult<List<DictionaryItem>> result = new GenericResult<List<DictionaryItem>>();
@@ -69,49 +80,7 @@ public class DictionaryItemController {
         }
         return result;
     }
-
-    //新增字典项
-    @PostMapping("/dictionaryItem")
-    public GenericResult<Boolean> saveDictionaryItem(@RequestBody DictionaryItem dictionaryItem, HttpServletRequest request) {
-        GenericResult<Boolean> result = new GenericResult<>();
-        try {
-            result = dictionaryItemService.saveDictionaryItem(dictionaryItem);
-        } catch (Exception e) {
-            result.setSuccess(false);
-            e.printStackTrace();
-        } finally {
-        }
-        return result;
-    }
-
-    //修改字典项
-    @PutMapping("/dictionaryItem/{id}")
-    public GenericResult<Boolean> updateDictionaryItem(@PathVariable("id") Long id, @RequestBody DictionaryItem dictionaryItem, HttpServletRequest request) {
-        GenericResult<Boolean> result = new GenericResult<>();
-        try {
-            result = dictionaryItemService.updateDictionaryItem(id, dictionaryItem);
-        } catch (Exception e) {
-            result.setSuccess(false);
-            e.printStackTrace();
-        } finally {
-        }
-        return result;
-    }
-
-    //删除字典项
-    @DeleteMapping("/dictionaryItem/{id}")
-    public GenericResult<Boolean> deleteDictionary(@PathVariable("id") Long id, HttpServletRequest request) {
-        GenericResult<Boolean> result = new GenericResult<>();
-        try {
-            result = dictionaryItemService.deleteDictionaryItem(id);
-        } catch (Exception e) {
-            result.setSuccess(false);
-            e.printStackTrace();
-        } finally {
-        }
-        return result;
-    }
-
+    
     /**
      * 根据字典项id查找字典项实体
      * @param id
@@ -131,5 +100,62 @@ public class DictionaryItemController {
         return result;
     }
 
+    /**
+     * 新增字典项
+     * @param dictionaryItem
+     * @param request
+     * @return
+     */
+    @PostMapping("/dictionaryItem")
+    public GenericResult<Boolean> save(@RequestBody DictionaryItem dictionaryItem, HttpServletRequest request) {
+        GenericResult<Boolean> result = new GenericResult<>();
+        try {
+            result = dictionaryItemService.save(dictionaryItem);
+        } catch (Exception e) {
+            result.setSuccess(false);
+            e.printStackTrace();
+        } finally {
+        }
+        return result;
+    }
+
+    /**
+     * 修改字典项
+     * @param id
+     * @param dictionaryItem
+     * @param request
+     * @return
+     */
+    @PutMapping("/dictionaryItem/{id}")
+    public GenericResult<Boolean> update(@PathVariable("id") Long id, @RequestBody DictionaryItem dictionaryItem, HttpServletRequest request) {
+        GenericResult<Boolean> result = new GenericResult<>();
+        try {
+            result = dictionaryItemService.update(id, dictionaryItem);
+        } catch (Exception e) {
+            result.setSuccess(false);
+            e.printStackTrace();
+        } finally {
+        }
+        return result;
+    }
+
+    /**
+     * 删除字典项
+     * @param id
+     * @param request
+     * @return
+     */
+    @DeleteMapping("/dictionaryItem/{id}")
+    public GenericResult<Boolean> delete(@PathVariable("id") Long id, HttpServletRequest request) {
+        GenericResult<Boolean> result = new GenericResult<>();
+        try {
+            result = dictionaryItemService.delete(id);
+        } catch (Exception e) {
+            result.setSuccess(false);
+            e.printStackTrace();
+        } finally {
+        }
+        return result;
+    }
 
 }

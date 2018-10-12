@@ -23,10 +23,14 @@ import com.fitech.framework.lang.util.FileUtil;
 
 @RestController
 public class AccountEditLogController {
-	
 	@Autowired
 	private AccountEditLogService accountEditLogService;
 	
+	/**
+	 * 
+	 * @param accountEditLog
+	 * @return
+	 */
 	@PostMapping("/accountEditLogs")
 	public GenericResult<Page<AccountEditLog>> getAll(@RequestBody AccountEditLog accountEditLog){
 		
@@ -42,7 +46,11 @@ public class AccountEditLogController {
 		
 		return result;
 	}
-	//工作任务统计(hx)
+	/**
+	 * 工作任务统计(hx)
+	 * @param accountEditLog
+	 * @return
+	 */
 	@PostMapping("/accountEditLogsTJ")
 	public GenericResult<Page<AccountEditLog>> getTJ(@RequestBody AccountEditLog accountEditLog){
 		

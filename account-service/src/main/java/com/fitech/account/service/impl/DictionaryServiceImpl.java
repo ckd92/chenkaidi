@@ -40,6 +40,18 @@ public class DictionaryServiceImpl implements DictionaryService {
 	private AccountFieldDAO accountFieldDAO;
 
 	/**
+	 * 查所有字典
+	 */
+	@Override
+	public List<Dictionary> findAllDictionary() {
+		try{
+			return dictionaryRepository.findAll();
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+		}
+	}
+	/**
 	 * 动态条件查询
 	 */
 	@Override
@@ -50,55 +62,6 @@ public class DictionaryServiceImpl implements DictionaryService {
 			e.printStackTrace();
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
 		}
-
-	}
-
-
-	/**
-	 * 分页请求
-	 */
-	private PageRequest buildPageRequest(Dictionary dictionary){
-		return new PageRequest(dictionary.getPageNum()-1,dictionary.getPageSize());
-	}
-	
-	/**
-	 * 创建动态查询条件组合.
-	 */
-	private Specification<Dictionary> buildSpecification(final Dictionary dictionary) {
-		return new Specification<Dictionary> () {
-			@Override
-			public Predicate toPredicate(Root<Dictionary> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-				List<Predicate> list = new ArrayList<Predicate>();
-				if(null != dictionary){
-					if (StringUtil.isNotEmpty(dictionary.getDicName())) {
-						list.add(cb.like(root.get("dicName").as(String.class), "%" + dictionary.getDicName()+ "%"));
-					}
-				}
-				query.orderBy(cb.desc(root.get("id")));
-				Predicate[] predicates = new Predicate[list.size()];
-				predicates = list.toArray(predicates);
-				return cb.and(predicates);
-			}
-		};
-	}
-
-	
-	private Specification<Dictionary> buildSpecification1(final Dictionary dictionary) {
-		return new Specification<Dictionary> () {
-			@Override
-			public Predicate toPredicate(Root<Dictionary> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-				List<Predicate> list = new ArrayList<Predicate>();
-				if(null != dictionary){
-					if (StringUtil.isNotEmpty(dictionary.getDicName())) {
-						list.add(cb.like(root.get("dicName").as(String.class),dictionary.getDicName()));
-					}
-				}
-				query.orderBy(cb.desc(root.get("id")));
-				Predicate[] predicates = new Predicate[list.size()];
-				predicates = list.toArray(predicates);
-				return cb.and(predicates);
-			}
-		};
 	}
 	
 	/**
@@ -113,13 +76,11 @@ public class DictionaryServiceImpl implements DictionaryService {
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
 		}
 	}
-
-
 	/**
 	 * 添加字典
 	 */
 	@Override
-	public GenericResult<Boolean> saveDictionary(Dictionary dictionary) {
+	public GenericResult<Boolean> save(Dictionary dictionary) {
 		GenericResult<Boolean> result = new GenericResult<Boolean>();
 		//判断字典名称、字典编码是否存在
 		if(valiDictionaryNameIsExist(null,dictionary).getRestCode().equals("")){		
@@ -142,13 +103,13 @@ public class DictionaryServiceImpl implements DictionaryService {
 	 * 根据id删除字典
 	 */
 	@Override
-	public GenericResult<Boolean> deleteDictionary(Long id) {
+	public GenericResult<Boolean> delete(Long id) {
 		GenericResult<Boolean> result = new GenericResult<Boolean>();
 		//判断该id是否存在字典实体
 		if(dictionaryRepository.exists(id)){
 			try{
 				if(accountFieldDAO.dicIsDeleteAble(id)){
-					dictionaryItemService.deleteDictionaryItemByDictionaryId(id);
+					dictionaryItemService.deleteByDictionaryId(id);
 					dictionaryRepository.delete(id);
 					result.setSuccess(true);
 				}else{
@@ -171,7 +132,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 	 * 更新字典
 	 */
 	@Override
-	public GenericResult<Boolean> updateDictionary(Long id,Dictionary dictionary) {
+	public GenericResult<Boolean> update(Long id,Dictionary dictionary) {
 		GenericResult<Boolean> result= new GenericResult<Boolean>();
 		Dictionary findeddictionary = findOne(id);
 		//若此id存在对应字典并且字典名称不重复
@@ -215,28 +176,22 @@ public class DictionaryServiceImpl implements DictionaryService {
 		return result;
 
 	}
-
-	/**
-	 * 验证字典是否可以删除
-	 */
-	@Override
-	public Boolean valiDictionaryIsDelete(Dictionary dictionary) {
-
-
-		return null;
-	}
-
-	/**
-	 * 查所有字典
-	 */
-	@Override
-	public List<Dictionary> findAllDictionary() {
-		try{
-			return dictionaryRepository.findAll();
-		}catch(Exception e){
-			e.printStackTrace();
-			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-		}
-		
+	
+	private Specification<Dictionary> buildSpecification1(final Dictionary dictionary) {
+		return new Specification<Dictionary> () {
+			@Override
+			public Predicate toPredicate(Root<Dictionary> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+				List<Predicate> list = new ArrayList<Predicate>();
+				if(null != dictionary){
+					if (StringUtil.isNotEmpty(dictionary.getDicName())) {
+						list.add(cb.like(root.get("dicName").as(String.class),dictionary.getDicName()));
+					}
+				}
+				query.orderBy(cb.desc(root.get("id")));
+				Predicate[] predicates = new Predicate[list.size()];
+				predicates = list.toArray(predicates);
+				return cb.and(predicates);
+			}
+		};
 	}
 }
