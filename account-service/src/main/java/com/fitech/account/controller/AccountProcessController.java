@@ -23,7 +23,6 @@ import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountProcess;
-import com.fitech.domain.system.ProcessConfig;
 import com.fitech.framework.activiti.service.ProcessRegistryService;
 import com.fitech.framework.activiti.service.TodoTaskService;
 import com.fitech.framework.activiti.vo.TaskVo;
@@ -42,29 +41,19 @@ import com.fitech.vo.account.AccountProcessVo;
 @RestController
 @RequestMapping("accountTask")
 public class AccountProcessController {
-    //task Service
     @Autowired
     private TodoTaskService todoTaskService;
-
-    //明细service
     @Autowired
     private AccountProcessService accountProcessService;
-
     @Autowired
     private ProcessRegistryService fProcessRegistry;
-
-    //流程配置service
     @Autowired
     private ProcessConfigService processConfigService;
-
     @Autowired
     private SysLogService sysLogService;
-
-//    @Autowired
-//    private SuperviseTaskService superviseTaskService;
-    
     @Autowired
     private AccountReportService accountReportService;
+    
     /**
      * 待办任务初始化分页
      * @param accountProcessVo 高级查询
@@ -126,8 +115,6 @@ public class AccountProcessController {
                                                                             ,@PathVariable String userId,HttpServletRequest request){
         GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
         try {
-            // 获取token
-//            Long userId = TokenUtils.getLoginId(request);
             accountProcessVo.setUserId(Long.valueOf(userId));
             Page<AccountProcessVo> pageVo = this.accountProcessService.findPageAccountProcessList(accountProcessVo);
             result.setData(pageVo);
@@ -205,7 +192,7 @@ public class AccountProcessController {
     public GenericResult<Object> ShanChuProcess(@PathVariable String reportid,HttpServletRequest request) {
     	GenericResult<Object> result = new GenericResult<Object>();
 		try {
-            ProcessConfig pi=processConfigService.findById(Long.valueOf(reportid));
+//            ProcessConfig pi=processConfigService.findById(Long.valueOf(reportid));
             this.accountProcessService.deleteProcessBL(reportid);
             result.setSuccess(true);
     		System.out.println("--------------成功删除流程下所有代办任务-----------------");

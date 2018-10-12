@@ -30,10 +30,8 @@ import java.util.List;
 @RestController
 @RequestMapping("accountTask")
 public class AccountController {
-
     @Autowired
     private AccountService accountService;
-    
     @Autowired
     private DictionaryItemService dictionaryItemService;
 

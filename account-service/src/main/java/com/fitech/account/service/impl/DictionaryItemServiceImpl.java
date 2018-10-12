@@ -35,7 +35,15 @@ import com.fitech.framework.lang.util.StringUtil;
 @ServiceTrace
 @Transactional
 public class DictionaryItemServiceImpl implements DictionaryItemService {
-
+	EntityManagerFactory entityManagerFactory;
+	/**
+	 * 注入entityManagerFactory
+	 * @param entityManagerFactory
+	 */
+	@PersistenceUnit
+	public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
+		this.entityManagerFactory = entityManagerFactory;
+	}
 
 	@Autowired
 	private DictionaryItemRepository dictionaryItemRepository;
@@ -82,26 +90,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 
 		};
 	}
-	/**
-	 * 添加字典项
-	 */
-	@Override
-	public GenericResult<Boolean> saveDictionaryItem(DictionaryItem dictionaryItem) {
-		GenericResult<Boolean> result = new GenericResult<Boolean>();
-		//判断字典项名称是否存在
-		if(valiDictionaryItemNameIsExist(null,dictionaryItem)){		
-			try{
-				dictionaryItemRepository.save(dictionaryItem);
-			}catch(Exception e){
-				e.printStackTrace();
-				throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-			}
-		}else{
-			result.setSuccess(false);
-			result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
-		}
-		return result;
-	}
+	
 
 
 
@@ -155,25 +144,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 		return flag;
 	}
 
-	/**
-	 * 修改字典项
-	 */
-	@Override
-	public GenericResult<Boolean> updateDictionaryItem(Long id, DictionaryItem dictionaryItem) {
-		GenericResult<Boolean> result= new GenericResult<Boolean>();
-		DictionaryItem findeddictionaryItem = findOne(id);
-		if(findeddictionaryItem!=null&&valiDictionaryItemNameIsExist(id,dictionaryItem)){						
-			findeddictionaryItem.setDicItemDesc(dictionaryItem.getDicItemDesc());
-			findeddictionaryItem.setDicItemName(dictionaryItem.getDicItemName());
-			findeddictionaryItem.setDicItemId(dictionaryItem.getDicItemId());
-			dictionaryItemRepository.saveAndFlush(findeddictionaryItem);
-		}else{
-			result.setSuccess(false);
-			result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
-		}
-
-		return result;
-	}
+	
 
 	/**
 	 * 根据id查询单个字典项
@@ -189,46 +160,6 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	}
 
 	/**
-	 * 根据id删除字典项
-	 */
-	@Override
-	public GenericResult<Boolean> deleteDictionaryItem(Long id) {
-		GenericResult<Boolean> result = new GenericResult<Boolean>();
-
-		if(dictionaryItemRepository.exists(id)){
-			try{
-				DictionaryItem dicItem= dictionaryItemRepository.findOne(id);
-				if(accountFieldDAO.dicIsDeleteAble(dicItem.getDictionary().getId())){					
-					dictionaryItemRepository.delete(id);
-					result.setSuccess(true);
-				}else{
-					result.setSuccess(false);
-					result.setMessage("该字典被使用，字典项不可删除！");
-				}
-			}catch(Exception e){
-				e.printStackTrace();
-				throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-			}			
-		}else{
-			result.setSuccess(false);
-			result.setMessage("该字典项不存在");
-		}		
-		return result;
-	}
-
-
-	EntityManagerFactory entityManagerFactory;
-
-	/**
-	 * 注入entityManagerFactory
-	 * @param entityManagerFactory
-	 */
-	@PersistenceUnit
-	public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
-		this.entityManagerFactory = entityManagerFactory;
-	}
-
-	/**
 	 * 根据字典id查询字典项
 	 */
 	public List<DictionaryItem> getDictionaryItemByDictionaryId(Long id){
@@ -239,15 +170,6 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 		em.close();
 		return list;
 	}
-
-	/**
-	 * 根据字典id删除字典项
-	 */
-	public void deleteDictionaryItemByDictionaryId(Long id){
-		List<DictionaryItem> list = getDictionaryItemByDictionaryId(id);
-		dictionaryItemRepository.delete(list);
-	}
-
 
 	/**
 	 * 根据字典id条件查询字典项,高级搜索
@@ -280,4 +202,75 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 		return dictionaryItemRepository.findById(id);
 	}
 
+	/**
+	 * 添加字典项
+	 */
+	@Override
+	public GenericResult<Boolean> save(DictionaryItem dictionaryItem) {
+		GenericResult<Boolean> result = new GenericResult<Boolean>();
+		//判断字典项名称是否存在
+		if(valiDictionaryItemNameIsExist(null,dictionaryItem)){		
+			try{
+				dictionaryItemRepository.save(dictionaryItem);
+			}catch(Exception e){
+				e.printStackTrace();
+				throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+			}
+		}else{
+			result.setSuccess(false);
+			result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+		}
+		return result;
+	}
+	/**
+	 * 修改字典项
+	 */
+	@Override
+	public GenericResult<Boolean> update(Long id, DictionaryItem dictionaryItem) {
+		GenericResult<Boolean> result= new GenericResult<Boolean>();
+		DictionaryItem findeddictionaryItem = findOne(id);
+		if(findeddictionaryItem!=null&&valiDictionaryItemNameIsExist(id,dictionaryItem)){						
+			findeddictionaryItem.setDicItemDesc(dictionaryItem.getDicItemDesc());
+			findeddictionaryItem.setDicItemName(dictionaryItem.getDicItemName());
+			findeddictionaryItem.setDicItemId(dictionaryItem.getDicItemId());
+			dictionaryItemRepository.saveAndFlush(findeddictionaryItem);
+		}else{
+			result.setSuccess(false);
+			result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+		}
+		return result;
+	}
+	/**
+	 * 根据id删除字典项
+	 */
+	@Override
+	public GenericResult<Boolean> delete(Long id) {
+		GenericResult<Boolean> result = new GenericResult<Boolean>();
+		if(dictionaryItemRepository.exists(id)){
+			try{
+				DictionaryItem dicItem= dictionaryItemRepository.findOne(id);
+				if(accountFieldDAO.dicIsDeleteAble(dicItem.getDictionary().getId())){					
+					dictionaryItemRepository.delete(id);
+					result.setSuccess(true);
+				}else{
+					result.setSuccess(false);
+					result.setMessage("该字典被使用，字典项不可删除！");
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+			}			
+		}else{
+			result.setSuccess(false);
+			result.setMessage("该字典项不存在");
+		}		
+		return result;
+	}
+	/**
+	 * 根据字典id删除字典项
+	 */
+	public void deleteByDictionaryId(Long id){
+		List<DictionaryItem> list = getDictionaryItemByDictionaryId(id);
+		dictionaryItemRepository.delete(list);
+	}
 }

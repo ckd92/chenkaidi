@@ -754,21 +754,20 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
 	@Override
 	public Collection<AccountField> findAccountFieldByIdVisable(Long id) {
         AccountTemplate accountTemplate = null;
-        Collection<AccountField> newCollection=null;
+        Collection<AccountField> newCollection = new ArrayList<AccountField>();
         if(null != id){
             try{
             	accountTemplate = accountTemplateRepository.findOne(id);
+            	Collection<AccountField> collection = accountTemplate.getAccountFields();
+                for(AccountField accountField:collection){
+                	if(accountField.isVisible()){
+                		newCollection.add(accountField);
+                	}
+                }
             }catch (Exception e) {
                 e.printStackTrace();
                 throw new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
             }
-          Collection<AccountField> collection = accountTemplate.getAccountFields();
-          newCollection = new ArrayList<AccountField>();
-          for(AccountField accountField:collection){
-        	  if(accountField.isVisible()){
-        		  newCollection.add(accountField);
-        	  }
-          }
         }
         return newCollection;
     }
