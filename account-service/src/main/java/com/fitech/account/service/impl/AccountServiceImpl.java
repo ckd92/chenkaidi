@@ -321,7 +321,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				for(AccountField accf:accline.getAccountFields()){
 					for(AccountField accountFieldnew :accountFields){
 						if(accountFieldnew.getItemCode().equals(accf.getItemCode())){
-							lineone.add(accf.getValue().toString());
+							lineone.add(String.valueOf(accf.getValue()));
 						}
 					}
 				}
