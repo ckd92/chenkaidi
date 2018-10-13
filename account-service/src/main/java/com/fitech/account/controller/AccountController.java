@@ -376,12 +376,11 @@ public class AccountController {
     public GenericResult<Boolean> loadDataFromTemplate (@RequestParam(value = "file", required = true) MultipartFile file,
                                                        @PathVariable("accountId") Long accountId, @PathVariable("operateFieldStr") String  operateFieldStr,
                                                        HttpServletRequest request) {
-        GenericResult<Boolean> result=new GenericResult<>();
+    	GenericResult<Boolean> result=new GenericResult<>();
         try {
-            Long userId = TokenUtils.getLoginId(request);
-
+        	Long userId = TokenUtils.getLoginId(request);
             result =  accountService.loadDataByTemplate(file.getInputStream(), file.getOriginalFilename(), accountId,userId,operateFieldStr);
-       } catch (Exception e){
+        } catch (Exception e){
             e.printStackTrace();
             result.setSuccess(false);
         }finally {

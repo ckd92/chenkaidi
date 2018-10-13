@@ -1,25 +1,23 @@
 package com.fitech.account.dao;
 
-import com.fitech.domain.account.Account;
-import com.fitech.domain.account.AccountLine;
-import com.fitech.domain.account.AccountTemplate;
-import com.fitech.vo.account.AccountProcessVo;
-import org.apache.poi.ss.usermodel.Sheet;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-import java.util.Map;
+import com.fitech.domain.account.Account;
+import com.fitech.domain.account.AccountLine;
+import com.fitech.vo.account.AccountProcessVo;
 
 public interface AccountDataDao {
 	
-	/**
-	 * 批量导入数据表数据
-	 * @param accountId
-	 * @param accountTemplate
-	 * @param sheet
-	 * @return 字符串集合  第一个元素表示是否添加成功，第二个元素表示提示行数
-	 */
-	public List<String> loadDataByTemplate(Long accountId, AccountTemplate accountTemplate, Sheet sheet, Account account);
+//	/**
+//	 * 批量导入数据表数据
+//	 * @param accountId
+//	 * @param accountTemplate
+//	 * @param sheet
+//	 * @return 字符串集合  第一个元素表示是否添加成功，第二个元素表示提示行数
+//	 */
+//	public List<String> loadDataByTemplate(Long accountId, AccountTemplate accountTemplate, Sheet sheet, Account account);
 
 	/**
 	 * 查询台账表数据

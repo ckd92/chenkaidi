@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fitech.account.dao.AccountBaseDao;
 import com.fitech.account.dao.AccountDataDao;
+import com.fitech.account.dao.AccountDatasDao;
 import com.fitech.account.dao.AccountProcessDao;
 import com.fitech.account.repository.AccountEditLogItemRepository;
 import com.fitech.account.repository.AccountEditLogRepository;
@@ -85,6 +86,8 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 
 	@Autowired
 	private AccountDataDao accountDataDao;
+	@Autowired
+	private AccountDatasDao accountDatasDao;
 
 	@Autowired
 	private AccountTemplateRepository accountTemplateRepository;
@@ -503,6 +506,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 	}
 
 	@Override
+	@Transactional
 	public GenericResult<Boolean> loadDataByTemplate(InputStream inputStream, String fileName, Long accountId,
 			Long userId, String operateFieldStr) {
 		GenericResult<Boolean> result = new GenericResult<>();
@@ -530,39 +534,39 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 				Account account = accountRepository.findOne(accountId);
 				if (account != null) {
 					AccountTemplate accountTemplate = account.getAccountTemplate();
-
 					Sheet sheet = ExcelUtil.getExcelSheet(inputStream, fileName);
-
-					List<String> resultList = accountDataDao.loadDataByTemplate(accountId, accountTemplate, sheet, account);
-					//返回false,载入失败，返回重复行号
+					// 数据载入
+					List<String> resultList = accountDatasDao.loadDataByTemplate(accountId, accountTemplate, sheet, account);
+					// 返回false,载入失败，返回重复行号
 					if (resultList.get(0).equals("false")) {
 						result.setSuccess(false);
 						result.setMessage("第"+resultList.get(1)+"行数据主键重复");
 						result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
 						return result;
 					}
-					//否则返回成功，size变量存储成功条数
+					// 否则返回成功，size变量存储成功条数
 					Integer size = Integer.getInteger(resultList.get(1));
 					// 业务条线：表名
-					String[] operateFieldArr = operateFieldStr.split("\\|"); // 待校验字段
-					String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem()
-							.getSubKey() + ":" + account.getAccountTemplate().getTableName();
-					Collection<ValidateAnalyzeResult> rules = validateAnalyzeResultService
-							.findByObjectID(validateTableName, operateFieldArr);
-					if (rules != null && rules.size() > 0) {
-						ValidateBatch validateBatch = validateAnalyzeResultService.excuteFormu(rules, accountId + "");
+//					String[] operateFieldArr = operateFieldStr.split("\\|"); // 待校验字段
+//					String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem()
+//							.getSubKey() + ":" + account.getAccountTemplate().getTableName();
+//					Collection<ValidateAnalyzeResult> rules = validateAnalyzeResultService
+//							.findByObjectID(validateTableName, operateFieldArr);
+//					if (rules != null && rules.size() > 0) {
+//						ValidateBatch validateBatch = validateAnalyzeResultService.excuteFormu(rules, accountId + "");
 						// 校验结果
-						Collection<ValidateResult> list = validateResultService
-								.findByValidatebatch(validateBatch.getBatchId());
+//						Collection<ValidateResult> list = validateResultService
+//								.findByValidatebatch(validateBatch.getBatchId());
 
-					}
+//					}
+					// 台账数据修改记录
 					AccountEditLog accountEditLog = new AccountEditLog();
 					accountEditLog.setAccountEditType(AccountEditEnum.INSERT);
 					accountEditLog.setLogSource(LogSourceEnum.OFFLINE);
 					accountEditLog.setEditLineNum(size);
 					accountEditLogService.saveAccoutnEditLog(account, userId, accountEditLog);
 				} else {
-					result.setSuccess(false);
+					result.setSuccess(false); 
 					result.setMessage("error:input accountId not exists!");
 					return result;
 				}

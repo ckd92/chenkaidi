@@ -1,18 +1,15 @@
 package com.fitech.account.dao.impl.oracle;
 
-import antlr.StringUtils;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.fitech.account.dao.AccountDataDao;
-import com.fitech.constant.ExceptionCode;
-import com.fitech.domain.account.*;
-import com.fitech.enums.SqlTypeEnum;
-import com.fitech.framework.lang.common.AppException;
-import com.fitech.framework.lang.result.GenericResult;
-import com.fitech.framework.lang.util.ExcelUtil;
-import com.fitech.framework.lang.util.StringUtil;
-import com.fitech.vo.account.AccountProcessVo;
+import javax.sql.DataSource;
 
-import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,11 +17,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 
-import javax.sql.DataSource;
-
-import java.sql.SQLDataException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import com.fitech.account.dao.AccountDataDao;
+import com.fitech.domain.account.Account;
+import com.fitech.domain.account.AccountField;
+import com.fitech.domain.account.AccountLine;
+import com.fitech.domain.account.AccountTemplate;
+import com.fitech.domain.account.CodeField;
+import com.fitech.domain.account.DateField;
+import com.fitech.domain.account.DoubleField;
+import com.fitech.domain.account.IntegerField;
+import com.fitech.enums.SqlTypeEnum;
+import com.fitech.framework.lang.util.StringUtil;
+import com.fitech.vo.account.AccountProcessVo;
 
 public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements AccountDataDao {
 	@Autowired
@@ -291,187 +295,179 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         return  totalNum;
     }
 
-    @Override
-    public List<String> loadDataByTemplate(Long accountId, AccountTemplate accountTemplate, Sheet sheet,Account account) {
-        List<String> resultList = new ArrayList<>();
-
-    	String tableName = accountTemplate.getTableName();
-        //获取EXCEL表头
-        List<String> columnHeaderlist = ExcelUtil.getColumnHeader(sheet);
-        //获取EXCEL数据列
-        List<List<String>> datas = ExcelUtil.getDatas(sheet,2);
-        Integer size = datas.size();
-        //构建主键MAP
-        HashMap<String, Object> pkMap = this.generatePKMap(columnHeaderlist, accountTemplate);
-
-        StringBuilder insertField = new StringBuilder(500);
-        //组装批量导入SQL
-        Collection<AccountField> itemsf = accountTemplate.getAccountFields();
-        Collection<AccountField> items=new ArrayList<AccountField>();
-        insertField.append("insert into " + tableName + " ( ");
-        for (int i = 0; i < columnHeaderlist.size(); i++) {
-            insertField.append(columnHeaderlist.get(i).trim());
-            insertField.append(",");
-            for(AccountField a:itemsf){
-            	if(a.getItemCode().equals(columnHeaderlist.get(i).trim())){
-            		items.add(a);
-            	}
-            }
-        }
-        //检验主键是否存在
-        Collection<AccountField> affs=new ArrayList<AccountField>();
-        
-        insertField.append("ID, ");
-        insertField.append("REPORTID");
-        insertField.append(") values ( ");
-
-        //集合存放复合主键的值，用于对比是否有重复数据
-        List<String> pkValueStr = new ArrayList<>();
-        //通过主键判断数据是否有重复（联合主键）
-        for( int i = 0; i < datas.size(); i++ ){
-            //取出一行值
-            List<String> values = datas.get(i);
-            //存放主键的在columnHeaderlist中的index
-            List<Integer> listFlag = new ArrayList<>();
-            Iterator pkIterator = pkMap.keySet().iterator();
-            if( pkIterator.hasNext() ){
-                String pk = (String)pkIterator.next();
-                //如果columnHeaderlist中有主键，记录其位置
-                Integer index = columnHeaderlist.indexOf( pk );
-                if(columnHeaderlist.indexOf( pk ) != -1){
-                    listFlag.add( index );
-                }
-            }
-
-            //拼接每条数据的复合主键
-            String str = "";
-            for(int j=0;j<listFlag.size();j++){
-                str += values.get(listFlag.get(j));
-            }
-            //判断该复合主键是否存在，不存在加入pkValueStr，存在就返回提示
-            if(StringUtil.isNotEmpty(str) && pkValueStr.contains(str)){
-                //失败返回重复数据的行号
-                resultList.add("false");
-                resultList.add(String.valueOf(i+1+2));
-                return resultList;
-            }else{
-                pkValueStr.add(str);
-            }
-
-        }
-
-        String deleteSql = "delete from "+tableName;
-        this.getNamedParameterJdbcTemplate().update(deleteSql,new HashMap<String, String>());
-
-        //递归数据行
-        for (int i = 0; i < datas.size(); i++) {
-            StringBuilder insertValueStr = new StringBuilder(500);
-//            StringBuilder updateValueStr = new StringBuilder(500);
-
-            //待录入值
-            List<String> values = datas.get(i);
-            for (int k = 0; k < values.size(); k++) {
-                String itemCode = columnHeaderlist.get(k);
-                AccountField field = null;
-                try{
-                	field = (AccountField) items.toArray()[k];
-            	}catch(IndexOutOfBoundsException e){
-            		throw new AppException(ExceptionCode.SYSTEM_ERROR, "请确认导入模板是否正确！字典项字段功能暂未完善，请确认是否导入字典项内容");
-            	}
-                
-                if (pkMap.containsKey(field.getItemCode())) {
-                    pkMap.put(field.getItemCode(), values.get(k));
-                }
-                if (values.get(k) != null) {
-                	String tempValue = values.get(k);
-                	if(StringUtil.isNotEmpty(field.getDicId()) && tempValue.indexOf("-") >-1 ){
-                		if(tempValue.indexOf("-")+1 < tempValue.length()){
-                			tempValue = tempValue.substring(tempValue.indexOf("-")+1, tempValue.length());
-                		}else{
-                			tempValue = "";
-                		}
-                	}
-                	
-                    if (field.getSqlType().equals(SqlTypeEnum.VARCHAR)) {
-                        insertValueStr.append("'" + tempValue + "'");
-                        field.setValue(tempValue);
-                    } else if(field.getSqlType().equals(SqlTypeEnum.DATE)) {
-                    	if("".equals(tempValue)){
-                    		insertValueStr.append("NULL");
-                    		field.setValue(tempValue);
-                    	}else{
-                    		insertValueStr.append("to_date('" + tempValue + "','yyyy-mm-dd')");
-                        	field.setValue(tempValue);
-                    	}	
-                    }else if(field.getSqlType().equals(SqlTypeEnum.INTEGER)||
-                    		field.getSqlType().equals(SqlTypeEnum.DECIMAL)||
-                    		field.getSqlType().equals(SqlTypeEnum.DOUBLE)||
-                    		field.getSqlType().equals(SqlTypeEnum.INT)||
-                    		field.getSqlType().equals(SqlTypeEnum.BIGINT)) {
-                    	if("".equals(tempValue)){
-                    		insertValueStr.append("NULL");
-                    		field.setValue(tempValue);
-                    	}else{
-                    		insertValueStr.append(tempValue);
-                        	field.setValue(tempValue);
-                    	}	
-                    }else{
-                    	insertValueStr.append(tempValue);
-                    	field.setValue(tempValue);
-                    }
-                } else {
-                    insertValueStr.append("NULL");
-                }
-                insertValueStr.append(",");
-                affs.add(field);
-
-//                updateValueStr.append(itemCode);
-//                updateValueStr.append("=");
-//                if (field.getSqlType().equals(com.fitech.domain.account.SqlType.VARCHAR)) {
-//                    updateValueStr.append("'" + values.get(k) + "'");
-//                } else if(field.getSqlType().equals(com.fitech.domain.account.SqlType.DATE)) {
-//                	updateValueStr.append("to_date('" + values.get(k) + "','yyyy-mm-dd')");
-//                } else {
-//                    updateValueStr.append(values.get(k));
-//                }
-//                System.out.println(updateValueStr);
-            }
-            insertValueStr.append("SEQ_FITECH.NEXTVAL" + ","+accountId+")");   
-            AccountLine accountline=new AccountLine();
-            accountline.setAccountFields(affs);
-//            if(this.queryDataisExist(accountline,account)){
-//                return -1;
+//    @Override
+//    public List<String> loadDataByTemplate(Long accountId, AccountTemplate accountTemplate, Sheet sheet,Account account) {
+//        List<String> resultList = new ArrayList<>();
+//
+//    	String tableName = accountTemplate.getTableName();
+//        //获取EXCEL表头
+//        List<String> columnHeaderlist = ExcelUtil.getColumnHeader(sheet);
+//        //获取EXCEL数据列
+//        List<List<String>> datas = ExcelUtil.getDatas(sheet,2);
+//        Integer size = datas.size();
+//        //构建主键MAP
+//        HashMap<String, Object> pkMap = this.generatePKMap(columnHeaderlist, accountTemplate);
+//
+//        StringBuilder insertField = new StringBuilder(500);
+//        //组装批量导入SQL
+//        Collection<AccountField> itemsf = accountTemplate.getAccountFields();
+//        Collection<AccountField> items=new ArrayList<AccountField>();
+//        insertField.append("insert into " + tableName + " ( ");
+//        for (int i = 0; i < columnHeaderlist.size(); i++) {
+//            insertField.append(columnHeaderlist.get(i).trim());
+//            insertField.append(",");
+//            for(AccountField a:itemsf){
+//            	if(a.getItemCode().equals(columnHeaderlist.get(i).trim())){
+//            		items.add(a);
+//            	}
 //            }
+//        }
+//        //检验主键是否存在
+////        Collection<AccountField> affs=new ArrayList<AccountField>();
+//        
+//        insertField.append("ID, ");
+//        insertField.append("REPORTID");
+//        insertField.append(") values (");
+//        // 拼接批量导入SQL
+//        for (int i = 0; i < columnHeaderlist.size(); i++) {
+//            insertField.append(":"+columnHeaderlist.get(i).trim());
+//            insertField.append(",");
+//        }
+//        insertField.append("SEQ_FITECH.NEXTVAL" + ","+accountId+")");
+//        System.out.println("insert:sql="+insertField);
+//        
+//
+//        //集合存放复合主键的值，用于对比是否有重复数据
+//        List<String> pkValueStr = new ArrayList<>();
+//        //通过主键判断数据是否有重复（联合主键）
+//        for( int i = 0; i < datas.size(); i++ ){
+//            //存放主键的在columnHeaderlist中的index
+//            List<Integer> listFlag = new ArrayList<>();
+//            Iterator pkIterator = pkMap.keySet().iterator();
+//            if( pkIterator.hasNext() ){
+//                String pk = (String)pkIterator.next();
+//                //如果columnHeaderlist中有主键，记录其位置
+//                Integer index = columnHeaderlist.indexOf( pk );
+//                if(columnHeaderlist.indexOf( pk ) != -1){
+//                    listFlag.add( index );
+//                }
+//            }
+//            //取出一行值
+//            List<String> values = datas.get(i);
+//            //拼接每条数据的复合主键
+//            String str = "";
+//            for(int j=0;j<listFlag.size();j++){
+//                str += values.get(listFlag.get(j));
+//            }
+//            //判断该复合主键是否存在，不存在加入pkValueStr，存在就返回提示
+//            if(StringUtil.isNotEmpty(str) && pkValueStr.contains(str)){
+//                //失败返回重复数据的行号
+////                resultList.add("false");
+////                resultList.add(String.valueOf(i+1+2));
+////                return resultList;
+//            }else{
+//                pkValueStr.add(str);
+//            }
+//        }
+//        // 所有该台账所有补录数据
+//        String deleteSql = "delete from "+tableName;
+//        this.getNamedParameterJdbcTemplate().update(deleteSql,new HashMap<String, String>());
+//        
+//        
+//        List<Map<String,Object>> dataMap = new ArrayList<Map<String,Object>>();
+//        
+//        
+//        //递归数据行
+//        for (int i = 0; i < datas.size(); i++) {
+////            StringBuilder insertValueStr = new StringBuilder(500);
+//            Map<String,Object> params = new HashMap<>();
+//            //待录入值
+//            List<String> values = datas.get(i);
+//            for (int k = 0; k < values.size(); k++) {
+//                AccountField field = null;
+//                try{
+//                	field = (AccountField) items.toArray()[k];
+//            	}catch(IndexOutOfBoundsException e){
+//            		throw new AppException(ExceptionCode.SYSTEM_ERROR, "请确认导入模板是否正确！字典项字段功能暂未完善，请确认是否导入字典项内容");
+//            	}
+//                
+//                if (pkMap.containsKey(field.getItemCode())) {
+//                    pkMap.put(field.getItemCode(), values.get(k));
+//                }
+//                if (values.get(k) != null) {
+//                	String tempValue = values.get(k);
+//                	if(StringUtil.isNotEmpty(field.getDicId()) && tempValue.indexOf("-") >-1 ){
+//                		if(tempValue.indexOf("-")+1 < tempValue.length()){
+//                			tempValue = tempValue.substring(tempValue.indexOf("-")+1, tempValue.length());
+//                		}else{
+//                			tempValue = "";
+//                		}
+//                	}
+//                	
+//                    if (field.getSqlType().equals(SqlTypeEnum.VARCHAR)) {
+////                        insertValueStr.append("'" + tempValue + "'");
+//                        params.put(field.getItemCode(), tempValue);
+//                        field.setValue(tempValue);
+//                    } else if(field.getSqlType().equals(SqlTypeEnum.DATE)) {
+//                    	if("".equals(tempValue)){
+////                    		insertValueStr.append("NULL");
+//                    		params.put(field.getItemCode(), null);
+//                    		field.setValue(tempValue);
+//                    	}else{
+////                    		insertValueStr.append("to_date('" + tempValue + "','yyyy-mm-dd')");
+//                    		params.put(field.getItemCode(), "to_date('" + tempValue + "','yyyy-mm-dd')");
+//                        	field.setValue(tempValue);
+//                    	}	
+//                    }else if(field.getSqlType().equals(SqlTypeEnum.INTEGER)||
+//                    		field.getSqlType().equals(SqlTypeEnum.DECIMAL)||
+//                    		field.getSqlType().equals(SqlTypeEnum.DOUBLE)||
+//                    		field.getSqlType().equals(SqlTypeEnum.INT)||
+//                    		field.getSqlType().equals(SqlTypeEnum.BIGINT)) {
+//                    	if("".equals(tempValue)){
+////                    		insertValueStr.append("NULL");
+//                    		params.put(field.getItemCode(), null);
+//                    		field.setValue(tempValue);
+//                    	}else{
+////                    		insertValueStr.append(tempValue);
+//                    		params.put(field.getItemCode(), tempValue);
+//                        	field.setValue(tempValue);
+//                    	}	
+//                    }else{
+////                    	insertValueStr.append(tempValue);
+//                    	params.put(field.getItemCode(), tempValue);
+//                    	field.setValue(tempValue);
+//                    }
+//                } else {
+////                    insertValueStr.append("NULL");
+//                    params.put(field.getItemCode(), null);
+//                }
+////                insertValueStr.append(",");
+////                affs.add(field);
+//
+//            }
+//            dataMap.add(params);
+////            insertValueStr.append("SEQ_FITECH.NEXTVAL" + ","+accountId+")");   
+////            AccountLine accountline=new AccountLine(); 
+////            accountline.setAccountFields(affs);
+////            if(this.queryDataisExist(accountline,account)){
+////                return -1;
+////            }
+//
+////            String insertsql =  insertField.toString() + insertValueStr.toString();
+////            System.out.println("insert:sql="+insertsql);
+//
+////            this.getNamedParameterJdbcTemplate().update(insertsql, new HashMap<String, String>());
+//        }
+//        
+//        
+//        //成功返回加载条数
+//        resultList.add("true");
+//        resultList.add(String.valueOf(size));
+//        return resultList;
+//    }
 
-            String insertsql =  insertField.toString() + insertValueStr.toString();
-            System.out.println("insert:sql="+insertsql);
 
-            this.getNamedParameterJdbcTemplate().update(insertsql, new HashMap<String, String>());
-        }
-        //成功返回加载条数
-        resultList.add("true");
-        resultList.add(String.valueOf(size));
-        return resultList;
-    }
-
-
-    /**
-     * 构建主键MAP
-     * @param columnHeaderlist
-     * @return
-     */
-    private HashMap<String, Object> generatePKMap(List<String> columnHeaderlist,AccountTemplate accountTemplate) {
-        HashMap<String, Object> keys  = new LinkedHashMap<>();
-
-        for (int i = 0; i < columnHeaderlist.size(); i++) {
-            Collection<AccountField> items = accountTemplate.getAccountFields();
-            AccountField field = (AccountField) items.toArray()[0];
-            if (field.isPkable()){
-                keys.put(field.getItemCode(),null);
-            }
-        }
-        return keys;
-    }
+    
 
     @Override
     public void insertData(AccountLine accountLine, Account account) {
