@@ -272,6 +272,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                 }
             }
             Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
+            
             //将collection中的数据放置到新建的list中
             List<AccountField> list = new ArrayList<>();
             for (AccountField field : accountField) {
