@@ -1,6 +1,7 @@
 package com.fitech.account.service.impl;
 
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,18 +21,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fitech.account.dao.AccountBaseDao;
 import com.fitech.account.dao.AccountDataDao;
 import com.fitech.account.dao.AccountDatasDao;
-import com.fitech.account.dao.AccountProcessDao;
-import com.fitech.account.repository.AccountEditLogItemRepository;
-import com.fitech.account.repository.AccountEditLogRepository;
-import com.fitech.account.repository.AccountProcessRepository;
 import com.fitech.account.repository.AccountRepository;
-import com.fitech.account.repository.AccountTemplateRepository;
 import com.fitech.account.repository.DictionaryItemRepository;
 import com.fitech.account.service.AccountEditLogService;
-import com.fitech.account.service.AccountFieldService;
 import com.fitech.account.service.AccountService;
 import com.fitech.account.util.ExcelUtils;
 import com.fitech.constant.ExceptionCode;
@@ -54,7 +48,6 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
-import com.fitech.framework.security.util.TokenUtils;
 import com.fitech.system.repository.RoleRepository;
 import com.fitech.system.repository.UserRepository;
 import com.fitech.system.service.FieldPermissionService;
@@ -392,6 +385,63 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
     
     @Override
     @Transactional
+    public List<String> batchUpdateAccounData(AccountProcessVo accountProcessVo) {
+        String taskid = accountProcessVo.getTaskId();
+        List<String> data = new ArrayList<>();
+        try {
+            // 根据id找到数据库中account
+            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
+            Collection<AccountField> accountFieldList = accountProcessVo.getAccount().getAccountLines().get(0)
+                    .getAccountFields();
+            // 业务条线：表名
+            String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem().getSubKey()
+                    + ":" + account.getAccountTemplate().getTableName();
+            Map<String, Object> map = new HashedMap();
+            for (AccountField accountField : accountFieldList) {
+                map.put(accountField.getItemCode(), accountField.getValue());
+            }
+            Collection<ObjectValidateRule> rules = objectValidateRuleService.findByObjectID(validateTableName);
+            List<String> list = validateAnalyzeResultService.excuteFormuForOne(rules, map);
+            for (String s : list) {
+                String[] str = s.split(":");
+                if ("true".equals(str[2])) {
+                    data.add(s);// 字段存在校验问题
+                }
+            }
+            if (data.size() == 0) {
+                List<Long> lineIds = new ArrayList<>();
+                // 分割前台传来数据的id
+                String[] taskids = taskid.split(",");
+                for (int i = 0; i < taskids.length; i++) {
+                    lineIds.add(Long.parseLong(taskids[i]));
+                }
+
+                if (taskid != null && !("".equals(taskid))) {
+                    AccountLine accountLine = new AccountLine();
+                    accountLine.setAccountFields(accountFieldList);
+                    accountDataDao.batchUpdateData(accountLine, account, lineIds);
+                    for (Long id : lineIds) {
+                        AccountEditLog accountEditLog = new AccountEditLog();
+                        accountEditLog.setAccountEditType(AccountEditEnum.UPDATE);
+                        accountEditLog.setLogSource(LogSourceEnum.ONLINE);
+                        accountEditLog.setEditLineNum(1);
+                        accountEditLog = accountEditLogService.saveAccoutnEditLog(account, accountProcessVo.getUserId(),
+                                accountEditLog);
+                        accountEditLogService.saveAccoutnEditLogItem(accountEditLog, accountLine.getAccountFields(),
+                                account);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+        }
+
+        return data;
+    }
+    
+    @Override
+    @Transactional
     public GenericResult<Boolean> deleteAccountData(AccountProcessVo accountProcessVo) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
@@ -619,33 +669,6 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             if (accountProcessVo.getAccount().getId() == null) {
                 return "falsetwo";
             }
-//            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
-//
-//            // 获取模板id
-//            Account accountt = accountRepository.findById(accountProcessVo.getAccount().getId());
-//            // 根据userid获取该用户的角色集合
-//            Collection<Role> c = userRepository.findById(accountProcessVo.getUserId()).getRoles();
-//            // 该报文已经配置的字段权限
-//            Collection<FieldPermission> rrfps = new ArrayList<FieldPermission>();
-//            // 迭代该用户的角色集合
-//            Iterator<Role> it = c.iterator();
-//            while (it.hasNext()) {
-//                Role role = it.next();
-//                Role r = roleRepository.findById(role.getId());
-//                Collection<FieldPermission> rfps = r.getFieldPermission();
-//                // 迭代字段权限集合
-//                Iterator<FieldPermission> its = rfps.iterator();
-//                while (its.hasNext()) {
-//                    FieldPermission fp = its.next();
-//                    // 如果字段权限的模板id是该模板id则将该模板权限添加到已配置的字段权限集合中
-//                    if (r.getSubSystem().getSubKey().equals("sjbl")) {
-//                        if (fp.getReportTemplate().getId().equals(accountt.getAccountTemplate().getId())) {
-//                            rrfps.add(fp);
-//                        }
-//                    }
-//                }
-//            }
-            
             // 补录台账信息
             Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
             // 该报文已经配置的字段权限
@@ -700,6 +723,15 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             ac.setAccountTemplate(account.getAccountTemplate());
             //accountLines是查询出来的数据
             List<AccountLine> accountLines = accountDataDao.downLoadDataByCondition(accountProcessVo);
+            for (AccountLine accountLine : accountLines) {
+                Collection<AccountField> accountFields = accountLine.getAccountFields();
+                for (AccountField field : accountFields) {
+                    if (field.getItemType() != null && field.getItemType().equals("DATE")){
+                        field.setValue(new SimpleDateFormat("yyyy-MM-dd").format(field.getValue()));
+                    }
+                }
+            }
+            
             //accountFields是用户可以查看的字段
             List<AccountField> accountFields = new ArrayList<>();
             for (AccountField accountFieldnew : account.getAccountTemplate().getAccountFields()) {
@@ -769,62 +801,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 //        return result;
 //    }
 
-    @Override
-    @Transactional
-    public List<String> batchUpdateAccounData(AccountProcessVo accountProcessVo) {
-        String taskid = accountProcessVo.getTaskId();
-        List<String> data = new ArrayList<>();
-        try {
-            // 根据id找到数据库中account
-            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
-            Collection<AccountField> accountFieldList = accountProcessVo.getAccount().getAccountLines().get(0)
-                    .getAccountFields();
-            // 业务条线：表名
-            String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem().getSubKey()
-                    + ":" + account.getAccountTemplate().getTableName();
-            Map<String, Object> map = new HashedMap();
-            for (AccountField accountField : accountFieldList) {
-                map.put(accountField.getItemCode(), accountField.getValue());
-            }
-            Collection<ObjectValidateRule> rules = objectValidateRuleService.findByObjectID(validateTableName);
-            List<String> list = validateAnalyzeResultService.excuteFormuForOne(rules, map);
-            for (String s : list) {
-                String[] str = s.split(":");
-                if ("true".equals(str[2])) {
-                    data.add(s);// 字段存在校验问题
-                }
-            }
-            if (data.size() == 0) {
-                List<Long> lineIds = new ArrayList<>();
-                // 分割前台传来数据的id
-                String[] taskids = taskid.split(",");
-                for (int i = 0; i < taskids.length; i++) {
-                    lineIds.add(Long.parseLong(taskids[i]));
-                }
-
-                if (taskid != null && !("".equals(taskid))) {
-                    AccountLine accountLine = new AccountLine();
-                    accountLine.setAccountFields(accountFieldList);
-                    accountDataDao.batchUpdateData(accountLine, account, lineIds);
-                    for (Long id : lineIds) {
-                        AccountEditLog accountEditLog = new AccountEditLog();
-                        accountEditLog.setAccountEditType(AccountEditEnum.UPDATE);
-                        accountEditLog.setLogSource(LogSourceEnum.ONLINE);
-                        accountEditLog.setEditLineNum(1);
-                        accountEditLog = accountEditLogService.saveAccoutnEditLog(account, accountProcessVo.getUserId(),
-                                accountEditLog);
-                        accountEditLogService.saveAccoutnEditLogItem(accountEditLog, accountLine.getAccountFields(),
-                                account);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-        }
-
-        return data;
-    }
+   
 	
     @Override
     public GenericResult<Object> validateAll(AccountProcessVo accountProcessVo) {
