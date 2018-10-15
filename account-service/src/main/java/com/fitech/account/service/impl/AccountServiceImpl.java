@@ -1,6 +1,7 @@
 package com.fitech.account.service.impl;
 
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -324,6 +325,14 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             ac.setAccountTemplate(account.getAccountTemplate());
             //accountLines是查询出来的数据
             List<AccountLine> accountLines = accountDataDao.downLoadDataByCondition(accountProcessVo);
+            for (AccountLine accountLine : accountLines) {
+                Collection<AccountField> accountFields = accountLine.getAccountFields();
+                for (AccountField field : accountFields) {
+                    if (field.getItemType() != null && field.getItemType().equals("DATE")){
+                        field.setValue(new SimpleDateFormat("yyyy-MM-dd").format(field.getValue()));
+                    }
+                }
+            }
             //accountFields是用户可以查看的字段
             List<AccountField> accountFields = new ArrayList<>();
             for (AccountField accountFieldnew : account.getAccountTemplate().getAccountFields()) {
