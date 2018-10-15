@@ -25,8 +25,6 @@ public class AccountTemplateController {
     @Autowired
     private AccountTemplateService accountTemplateService;
 
-    
-
     /**
      * 获取制度下所有补录模板
      * @param id
