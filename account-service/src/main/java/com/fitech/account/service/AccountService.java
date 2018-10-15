@@ -28,6 +28,13 @@ public interface AccountService {
     public AccountLine findAccountDatas(Long userId, Long accountId,Long lineId);
     
     /**
+     * 台账数据查询  ,无权限的字段查询(hx)
+     * @param accountProcessVo
+     * @return
+     */
+    public AccountProcessVo findAccountDatatwo(AccountProcessVo accountProcessVo);
+    
+    /**
      * 新增台账数据
      * @param accountProcessVo
      * @return
@@ -42,18 +49,39 @@ public interface AccountService {
     public List<String> modifyAccountData(AccountProcessVo accountProcessVo);
     
     /**
-     * 下载数据
+     * 删除单条台账数据
      * @param accountProcessVo
      * @return
      */
-    public String downLoadPageAccounData(AccountProcessVo accountProcessVo);
+    public GenericResult<Boolean> deleteAccountData(AccountProcessVo accountProcessVo);
 
     /**
-     * 支持高级搜索分页查询台账数据,无权限(hx)
+     * 生成台账模板
+     * @param accountId
+     * @param userId
+     * @return
+     */
+   public String generateAccountTemplate(Long accountId,Long userId);
+   
+   /**
+    * 批量导入台账数据
+    * @param inputStream
+    * @param fileName
+    * @param accountId
+    * @return
+    */
+   public GenericResult<Boolean> loadDataByTemplate(InputStream inputStream, String fileName, Long accountId,Long userId,String operateFieldStr);
+   
+    
+    /**
+     * 下载台账数据 
      * @param accountProcessVo
      * @return
      */
-    public GenericResult<AccountProcessVo> findPageAccounDatatwo(AccountProcessVo accountProcessVo);
+    public String downLoadAccounData(AccountProcessVo accountProcessVo);
+
+    
+    
     
     /**
      * 批量补录台账数据
@@ -62,30 +90,12 @@ public interface AccountService {
      */
     public List<String> batchUpdateAccounData(AccountProcessVo accountProcessVo);
 
-    /**
-     * 初始化单张台账表格列
-     * @param accountProcessVo
-     * @return
-     */
-    public GenericResult<AccountProcessVo> initAccountTable(AccountProcessVo accountProcessVo);
-
-    /**
-     *
-     * 生成台账模板
-     * @param accountId
-     * @return
-     */
-    public String generateAccountTemplate(Long accountId,Long userId);
-
-
-    
-
-    /**
-     * 删除单条台账数据
-     * @param accountProcessVo
-     * @return
-     */
-    public GenericResult<Boolean> deleteAccountDataById(AccountProcessVo accountProcessVo);
+//    /**
+//     * 初始化单张台账表格列
+//     * @param accountProcessVo
+//     * @return
+//     */
+//    public GenericResult<AccountProcessVo> initAccountTable(AccountProcessVo accountProcessVo);
 
     /**
      * 查询单条台账数据
@@ -93,29 +103,6 @@ public interface AccountService {
      * @return
      */
     public AccountLine findAccountDataById(AccountProcessVo accountProcessVo);
-
-    /**
-     * 批量导入台账数据
-     * @param inputStream
-     * @param fileName
-     * @param accountId
-     * @return
-     */
-    public GenericResult<Boolean> loadDataByTemplate(InputStream inputStream, String fileName, Long accountId,Long userId,String operateFieldStr);
-    
-//    /**
-//     * 根据角色ID获取角色信息
-//     * @param role
-//     * @return Role
-//     */
-//    public Collection<FieldPermission> findById(Long userId, Long id);
-    
-    /**
-     * 获取模板id
-     * @param Account
-     * @return
-     */
-    public Long findByAccountTemplateId(Long accountId);
 
     /**
      * 全表校验

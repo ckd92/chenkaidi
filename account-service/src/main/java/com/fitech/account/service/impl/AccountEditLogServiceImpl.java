@@ -36,7 +36,7 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.util.DateUtils;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
-import com.fitech.system.repository.UserRepository;
+import com.fitech.system.dao.UserDataDao;
 
 /**
  * Created by wangxw on 2017/8/24.
@@ -44,19 +44,15 @@ import com.fitech.system.repository.UserRepository;
 @Service
 @ServiceTrace
 public class AccountEditLogServiceImpl implements AccountEditLogService {
-
+	@Autowired
+	private EntityManagerFactory entityManagerFactory;
+	
     @Autowired
     private AccountEditLogRepository accountEditLogRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
     @Autowired
     private AccountEditLogItemRepository accountEditLogItemRepository;
-
     @Autowired
-    private EntityManagerFactory entityManagerFactory;
-
+    private UserDataDao userDataDao;
 
     @Override
     public AccountEditLog saveAccoutnEditLog(Account account, Long userId, AccountEditLog ae) {
@@ -69,7 +65,7 @@ public class AccountEditLogServiceImpl implements AccountEditLogService {
         accountEditLog.setEditLineNum(ae.getEditLineNum());
         accountEditLog.setEditTime(new Date());
 
-        User user = this.userRepository.findById(userId);
+        User user = userDataDao.findUserById(userId);
 
         accountEditLog.setEditUser(user.getLoginId());
         accountEditLog.setInstitutionId(account.getInstitution().getInstitutionId());

@@ -77,22 +77,10 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
-    private AccountProcessRepository accountProcessRepository;
-    @Autowired
-    private AccountTemplateRepository accountTemplateRepository;
-    @Autowired
-    private AccountEditLogRepository accountEditLogRepository;
-    @Autowired
-    private AccountEditLogItemRepository accountEditLogItemRepository;
-    @Autowired
     private RoleRepository<Role> roleRepository;
     @Autowired
     private UserRepository<User> userRepository;
-
-    @Autowired
-    private AccountProcessDao accountProcessDao;
-    @Autowired
-    private AccountBaseDao accountBaseDao;
+    
     @Autowired
     private AccountDataDao accountDataDao;
     @Autowired
@@ -100,8 +88,6 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 
     @Autowired
     private AccountEditLogService accountEditLogService;
-    @Autowired
-    private AccountFieldService accountFieldService;
     @Autowired
     private ObjectValidateRuleService objectValidateRuleService;
     @Autowired
@@ -259,6 +245,26 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 	}
     
     @Override
+    public AccountProcessVo findAccountDatatwo(AccountProcessVo accountProcessVo) {
+        try {
+            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
+
+            Account ac = accountProcessVo.getAccount();
+            ac.setAccountTemplate(account.getAccountTemplate());
+
+            Page<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo);
+            account.setAccountLine(accountLines);
+
+            accountProcessVo.setAccount(account);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+        }
+
+        return accountProcessVo;
+    }
+    
+    @Override
     public List<String> addAccountData(AccountProcessVo accountProcessVo) {
         List<String> data = new ArrayList<>();
         try {
@@ -383,197 +389,43 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
         }
         return data;
     }
-
-    //下载数据
+    
     @Override
-    public String downLoadPageAccounData(AccountProcessVo accountProcessVo) {
+    @Transactional
+    public GenericResult<Boolean> deleteAccountData(AccountProcessVo accountProcessVo) {
+        GenericResult<Boolean> result = new GenericResult<>();
         try {
-            if (accountProcessVo == null || accountProcessVo.getAccount() == null) {
-                return "falseone";
+            if (accountProcessVo == null || accountProcessVo.getAccount() == null
+                    || accountProcessVo.getAccount().getId() == null) {
+                result.setSuccess(false);
+                result.setMessage("queryAccountData param is null!");
+                return result;
             }
-            if (accountProcessVo.getAccount().getId() == null) {
-                return "falsetwo";
-            }
+
             Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
 
-            // 获取模板id
-            Account accountt = accountRepository.findById(accountProcessVo.getAccount().getId());
-            // 根据userid获取该用户的角色集合
-            Collection<Role> c = userRepository.findById(accountProcessVo.getUserId()).getRoles();
-            // 该报文已经配置的字段权限
-            Collection<FieldPermission> rrfps = new ArrayList<FieldPermission>();
-            // 迭代该用户的角色集合
-            Iterator<Role> it = c.iterator();
-            while (it.hasNext()) {
-                Role role = it.next();
-                Role r = roleRepository.findById(role.getId());
-                Collection<FieldPermission> rfps = r.getFieldPermission();
-                // 迭代字段权限集合
-                Iterator<FieldPermission> its = rfps.iterator();
-                while (its.hasNext()) {
-                    FieldPermission fp = its.next();
-                    // 如果字段权限的模板id是该模板id则将该模板权限添加到已配置的字段权限集合中
-                    if (r.getSubSystem().getSubKey().equals("sjbl")) {
-                        if (fp.getReportTemplate().getId().equals(accountt.getAccountTemplate().getId())) {
-                            rrfps.add(fp);
-                        }
-                    }
-                }
-            }
-            Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
-            
-            //将collection中的数据放置到新建的list中
-            List<AccountField> list = new ArrayList<>();
-            for (AccountField field : accountField) {
-                list.add(field);
-            }
-            //根据accountFiled的orderNumber字段进行冒泡排序
-            for (int i = 0; i < list.size(); i++) {
-                for (int j = 0; j < list.size() - 1 - i; j++) {
-                    int orderNumber1 = list.get(j).getOrderNumber();
-                    int orderNumber2 = list.get(j + 1).getOrderNumber();
-                    if (orderNumber1 > orderNumber2) {
-                        //互换位置
-                        AccountField accountF = list.get(j);
-                        list.set(j, list.get(j + 1));
-                        list.set(j + 1, accountF);
-                    }
-                }
-            }
-            accountField.clear();
-            for (AccountField field : list) {
-                accountField.add(field);
-            }
-            Iterator<AccountField> itaf = accountField.iterator();
-            while (itaf.hasNext()) {
-                AccountField af = itaf.next();
-                if (af.getItemType().equals("CODELIB")) {
-                    af.setDictionaryItems(dictionaryItemRepository.findByDictionaryId(Long.valueOf(af.getDicId())));
-                }
-                Iterator<FieldPermission> itfp = rrfps.iterator();
-                String allfp = "";
-                while (itfp.hasNext()) {
-                    FieldPermission fp = itfp.next();
-                    if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId())) {
-                        allfp += fp.getOperationType().toString();
-                        allfp += ",";
-                    }
-                }
-                if (!allfp.equals("")) {
-                    allfp = allfp.substring(0, allfp.lastIndexOf(","));
-                }
-                af.setFieldPermission(allfp);
-            }
-
-            Account ac = accountProcessVo.getAccount();
-
-            ac.setAccountTemplate(account.getAccountTemplate());
-            //accountLines是查询出来的数据
-            List<AccountLine> accountLines = accountDataDao.downLoadDataByCondition(accountProcessVo);
-            //accountFields是用户可以查看的字段
-            List<AccountField> accountFields = new ArrayList<>();
-            for (AccountField accountFieldnew : account.getAccountTemplate().getAccountFields()) {
-                //fieldPermission沒有OPERATE，则有操作权限
-                if (accountFieldnew.getFieldPermission().indexOf("OPERATE") == -1) {
-                    accountFields.add(accountFieldnew);
-                }
-            }
-            String sheetName = "BuLuData-";
-//        	UUID uuid = UUID.randomUUID();
-            long time = new Date().getTime();
-            sheetName += String.valueOf(time);
-            List<List<String>> hList = new ArrayList<>();
-            List<String> lineFirst = new ArrayList<>();
-            for (AccountField accountFieldnew : accountFields) {
-                lineFirst.add(accountFieldnew.getItemName());
-            }
-            hList.add(lineFirst);
-            for (AccountLine accline : accountLines) {
-                List<String> lineone = new ArrayList<>();
-                for (AccountField accf : accline.getAccountFields()) {
-                    for (AccountField accountFieldnew : accountFields) {
-                        if (accountFieldnew.getItemCode().equals(accf.getItemCode())) {
-                            if (accf.getValue() == null) {
-                                lineone.add("");
-                            } else {
-                                lineone.add(String.valueOf(accf.getValue()));
-                            }
-                        }
-                    }
-                }
-                hList.add(lineone);
-            }
-            Boolean flag = true;
-            String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("template_path"), sheetName);
-            return result;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-        }
-    }
-
-    // 数据查询中查询数据，无权限(hx)
-    @Override
-    public GenericResult<AccountProcessVo> findPageAccounDatatwo(AccountProcessVo accountProcessVo) {
-        GenericResult<AccountProcessVo> result = new GenericResult<>();
-        try {
-            if (accountProcessVo == null || accountProcessVo.getAccount() == null) {
+            if (account == null) {
                 result.setSuccess(false);
-                result.setMessage("account param is null !");
+                result.setMessage("queryAccountData account ID not exist!");
                 return result;
             }
-            if (accountProcessVo.getAccount().getId() == null) {
+            List<AccountLine> accountLines = accountProcessVo.getAccount().getAccountLines();
+
+            AccountLine accountLine = accountLines.get(0);
+
+            if (accountLine.getId() == null) {
                 result.setSuccess(false);
-                result.setMessage("account id is null !");
+                result.setMessage("queryAccountData line ID is null!");
                 return result;
             }
-            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
-
-            Account ac = accountProcessVo.getAccount();
-
-            ac.setAccountTemplate(account.getAccountTemplate());
-
-            Page<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo);
-
-            account.setAccountLine(accountLines);
-
-            accountProcessVo.setAccount(account);
-
-            result.setData(accountProcessVo);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-        }
-
-        return result;
-    }
-
-    @Override
-    public GenericResult<AccountProcessVo> initAccountTable(AccountProcessVo accountProcessVo) {
-        GenericResult<AccountProcessVo> result = new GenericResult<>();
-        try {
-            if (accountProcessVo == null || accountProcessVo.getAccount() == null) {
-                result.setSuccess(false);
-                result.setMessage("account param is null !");
-                return result;
-            }
-            if (accountProcessVo.getAccount().getId() == null) {
-                result.setSuccess(false);
-                result.setMessage("account id is null !");
-                return result;
-            }
-            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
-
-            accountProcessVo.setAccount(account);
-
-            result.setData(accountProcessVo);
+            accountDataDao.deleteData(accountLine, account);
         } catch (Exception e) {
             e.printStackTrace();
             throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
         }
         return result;
     }
-
+    
     @Override
     public String generateAccountTemplate(Long accountId, Long userId) {
         if (null != accountId) {
@@ -585,7 +437,6 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             Iterator<Role> it = c.iterator();
             while (it.hasNext()) {
                 Role role = it.next();
-                //Role r = roleRepository.findById(role.getId());
                 Collection<FieldPermission> rfps = role.getFieldPermission();
                 // 迭代字段权限集合
                 Iterator<FieldPermission> its = rfps.iterator();
@@ -677,7 +528,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
         }
         return null;
     }
-
+    
     @Override
     public GenericResult<Boolean> loadDataByTemplate(InputStream inputStream, String fileName, Long accountId,
                                                      Long userId, String operateFieldStr) {
@@ -758,8 +609,223 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
         }
         return result;
     }
- 
 
+    @Override
+    public String downLoadAccounData(AccountProcessVo accountProcessVo) {
+        try {
+            if (accountProcessVo == null || accountProcessVo.getAccount() == null) {
+                return "falseone";
+            }
+            if (accountProcessVo.getAccount().getId() == null) {
+                return "falsetwo";
+            }
+//            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
+//
+//            // 获取模板id
+//            Account accountt = accountRepository.findById(accountProcessVo.getAccount().getId());
+//            // 根据userid获取该用户的角色集合
+//            Collection<Role> c = userRepository.findById(accountProcessVo.getUserId()).getRoles();
+//            // 该报文已经配置的字段权限
+//            Collection<FieldPermission> rrfps = new ArrayList<FieldPermission>();
+//            // 迭代该用户的角色集合
+//            Iterator<Role> it = c.iterator();
+//            while (it.hasNext()) {
+//                Role role = it.next();
+//                Role r = roleRepository.findById(role.getId());
+//                Collection<FieldPermission> rfps = r.getFieldPermission();
+//                // 迭代字段权限集合
+//                Iterator<FieldPermission> its = rfps.iterator();
+//                while (its.hasNext()) {
+//                    FieldPermission fp = its.next();
+//                    // 如果字段权限的模板id是该模板id则将该模板权限添加到已配置的字段权限集合中
+//                    if (r.getSubSystem().getSubKey().equals("sjbl")) {
+//                        if (fp.getReportTemplate().getId().equals(accountt.getAccountTemplate().getId())) {
+//                            rrfps.add(fp);
+//                        }
+//                    }
+//                }
+//            }
+            
+            // 补录台账信息
+            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
+            // 该报文已经配置的字段权限
+            Collection<FieldPermission> rrfps = fieldPermissionService.findByUserAndTemplate(accountProcessVo.getUserId(), account.getAccountTemplate());
+            
+            Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
+            //将collection中的数据放置到新建的list中
+            List<AccountField> list = new ArrayList<>();
+            for (AccountField field : accountField) {
+                list.add(field);
+            }
+            //根据accountFiled的orderNumber字段进行冒泡排序
+            for (int i = 0; i < list.size(); i++) {
+                for (int j = 0; j < list.size() - 1 - i; j++) {
+                    int orderNumber1 = list.get(j).getOrderNumber();
+                    int orderNumber2 = list.get(j + 1).getOrderNumber();
+                    if (orderNumber1 > orderNumber2) {
+                        //互换位置
+                        AccountField accountF = list.get(j);
+                        list.set(j, list.get(j + 1));
+                        list.set(j + 1, accountF);
+                    }
+                }
+            }
+            accountField.clear();
+            for (AccountField field : list) {
+                accountField.add(field);
+            }
+            Iterator<AccountField> itaf = accountField.iterator();
+            while (itaf.hasNext()) {
+                AccountField af = itaf.next();
+                if (af.getItemType().equals("CODELIB")) {
+                    af.setDictionaryItems(dictionaryItemRepository.findByDictionaryId(Long.valueOf(af.getDicId())));
+                }
+                Iterator<FieldPermission> itfp = rrfps.iterator();
+                String allfp = "";
+                while (itfp.hasNext()) {
+                    FieldPermission fp = itfp.next();
+                    if (af.isPkable() == false && af.getId().equals(fp.getAccountField().getId())) {
+                        allfp += fp.getOperationType().toString();
+                        allfp += ",";
+                    }
+                }
+                if (!allfp.equals("")) {
+                    allfp = allfp.substring(0, allfp.lastIndexOf(","));
+                }
+                af.setFieldPermission(allfp);
+            }
+
+            Account ac = accountProcessVo.getAccount();
+
+            ac.setAccountTemplate(account.getAccountTemplate());
+            //accountLines是查询出来的数据
+            List<AccountLine> accountLines = accountDataDao.downLoadDataByCondition(accountProcessVo);
+            //accountFields是用户可以查看的字段
+            List<AccountField> accountFields = new ArrayList<>();
+            for (AccountField accountFieldnew : account.getAccountTemplate().getAccountFields()) {
+                //fieldPermission沒有OPERATE，则有操作权限
+                if (accountFieldnew.getFieldPermission().indexOf("OPERATE") == -1) {
+                    accountFields.add(accountFieldnew);
+                }
+            }
+            String sheetName = "BuLuData-";
+//        	UUID uuid = UUID.randomUUID();
+            long time = new Date().getTime();
+            sheetName += String.valueOf(time);
+            List<List<String>> hList = new ArrayList<>();
+            List<String> lineFirst = new ArrayList<>();
+            for (AccountField accountFieldnew : accountFields) {
+                lineFirst.add(accountFieldnew.getItemName());
+            }
+            hList.add(lineFirst);
+            for (AccountLine accline : accountLines) {
+                List<String> lineone = new ArrayList<>();
+                for (AccountField accf : accline.getAccountFields()) {
+                    for (AccountField accountFieldnew : accountFields) {
+                        if (accountFieldnew.getItemCode().equals(accf.getItemCode())) {
+                            if (accf.getValue() == null) {
+                                lineone.add("");
+                            } else {
+                                lineone.add(String.valueOf(accf.getValue()));
+                            }
+                        }
+                    }
+                }
+                hList.add(lineone);
+            }
+            String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("template_path"), sheetName);
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+        }
+    }
+
+    
+
+//    @Override
+//    public GenericResult<AccountProcessVo> initAccountTable(AccountProcessVo accountProcessVo) {
+//        GenericResult<AccountProcessVo> result = new GenericResult<>();
+//        try {
+//            if (accountProcessVo == null || accountProcessVo.getAccount() == null) {
+//                result.setSuccess(false);
+//                result.setMessage("account param is null !");
+//                return result;
+//            }
+//            if (accountProcessVo.getAccount().getId() == null) {
+//                result.setSuccess(false);
+//                result.setMessage("account id is null !");
+//                return result;
+//            }
+//            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
+//
+//            accountProcessVo.setAccount(account);
+//
+//            result.setData(accountProcessVo);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+//        }
+//        return result;
+//    }
+
+    @Override
+    @Transactional
+    public List<String> batchUpdateAccounData(AccountProcessVo accountProcessVo) {
+        String taskid = accountProcessVo.getTaskId();
+        List<String> data = new ArrayList<>();
+        try {
+            // 根据id找到数据库中account
+            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
+            Collection<AccountField> accountFieldList = accountProcessVo.getAccount().getAccountLines().get(0)
+                    .getAccountFields();
+            // 业务条线：表名
+            String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem().getSubKey()
+                    + ":" + account.getAccountTemplate().getTableName();
+            Map<String, Object> map = new HashedMap();
+            for (AccountField accountField : accountFieldList) {
+                map.put(accountField.getItemCode(), accountField.getValue());
+            }
+            Collection<ObjectValidateRule> rules = objectValidateRuleService.findByObjectID(validateTableName);
+            List<String> list = validateAnalyzeResultService.excuteFormuForOne(rules, map);
+            for (String s : list) {
+                String[] str = s.split(":");
+                if ("true".equals(str[2])) {
+                    data.add(s);// 字段存在校验问题
+                }
+            }
+            if (data.size() == 0) {
+                List<Long> lineIds = new ArrayList<>();
+                // 分割前台传来数据的id
+                String[] taskids = taskid.split(",");
+                for (int i = 0; i < taskids.length; i++) {
+                    lineIds.add(Long.parseLong(taskids[i]));
+                }
+
+                if (taskid != null && !("".equals(taskid))) {
+                    AccountLine accountLine = new AccountLine();
+                    accountLine.setAccountFields(accountFieldList);
+                    accountDataDao.batchUpdateData(accountLine, account, lineIds);
+                    for (Long id : lineIds) {
+                        AccountEditLog accountEditLog = new AccountEditLog();
+                        accountEditLog.setAccountEditType(AccountEditEnum.UPDATE);
+                        accountEditLog.setLogSource(LogSourceEnum.ONLINE);
+                        accountEditLog.setEditLineNum(1);
+                        accountEditLog = accountEditLogService.saveAccoutnEditLog(account, accountProcessVo.getUserId(),
+                                accountEditLog);
+                        accountEditLogService.saveAccoutnEditLogItem(accountEditLog, accountLine.getAccountFields(),
+                                account);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+        }
+
+        return data;
+    }
+	
     @Override
     public GenericResult<Object> validateAll(AccountProcessVo accountProcessVo) {
         GenericResult<Object> result = new GenericResult<>();
@@ -849,12 +915,11 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                     account.setValidateStatus(ValidateStatusEnum.SUCCESS);
                     accountRepository.save(account);
                 }
-
             }
         }
         return result;
     }
-
+    
     @Override
     public AccountLine findAccountDataById(AccountProcessVo accountProcessVo) {
         try {
@@ -870,103 +935,4 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
         }
     }
-
-    @Override
-    @Transactional
-    public GenericResult<Boolean> deleteAccountDataById(AccountProcessVo accountProcessVo) {
-        GenericResult<Boolean> result = new GenericResult<>();
-        try {
-            if (accountProcessVo == null || accountProcessVo.getAccount() == null
-                    || accountProcessVo.getAccount().getId() == null) {
-                result.setSuccess(false);
-                result.setMessage("queryAccountData param is null!");
-                return result;
-            }
-
-            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
-
-            if (account == null) {
-                result.setSuccess(false);
-                result.setMessage("queryAccountData account ID not exist!");
-                return result;
-            }
-            List<AccountLine> accountLines = accountProcessVo.getAccount().getAccountLines();
-
-            AccountLine accountLine = accountLines.get(0);
-
-            if (accountLine.getId() == null) {
-                result.setSuccess(false);
-                result.setMessage("queryAccountData line ID is null!");
-                return result;
-            }
-            accountDataDao.deleteData(accountLine, account);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-        }
-        return result;
-    }
-
-    @Override
-    @Transactional
-    public List<String> batchUpdateAccounData(AccountProcessVo accountProcessVo) {
-        String taskid = accountProcessVo.getTaskId();
-        List<String> data = new ArrayList<>();
-        try {
-            // 根据id找到数据库中account
-            Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
-            Collection<AccountField> accountFieldList = accountProcessVo.getAccount().getAccountLines().get(0)
-                    .getAccountFields();
-            // 业务条线：表名
-            String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem().getSubKey()
-                    + ":" + account.getAccountTemplate().getTableName();
-            Map<String, Object> map = new HashedMap();
-            for (AccountField accountField : accountFieldList) {
-                map.put(accountField.getItemCode(), accountField.getValue());
-            }
-            Collection<ObjectValidateRule> rules = objectValidateRuleService.findByObjectID(validateTableName);
-            List<String> list = validateAnalyzeResultService.excuteFormuForOne(rules, map);
-            for (String s : list) {
-                String[] str = s.split(":");
-                if ("true".equals(str[2])) {
-                    data.add(s);// 字段存在校验问题
-                }
-            }
-            if (data.size() == 0) {
-                List<Long> lineIds = new ArrayList<>();
-                // 分割前台传来数据的id
-                String[] taskids = taskid.split(",");
-                for (int i = 0; i < taskids.length; i++) {
-                    lineIds.add(Long.parseLong(taskids[i]));
-                }
-
-                if (taskid != null && !("".equals(taskid))) {
-                    AccountLine accountLine = new AccountLine();
-                    accountLine.setAccountFields(accountFieldList);
-                    accountDataDao.batchUpdateData(accountLine, account, lineIds);
-                    for (Long id : lineIds) {
-                        AccountEditLog accountEditLog = new AccountEditLog();
-                        accountEditLog.setAccountEditType(AccountEditEnum.UPDATE);
-                        accountEditLog.setLogSource(LogSourceEnum.ONLINE);
-                        accountEditLog.setEditLineNum(1);
-                        accountEditLog = accountEditLogService.saveAccoutnEditLog(account, accountProcessVo.getUserId(),
-                                accountEditLog);
-                        accountEditLogService.saveAccoutnEditLogItem(accountEditLog, accountLine.getAccountFields(),
-                                account);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-        }
-
-        return data;
-    }
-
-    @Override
-    public Long findByAccountTemplateId(Long accountId) {
-        return accountRepository.findById(accountId).getAccountTemplate().getId();
-    }
-	
 }
