@@ -1,14 +1,11 @@
 package com.fitech.account.service;
 
-import com.fitech.domain.account.Account;
+import java.io.InputStream;
+import java.util.List;
+
 import com.fitech.domain.account.AccountLine;
-import com.fitech.domain.system.FieldPermission;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.vo.account.AccountProcessVo;
-
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by wangxw on 2017/8/17.
@@ -20,10 +17,34 @@ public interface AccountService {
      * @param accountProcessVo
      * @return
      */
-    public GenericResult<AccountProcessVo> findPageAccounData(AccountProcessVo accountProcessVo);
+    public GenericResult<AccountProcessVo> findAccounDatas(AccountProcessVo accountProcessVo);
     
     /**
-     下载数据
+     * 获取台账行数据
+     * @param accountId 报文ID
+     * @param lineId	台账行ID
+     * @return
+     */
+    public AccountLine findAccountDatas(Long userId, Long accountId,Long lineId);
+    
+    /**
+     * 新增台账数据
+     * @param accountProcessVo
+     * @return
+     */
+    public List<String> addAccountData(AccountProcessVo accountProcessVo);
+
+    /**
+     * 修改台账数据
+     * @param accountProcessVo
+     * @return
+     */
+    public List<String> modifyAccountData(AccountProcessVo accountProcessVo);
+    
+    /**
+     * 下载数据
+     * @param accountProcessVo
+     * @return
      */
     public String downLoadPageAccounData(AccountProcessVo accountProcessVo);
 
@@ -57,19 +78,7 @@ public interface AccountService {
     public String generateAccountTemplate(Long accountId,Long userId);
 
 
-    /**
-     * 新增台账数据
-     * @param accountProcessVo
-     * @return
-     */
-    public List<String > addAccountData(AccountProcessVo accountProcessVo);
-
-    /**
-     * 修改台账数据
-     * @param accountProcessVo
-     * @return
-     */
-    public List<String> modifyAccountData(AccountProcessVo accountProcessVo);
+    
 
     /**
      * 删除单条台账数据
@@ -83,7 +92,7 @@ public interface AccountService {
      * @param accountProcessVo
      * @return
      */
-    public GenericResult<AccountLine> findAccountDataById(AccountProcessVo accountProcessVo);
+    public AccountLine findAccountDataById(AccountProcessVo accountProcessVo);
 
     /**
      * 批量导入台账数据
@@ -94,12 +103,12 @@ public interface AccountService {
      */
     public GenericResult<Boolean> loadDataByTemplate(InputStream inputStream, String fileName, Long accountId,Long userId,String operateFieldStr);
     
-    /**
-     * 根据角色ID获取角色信息
-     * @param role
-     * @return Role
-     */
-    public Collection<FieldPermission> findById(Long userId, Long id);
+//    /**
+//     * 根据角色ID获取角色信息
+//     * @param role
+//     * @return Role
+//     */
+//    public Collection<FieldPermission> findById(Long userId, Long id);
     
     /**
      * 获取模板id

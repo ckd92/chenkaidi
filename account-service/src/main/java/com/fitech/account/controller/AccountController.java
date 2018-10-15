@@ -11,13 +11,16 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.FileUtil;
 import com.fitech.framework.security.util.TokenUtils;
+import com.fitech.system.service.FieldPermissionService;
 import com.fitech.vo.account.AccountProcessVo;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +37,8 @@ public class AccountController {
     private AccountService accountService;
     @Autowired
     private DictionaryItemService dictionaryItemService;
+    @Autowired
+    private FieldPermissionService fieldPermissionService;
 
     /**
      * 查询台账字段
@@ -55,17 +60,37 @@ public class AccountController {
     }
 
     /**
-     * 高级查询台账数据
+     * 台账代办任务处理  - (数据列权限,列表和新增)
      * @param accountProcessVo
      * @param request
      * @return
      */
     @PostMapping("Account/accountdatas")
-    public GenericResult<AccountProcessVo> findPageAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
+    public GenericResult<AccountProcessVo> findAccountDatas(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
         GenericResult<AccountProcessVo> result=new GenericResult<>();
         try {
         	accountProcessVo.setUserId(TokenUtils.getLoginId(request));
-            result = accountService.findPageAccounData(accountProcessVo);
+            result = accountService.findAccounDatas(accountProcessVo);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setSuccess(false);
+        }finally {
+        }
+        return result;
+    }
+    /**
+     * 台账代办任务处理  - (数据列权限,修改功能)
+     * @param accountId	报文ID
+     * @param id	台账行ID
+     * @param response
+     * @param request
+     * @return
+     */
+    @GetMapping("Account/{accountId}/AccountLine/{id}")
+    public GenericResult<AccountLine> findAccountDatas(@PathVariable Long accountId,@PathVariable Long id, HttpServletResponse response, HttpServletRequest request) {
+        GenericResult<AccountLine> result=new GenericResult<>();
+        try {
+            result.setData(accountService.findAccountDatas(TokenUtils.getLoginId(request), accountId, id));
         }catch (Exception e){
             e.printStackTrace();
             result.setSuccess(false);
@@ -74,6 +99,62 @@ public class AccountController {
         return result;
     }
     
+    /**
+    *
+    * 新增单条明细
+    * @param accountProcessVo
+    * @param request
+    * @return
+    */
+   @PostMapping("Account/accountdata")
+   public GenericResult<Object> addAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
+       GenericResult<Object> result = new GenericResult<>();
+       try {
+           List<String> data = new ArrayList<>();
+           Long userId = TokenUtils.getLoginId(request);
+           accountProcessVo.setUserId(userId);
+           data = accountService.addAccountData(accountProcessVo);//校验结果。如果存在校验不通过的数据，则data不为空，返回校验不通过
+           if (data.size() != 0) {
+           	if("addAccountData pk is exist!".equals(data.get(0))){
+           		result.setMessage("addAccountData pk is exist!");
+           		result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+           	}
+               result.setSuccess(false);
+           }
+           result.setData(data);
+       }catch (Exception e){
+           e.printStackTrace();
+           result.setSuccess(false);
+       }finally {
+       }
+       return result;
+   }
+
+   /**
+    * 修改单条明细
+    * @param accountProcessVo
+    * @param request
+    * @return
+    */
+   @PutMapping("Account/accountdata")
+   public GenericResult<Object> updateAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
+       GenericResult<Object> result = new GenericResult<>();
+       try {
+           List<String> data = new ArrayList<>();
+           Long userId = TokenUtils.getLoginId(request);
+           accountProcessVo.setUserId(userId);
+           data = accountService.modifyAccountData(accountProcessVo); //校验结果。如果存在校验不通过的数据，则data不为空，返回校验不通过
+           if (data.size() != 0) {
+               result.setSuccess(false);
+           }
+           result.setData(data);
+       }catch (Exception e){
+           e.printStackTrace();
+           result.setSuccess(false);
+       }finally {
+       }
+       return result;
+   }
     
     /**
      * 下载台账数据
@@ -148,62 +229,7 @@ public class AccountController {
         return result;
     }
 
-    /**
-     *
-     * 新增单条明细
-     * @param accountProcessVo
-     * @param request
-     * @return
-     */
-    @PostMapping("Account/accountdata")
-    public GenericResult<Object> addAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-        GenericResult<Object> result = new GenericResult<>();
-        try {
-            List<String> data = new ArrayList<>();
-            Long userId = TokenUtils.getLoginId(request);
-            accountProcessVo.setUserId(userId);
-            data = accountService.addAccountData(accountProcessVo);//校验结果。如果存在校验不通过的数据，则data不为空，返回校验不通过
-            if (data.size() != 0) {
-            	if("addAccountData pk is exist!".equals(data.get(0))){
-            		result.setMessage("addAccountData pk is exist!");
-            		result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
-            	}
-                result.setSuccess(false);
-            }
-            result.setData(data);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setSuccess(false);
-        }finally {
-        }
-        return result;
-    }
-
-    /**
-     * 修改单条明细
-     * @param accountProcessVo
-     * @param request
-     * @return
-     */
-    @PutMapping("Account/accountdata")
-    public GenericResult<Object> updateAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-        GenericResult<Object> result = new GenericResult<>();
-        try {
-            List<String> data = new ArrayList<>();
-            Long userId = TokenUtils.getLoginId(request);
-            accountProcessVo.setUserId(userId);
-            data = accountService.modifyAccountData(accountProcessVo); //校验结果。如果存在校验不通过的数据，则data不为空，返回校验不通过
-            if (data.size() != 0) {
-                result.setSuccess(false);
-            }
-            result.setData(data);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setSuccess(false);
-        }finally {
-        }
-        return result;
-    }
+    
 
     /**
      * 全表校验
@@ -268,66 +294,7 @@ public class AccountController {
         return result;
     }
 
-    @GetMapping("Account/{accountId}/AccountLine/{id}")
-    public GenericResult<AccountLine> findAccountById(@PathVariable Long accountId,@PathVariable Long id, HttpServletResponse response, HttpServletRequest request) {
-        GenericResult<AccountLine> result=new GenericResult<>();
-        try {
-            AccountProcessVo accountProcessVo = new AccountProcessVo();
-            Account account = new Account();
-            account.setId(accountId);
-            accountProcessVo.setAccount(account);
-            AccountLine accountLine = new AccountLine();
-            accountLine.setId(id);
-            List<AccountLine> accountLines = new ArrayList<>();
-            accountLines.add(accountLine);
-            account.setAccountLines(accountLines);
-            result = accountService.findAccountDataById(accountProcessVo);
-            
-            Collection<FieldPermission> rrfps = accountService.findById(TokenUtils.getLoginId(request), accountService.findByAccountTemplateId(accountId));
-            
-            Collection<AccountField> accountField = result.getData().getAccountFields();
-			Iterator<AccountField> itaf = accountField.iterator();
-			while (itaf.hasNext()){
-				AccountField af = itaf.next();
-				if(af.getItemType().equals("CODELIB")){
-                	af.setDictionaryItems(dictionaryItemService.findByDictionaryId(Long.valueOf(af.getDicId())));
-                }
-				Iterator<FieldPermission> itfp = rrfps.iterator();
-				String allfp = "";
-				while (itfp.hasNext()){
-					FieldPermission fp = itfp.next();
-					if(af.isPkable() == false && af.getId().equals(fp.getAccountField().getId())){
-						allfp += fp.getOperationType().toString();
-						allfp += ",";
-					}
-				}
-				if(!allfp.equals("")){
-					allfp = allfp.substring(0,allfp.lastIndexOf(","));
-				}
-                //权限转换，实际有的操作权限没有存放数据库，数据库存放的权限实际没有
-                switch (allfp){
-                    case "LOOK":
-                        allfp = "OPERATE";
-                        break;
-                    case "OPERATE":
-                        allfp = "LOOK";
-                        break;
-                    case "":
-                        allfp = "LOOK,OPERATE";
-                        break;
-                    default:
-                        allfp = "";
-                        break;
-                }
-				af.setFieldPermission(allfp);
-			}
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setSuccess(false);
-        }finally {
-        }
-        return result;
-    }
+    
 
     /**
      *下载模板到服务器，并返回fileName

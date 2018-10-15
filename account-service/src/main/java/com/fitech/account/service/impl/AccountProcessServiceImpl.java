@@ -128,7 +128,6 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         	//查询用户
             User user = null;
             if (vo.getUserId() != null) {
-//                user = this.userRepository.findById(vo.getUserId());
                 user = userDataDao.findUserById(vo.getUserId());
             }
             return accountProcessDao.findTodoTaskBySql(vo, user);
