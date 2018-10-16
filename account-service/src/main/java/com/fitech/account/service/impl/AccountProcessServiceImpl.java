@@ -139,81 +139,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         }
     }
     
-    
-    
-    
-  //下载---数据查询的下载
-    public String downLoadAccounts(String searchs){
-    	AccountProcessVo ap=new AccountProcessVo();
-    	if("true".equals(searchs)){
-    		ap.setTerm("");
-    		ap.setReportTemplateName("");
-    		ap.setInstitutionName("");
-    	}else{
-    		String[] searchlist = searchs.split(",",3);
-    		ap.setTerm(searchlist[0]);
-        	ap.setReportTemplateName(searchlist[1]);  	
-        	ap.setInstitutionName(searchlist[2]);
-    	} 	   	
-    	List<AccountProcessVo> list =accountProcessDao.findDoneQuerySqltwo(ap);
-    	String sheetName="DoneQuery";
-    	List<List<String>> hList = new ArrayList<>();
-		List<String> lineFirst=new ArrayList<>();
-		lineFirst.add("报送机构");
-		lineFirst.add("期数");
-		lineFirst.add("台账");
-		hList.add(lineFirst);
-    	for(AccountProcessVo ac:list){
-    		List<String> line=new ArrayList<>();
-    		line.add(ac.getInstitutionName());
-    		line.add(ac.getTerm());
-    		line.add(ac.getReportTemplateName());
-    		hList.add(line);
-    	} 	
-    	return ExcelUtil.createExcel(hList, sheetName, CommonConst.getProperties("template_path"),sheetName);
-    }
 
-    
-//    /**
-//     * 对象转化 转化成页面的vo
-//     * @param lp
-//     * @return
-//     */
-//    private LedgerProcessVo objectChange(LedgerProcess lp){
-//        try {
-//            if (lp != null) {
-//                LedgerProcessVo lpVo = new LedgerProcessVo();
-//                //设置机构ID
-//                lpVo.setInstitutionId(lp.getLedgerReport().getInstitution().getInstitutionId());
-//                //设置机构名称
-//                lpVo.setInstitutionName(lp.getLedgerReport().getInstitution().getInstitutionName());
-//                //报文编号
-//                lpVo.setReportTemplateId(lp.getLedgerReport().getLedgerReportTemplate().getTemplateCode());
-//                // 报表名称
-//                lpVo.setReportTemplateName(lp.getLedgerReport().getLedgerReportTemplate().getTemplateName());
-//                //设置频度
-//                lpVo.setFreq(lp.getLedgerReport().getFreq());
-//                //设置期数
-//                lpVo.setTerm(lp.getLedgerReport().getTerm());
-//                //校验状态
-//                lpVo.setValidateStatus(lp.getLedgerReport().getValidateStatus());
-//                //根据流程实例ID 查询流程名称
-//                List<TaskVo> taskList = todoTaskService.getTasksByProcInstId(lp.getProcInsetId());
-//                lpVo.setProcessId(lp.getProcInsetId());
-//                if (taskList != null && taskList.size() > 0) {
-//                    lpVo.setProcessName(taskList.get(0).getTaskName());
-//                    lpVo.setTaskId(taskList.get(0).getTaskId());
-//                }
-//                return lpVo;
-//            }
-//            return null;
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
-//        }
-//    }
-
-    
     @Transactional
 	public void processStart(ProcessConfig processConfig,Account rpt) {
         try {
@@ -379,7 +305,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                     throw new AppException(ExceptionCode.SYSTEM_ERROR,"commit accountState error,accountState no change");
                 }
 
-              //退回业务流程，保存退回原因
+                //退回业务流程，保存退回原因
                 if("refuse".equals(action)){
                     AccountProcess accountProcess = accountProcessVo.getAccountProcess();
 
@@ -456,7 +382,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         }
         return result;
     }
-
+    
 
 	@Override
 	public List<Long> getReceiverIdList(String term, String freq) {

@@ -13,6 +13,4 @@ public interface AccountReportService {
      */
     public void startProcess(Account account);
 
-    public void modify(Account account);
-
 }

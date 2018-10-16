@@ -57,7 +57,7 @@ public class AccountReportServiceImpl implements AccountReportService {
                     accountProcessService.processStart(processConfig, report);
                     report.setSubmitStateType(SubmitStateEnum.SUBMITING);
                     report.setAccountState(AccountStateEnum.DBL);
-                    this.modify(report);
+                    accountRepository.save(account);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -84,15 +84,6 @@ public class AccountReportServiceImpl implements AccountReportService {
     }
 
 
-    @Override
-    public void modify(Account account) {
-        try {
-            accountRepository.save(account);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-        }
-    }
     private void sendNotice(List<Long> receiverIdList){
 		NoticeSceneVo noticeSceneVo = new NoticeSceneVo();
 		noticeSceneVo.setReceiverIdList(receiverIdList);

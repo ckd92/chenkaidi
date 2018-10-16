@@ -1,17 +1,14 @@
 package com.fitech.account.service;
 
 
-import com.fitech.domain.account.Account;
-import com.fitech.domain.account.AccountProcess;
-import com.fitech.domain.system.ProcessConfig;
-import com.fitech.domain.system.User;
-import com.fitech.framework.lang.result.GenericResult;
-import com.fitech.vo.account.AccountProcessVo;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 
-import java.util.Collection;
-import java.util.List;
+import com.fitech.domain.account.Account;
+import com.fitech.domain.system.ProcessConfig;
+import com.fitech.framework.lang.result.GenericResult;
+import com.fitech.vo.account.AccountProcessVo;
 
 /**
  * 任务管理service
@@ -56,8 +53,6 @@ public interface AccountProcessService {
     public GenericResult<Boolean> submitProcess(List<AccountProcessVo> accountProcessVoList
             , String action,Long userId);
 
-    
-    public String downLoadAccounts(String where);
 
     
     public List<Long> getReceiverIdList(String term,String freq);

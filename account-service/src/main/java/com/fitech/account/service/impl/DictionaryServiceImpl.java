@@ -1,5 +1,18 @@
 package com.fitech.account.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.fitech.account.dao.AccountFieldDAO;
 import com.fitech.account.repository.DictionaryRepository;
 import com.fitech.account.service.DictionaryItemService;
@@ -10,19 +23,6 @@ import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.StringUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by wangxw on 2017/7/1.

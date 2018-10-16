@@ -1,8 +1,6 @@
 package com.fitech.account.controller;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +20,6 @@ import com.fitech.account.service.AccountProcessService;
 import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
-import com.fitech.domain.account.AccountProcess;
 import com.fitech.framework.activiti.service.ProcessRegistryService;
 import com.fitech.framework.activiti.service.TodoTaskService;
 import com.fitech.framework.activiti.vo.TaskVo;
@@ -145,22 +142,22 @@ public class AccountProcessController {
         return result;
     }
 
-    /**
-     * 转发
-     */
-    @PutMapping("SuperviseTask")
-    public GenericResult transmit(@RequestBody TaskVo taskVo,HttpServletRequest request){
-        GenericResult result = new GenericResult();
-        try {
-        	todoTaskService.setTaskAssignee(taskVo.getTaskId(), taskVo.getAssignee());
-        } catch (Exception e) {
-            e.printStackTrace();
-           result.setSuccess(false);
-        }finally {
-            sysLogService.addOperateLog("转发按钮按下",request);
-        }
-        return result;
-    }
+//    /**
+//     * 转发
+//     */
+//    @PutMapping("SuperviseTask")
+//    public GenericResult transmit(@RequestBody TaskVo taskVo,HttpServletRequest request){
+//        GenericResult result = new GenericResult();
+//        try {
+//        	todoTaskService.setTaskAssignee(taskVo.getTaskId(), taskVo.getAssignee());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//           result.setSuccess(false);
+//        }finally {
+//            sysLogService.addOperateLog("转发按钮按下",request);
+//        }
+//        return result;
+//    }
     /**
      * 开启并指派一个新的任务
      *
@@ -180,20 +177,5 @@ public class AccountProcessController {
             sysLogService.addOperateLog("开启并指派一个新的任务",request);
         }
         return result;
-    }
-    
-    /**
-     * 下载审核通过的台账
-     * @param response
-     */
-    @GetMapping("DownLoadAccount/{searchs}")
-    public void downloadTemplate(@PathVariable String searchs, HttpServletResponse response,HttpServletRequest request) {
-        try {
-            String fileName = this.accountProcessService.downLoadAccounts(searchs);
-            File file = new File(fileName);
-            FileUtil.downLoadFile(file, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

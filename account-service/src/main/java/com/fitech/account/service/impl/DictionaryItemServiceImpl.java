@@ -11,17 +11,16 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.NumberUtils;
 
 import com.fitech.account.dao.AccountFieldDAO;
 import com.fitech.account.repository.DictionaryItemRepository;
 import com.fitech.account.service.DictionaryItemService;
 import com.fitech.constant.ExceptionCode;
-import com.fitech.domain.account.Dictionary;
 import com.fitech.domain.account.DictionaryItem;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
