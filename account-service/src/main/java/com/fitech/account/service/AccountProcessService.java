@@ -25,26 +25,22 @@ public interface AccountProcessService {
      * @param where 查询条件
      * @return
      */
-    public Page<AccountProcessVo> findPageAccountProcessList(AccountProcessVo where);
+    public Page<AccountProcessVo> findTodoTask(AccountProcessVo where);
     
-    
-    public void deleteProcessBL(String reportId);
-    
-    public Page<AccountProcessVo> findPageAccounts(AccountProcessVo where);
-    
-    public String downLoadAccounts(String where);
-
-    public Page<AccountProcessVo> findPagefindAssignedTask(AccountProcessVo vo);
-
-    public AccountProcess findProcessById(Long id);
-
     /**
-     * 根据用户查询此用户下的机构
-     * @param userId 用户Id
+     * 台账补录-已办任务查询
+     * @param vo
      * @return
      */
-    public Collection<User> findUserByInstitution(Long userId);
-
+    public Page<AccountProcessVo> findDoneTask(AccountProcessVo vo);
+    
+    /**
+     * 数据查询---数据查询的初始化和高级查询
+     * @param where
+     * @return
+     */
+    public Page<AccountProcessVo> findPageAccounts(AccountProcessVo where);
+    
     /**
      * 流程开启
      * @param processConfig 流程配置对象
@@ -60,14 +56,9 @@ public interface AccountProcessService {
     public GenericResult<Boolean> submitProcess(List<AccountProcessVo> accountProcessVoList
             , String action,Long userId);
 
-    public Boolean isMultiInstanceTaskExecOver(String proInstId);
+    
+    public String downLoadAccounts(String where);
 
-    /**
-     * 查询用户待办任务权限
-     * @param userId
-     * @return
-     */
-    public List<Long> queryAccountTaskPermission(Long userId);
     
     public List<Long> getReceiverIdList(String term,String freq);
 

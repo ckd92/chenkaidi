@@ -72,58 +72,37 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     @Autowired
     private UserRepository<User> userRepository;
     @Autowired
-    private InstitutionRepository institutionInstitutionRepository;
+    private AccountRepository accountRepository;
+    @Autowired
+    private RoleRepository<Role> roleRepository;
+    @Autowired
+    private AccountTaskRepository accountTaskRepository;
+    @Autowired
+    private AccountProcessRepository accountProcessRepository;
+    @Autowired
+    private DictionaryItemRepository dictionaryItemRepository;
 
     @Autowired
     private TodoTaskService todoTaskService;
-
     @Autowired
     private ProcessService processService;
-
-    @Autowired
-    private AccountRepository accountRepository;
-    
-    @Autowired
-    private RoleRepository<Role> roleRepository;
-
     @Autowired
     private ValidateAnalyzeResultService validateAnalyzeResultService;
+    @Autowired
+    private ValidateResultService validateResultService;
+    @Autowired
+    private RuntimeService runtimeService;
     
     @Autowired
     private AccountProcessDao accountProcessDao;
-
-    @Autowired
-    private AccountTaskRepository accountTaskRepository;
-
-    @Autowired
-    private AccountProcessRepository accountProcessRepository;
-
-    @Autowired
-    private ValidateResultService validateResultService;
-    
-    @Autowired
-    private RuntimeService runtimeService;
-
     @Autowired
     private AccountBaseDao accountBaseDao;
-    
-    @Autowired
-    private DictionaryItemRepository dictionaryItemRepository;
     @Autowired
     private UserDataDao userDataDao;
     @Autowired
     private AccountProcDao accountProcDao;
 
-    @Override
-    public AccountProcess findProcessById(Long id) {
-        AccountProcess accountProcess = null;
-        if(id != null){
-            accountProcess = accountProcessRepository.findOne(id);
-        }
-        return accountProcess;
-    }
-
-    public Page<AccountProcessVo> findPageAccountProcessList(AccountProcessVo vo){
+    public Page<AccountProcessVo> findTodoTask(AccountProcessVo vo){
         try {
         	//查询用户
             User user = null;
@@ -136,7 +115,21 @@ public class AccountProcessServiceImpl implements AccountProcessService {
             throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
         }
     }
-    //数据查询---数据查询的初始化和高级查询
+    
+    public Page<AccountProcessVo> findDoneTask(AccountProcessVo vo){
+        try {
+            //查询用户
+            User user = null;
+            if (vo.getUserId() != null) {
+                user = userDataDao.findUserById(vo.getUserId());
+            }
+            return accountProcessDao.findDoneTaskBySql(vo, user);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
+        }
+    }
+    
     public Page<AccountProcessVo> findPageAccounts(AccountProcessVo vo){
         try {
             return accountProcessDao.findDoneQuerySql(vo);
@@ -145,6 +138,9 @@ public class AccountProcessServiceImpl implements AccountProcessService {
             throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
         }
     }
+    
+    
+    
     
   //下载---数据查询的下载
     public String downLoadAccounts(String searchs){
@@ -177,35 +173,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     	return ExcelUtil.createExcel(hList, sheetName, CommonConst.getProperties("template_path"),sheetName);
     }
 
-    public Page<AccountProcessVo> findPagefindAssignedTask(AccountProcessVo vo){
-        try {
-            //查询用户
-            User user = null;
-            if (vo.getUserId() != null) {
-//                user = this.userRepository.findById(vo.getUserId());
-                user = userDataDao.findUserById(vo.getUserId());
-            }
-            return accountProcessDao.findDoneTaskBySql(vo, user);
-        }catch (Exception e){
-            e.printStackTrace();
-            throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
-        }
-    }
-
-
-    public Collection<User> findUserByInstitution(Long userId){
-        try {
-            User user = this.userRepository.findById(userId);
-            if (user != null) {
-
-            }
-            return null;
-        }catch (Exception e){
-            e.printStackTrace();
-            throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
-        }
-    }
-
+    
 //    /**
 //     * 对象转化 转化成页面的vo
 //     * @param lp
@@ -470,38 +438,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         return result;
     }
 
-    
-    //删除流程下所有实例(hx)
-    public void deleteProcessBL(String reportId){
-    	StringBuffer sb = new StringBuffer();   	
-        sb.append(" select p.id lpid, p.procinsetid lpproc, r.id lrid ");
-        sb.append(" from account r ");
-        sb.append(" left join accountprocess p ");
-        sb.append(" on p.account_id = r.id ");
-        sb.append(" where r.processconfig = ");
-        sb.append(reportId);
-        Map<String,String > map=new HashMap<>();
-        List<Object[]> list=accountBaseDao.findBySql(sb, map);
-        if (list != null && (!list.isEmpty())) {
-            for (Object[] object : list) {
-            	if(object[0]!=null){
-                    Long lpid=Long.valueOf(String.valueOf(object[0]));
-                    accountProcDao.deleteAccTaskByAccProcId(lpid);
-            		String procid=String.valueOf(object[1]);
-                	//捕捉改流程activity已被其他流程删除
-                	processService.deleteProcInstance(procid, null);
-                	accountProcessRepository.delete(lpid);
-            	}else{
-            		Long lrid=Long.valueOf(String.valueOf(object[2]));
-            		accountRepository.delete(lrid);
-            		System.out.println("改任务还未进入流程");
-            	}
-            }
-        }
-        System.out.println("-------------该方法已执行完成--------------");
-    }
-    
-    public Boolean isMultiInstanceTaskExecOver(String proInstId){
+    private Boolean isMultiInstanceTaskExecOver(String proInstId){
         boolean result = true;
         if(StringUtil.isNotEmpty(proInstId)){
 
@@ -520,29 +457,6 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         return result;
     }
 
-    @Override
-    public List<Long> queryAccountTaskPermission(Long userId) {
-        List<Long> permesionss = new ArrayList<>();
-        User user = this.userRepository.findById(userId);
-
-        if(null != user){
-            Collection<Role> roleList = user.getRoles();
-            if(null != roleList && !roleList.isEmpty()){
-                for(Role role : roleList){
-                    Collection<ReportPermission> permissions = role.getReportPermission();
-                    if(null != permissions && !permissions.isEmpty()){
-                        for(ReportPermission reportPermission : permissions){
-                            Long opertorType = Long.valueOf(reportPermission.getOperationType().ordinal());
-                            if(!permesionss.contains(opertorType)){
-                                permesionss.add(opertorType);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return permesionss;
-    }
 
 	@Override
 	public List<Long> getReceiverIdList(String term, String freq) {

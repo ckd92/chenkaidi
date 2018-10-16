@@ -35,7 +35,7 @@ import com.fitech.vo.account.AccountProcessVo;
 
 
 /**
- * 任务管理Controller
+ * 补录台账 - 流程有关的业务
  * Created by wupei on 2017/3/1.
  */
 @RestController
@@ -60,13 +60,13 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccountProcess")
-    public GenericResult<Page<AccountProcessVo>> findPageAccountProcessList(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
+    public GenericResult<Page<AccountProcessVo>> findTodoTask(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
         GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
         try {
            // 获取token
             Long userId = TokenUtils.getLoginId(request);
             accountProcessVo.setUserId(userId);
-            Page<AccountProcessVo> pageVo = this.accountProcessService.findPageAccountProcessList(accountProcessVo);
+            Page<AccountProcessVo> pageVo = this.accountProcessService.findTodoTask(accountProcessVo);
             result.setData(pageVo);
         }catch (Exception e){
             e.printStackTrace();
@@ -78,12 +78,36 @@ public class AccountProcessController {
     }
     
     /**
+     * 已办任务查看
+     * @param accountProcessVo
+     * @param request
+     * @return
+     */
+    @PostMapping("findAssignedTask")
+    public GenericResult<Page<AccountProcessVo>> findDoneTask(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
+        GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
+        try {
+            //获取token
+            Long userId = TokenUtils.getLoginId(request);
+            accountProcessVo.setUserId(userId);
+            Page<AccountProcessVo> pageVo = this.accountProcessService.findDoneTask(accountProcessVo);
+            result.setData(pageVo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        }finally{
+        	sysLogService.addOperateLog("已办任务查看",request);
+        }
+        return result;
+    }
+    
+    /**
      * 数据查询数据查询(审核通过的台账)
      * @param accountProcessVo 高级查询
      * @return
      */
     @PostMapping("findPageAccounts")
-    public GenericResult<Page<AccountProcessVo>> findPageAccounts(@RequestBody AccountProcessVo accountProcessVo){
+    public GenericResult<Page<AccountProcessVo>> findCurrentAccounts(@RequestBody AccountProcessVo accountProcessVo){
         GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
         try {
             Page<AccountProcessVo> pageVo = this.accountProcessService.findPageAccounts(accountProcessVo);
@@ -95,115 +119,32 @@ public class AccountProcessController {
         }
         return result;
     }
-    /**
-     * 下载审核通过的台账
-     * @param response
-     */
-    @GetMapping("DownLoadAccount/{searchs}")
-    public void downloadTemplate(@PathVariable String searchs, HttpServletResponse response,HttpServletRequest request) {
-        try {
-            String fileName = this.accountProcessService.downLoadAccounts(searchs);
-            File file = new File(fileName);
-            FileUtil.downLoadFile(file, response);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @PostMapping("findPageAccountProcess/test/{userId}")
-    public GenericResult<Page<AccountProcessVo>> findPageAccountProcessList(@RequestBody AccountProcessVo accountProcessVo
-                                                                            ,@PathVariable String userId,HttpServletRequest request){
-        GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
-        try {
-            accountProcessVo.setUserId(Long.valueOf(userId));
-            Page<AccountProcessVo> pageVo = this.accountProcessService.findPageAccountProcessList(accountProcessVo);
-            result.setData(pageVo);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setSuccess(false);
-        }finally {
-            sysLogService.addOperateLog("待办任务初始化分页",request);
-        }
-        return result;
-    }
-
 
     /**
-     * 处理查看
-     */
-    @GetMapping("findNextNode/{taskId}")
-    public GenericResult<TaskVo> findNextNode(@PathVariable String taskId,HttpServletRequest request){
-    	GenericResult<TaskVo> result = new GenericResult<>();
-        sysLogService.addOperateLog("处理按钮按下",request);
-    	TaskVo task = todoTaskService.getTaskByTaskId(taskId);
-        result.setData(task);
-        return result;
-    }
-
-    /**
-     * 流程图片查看
-     */
-    @GetMapping("findProcessImg/{procInstId}")
-    public void findProcessImg(@PathVariable String procInstId,HttpServletResponse response,HttpServletRequest request){
-        try {
-            InputStream imageStream = fProcessRegistry.createProcImage(procInstId);
-            OutputStream out = response.getOutputStream();
-            byte[] b = new byte[1024];
-            while (imageStream.read(b) != -1) {
-                out.write(b);
-            }
-            imageStream.close();
-            out.flush();
-            out.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }finally {
-            sysLogService.addOperateLog("流程图片查看",request);
-        }
-    }
-
-    /**
-     * 已办任务查看
-     */
-    @PostMapping("findAssignedTask")
-    public GenericResult<Page<AccountProcessVo>> findPagefindAssignedTask(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
-        GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
-        try {
-            sysLogService.addOperateLog("已办任务查看",request);
-
-            //获取token
-            Long userId = TokenUtils.getLoginId(request);
-            accountProcessVo.setUserId(userId);
-            Page<AccountProcessVo> pageVo = this.accountProcessService.findPagefindAssignedTask(accountProcessVo);
-            result.setData(pageVo);
-        } catch (Exception e) {
-            e.printStackTrace();
-            result.setSuccess(false);
-        }
-        return result;
-    }
-
-    /**
-     * 删除流程所建的所有流程任务实例(hx)
-     *
+     * 台账补录，数据提交
+     * @param accountProcessVoList
+     * @param action
+     * @param request
      * @return
      */
-    @PostMapping(value = "ShanChu/{reportid}")
-    public GenericResult<Object> ShanChuProcess(@PathVariable String reportid,HttpServletRequest request) {
-    	GenericResult<Object> result = new GenericResult<Object>();
-		try {
-//            ProcessConfig pi=processConfigService.findById(Long.valueOf(reportid));
-            this.accountProcessService.deleteProcessBL(reportid);
-            result.setSuccess(true);
-    		System.out.println("--------------成功删除流程下所有代办任务-----------------");
-        } catch (Exception e) {
+    @PostMapping("submitProcess/{action}")
+    public GenericResult<Boolean> submitProcess(@RequestBody List<AccountProcessVo> accountProcessVoList, @PathVariable String action
+            , HttpServletRequest request){
+        GenericResult<Boolean> result=new GenericResult<>();
+        try {
+            //获取token
+            Long userId = TokenUtils.getLoginId(request);
+            result = accountProcessService.submitProcess(accountProcessVoList,action,userId);
+        }catch (Exception e){
             e.printStackTrace();
             result.setSuccess(false);
-        }finally {        	
-            sysLogService.addOperateLog("删除流程下所有代办任务",request);
+            result.fail(ExceptionCode.SYSTEM_ERROR, "任务提交异常！");
+        }finally {
+//            sysLogService.addOperateLog("待办任务提交"+accountProcessVo.getTaskId(),request);
         }
         return result;
     }
+
     /**
      * 转发
      */
@@ -240,53 +181,19 @@ public class AccountProcessController {
         }
         return result;
     }
-
-    @PostMapping("submitProcess/{action}")
-    public GenericResult<Boolean> submitProcess(@RequestBody List<AccountProcessVo> accountProcessVoList, @PathVariable String action
-            , HttpServletRequest request){
-        GenericResult<Boolean> result=new GenericResult<>();
-        try {
-            //获取token
-            Long userId = TokenUtils.getLoginId(request);
-            result = accountProcessService.submitProcess(accountProcessVoList,action,userId);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setSuccess(false);
-            result.fail(ExceptionCode.SYSTEM_ERROR, "任务提交异常！");
-        }finally {
-//            sysLogService.addOperateLog("待办任务提交"+accountProcessVo.getTaskId(),request);
-        }
-        return result;
-    }
-
-    @GetMapping("accountProcess/{id}")
-    public GenericResult<AccountProcess> findAccountProcessById(@PathVariable Long id, HttpServletRequest request){
-        GenericResult<AccountProcess> result = new GenericResult<>();
-        try {
-            AccountProcess accountProcess = accountProcessService.findProcessById(id);
-            result.setData(accountProcess);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setSuccess(false);
-        }finally {
-        }
-        return result;
-    }
-
-    @GetMapping("accountProcess/accountTaskPermessions")
-    public GenericResult<List<Long>> queryAccountTaskPermessions( HttpServletRequest request){
-        GenericResult<List<Long>> result = new GenericResult<>();
-        try {
-            Long userId = TokenUtils.getLoginId(request);
-
-            List<Long> permissions = accountProcessService.queryAccountTaskPermission(userId);
-            result.setData(permissions);
-        }catch (Exception e){
-            e.printStackTrace();
-            result.setSuccess(false);
-        }finally {
-        }
-        return result;
-    }
     
+    /**
+     * 下载审核通过的台账
+     * @param response
+     */
+    @GetMapping("DownLoadAccount/{searchs}")
+    public void downloadTemplate(@PathVariable String searchs, HttpServletResponse response,HttpServletRequest request) {
+        try {
+            String fileName = this.accountProcessService.downLoadAccounts(searchs);
+            File file = new File(fileName);
+            FileUtil.downLoadFile(file, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

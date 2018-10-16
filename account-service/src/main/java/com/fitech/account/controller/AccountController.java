@@ -32,7 +32,7 @@ import com.fitech.system.service.FieldPermissionService;
 import com.fitech.vo.account.AccountProcessVo;
 
 /**
- * 补录台账数据有关的业务
+ * 补录台账 - 数据有关的业务
  * Created by wangxw on 2017/8/17.
  */
 @RestController

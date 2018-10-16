@@ -35,7 +35,7 @@ import com.fitech.vo.system.NoticeSceneVo;
 @ServiceTrace
 public class AccountReportServiceImpl implements AccountReportService {
     @Autowired
-    private ProcessConfigRepository processConfigRepository;
+    private ProcessConfigRepository<ProcessConfig> processConfigRepository;
     @Autowired
     private AccountProcessService accountProcessService;
     @Autowired
@@ -64,9 +64,9 @@ public class AccountReportServiceImpl implements AccountReportService {
                 throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
             }
         }
-      //通过流程id和期数查询出生成待办任务第一节点的用户
-        List<Long> receiverIdList = accountProcessService.getReceiverIdList(account.getTerm(), "");
-        sendNotice(receiverIdList);
+        //通过流程id和期数查询出生成待办任务第一节点的用户
+		List<Long> receiverIdList = accountProcessService.getReceiverIdList(account.getTerm(), "");
+		sendNotice(receiverIdList);
     }
 
     private ProcessConfig findByAccountReport(Account account) throws Exception {
