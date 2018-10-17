@@ -31,7 +31,7 @@ import com.fitech.framework.lang.util.StringUtil;
 import com.fitech.vo.account.AccountProcessVo;
 
 public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements AccountDataDao {
-	@Autowired
+    @Autowired
     public AccountDataDaoImpl(DataSource dataSource) {
         setDataSource(dataSource);
         try {
@@ -66,16 +66,16 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
 
         accountTemplate.setAccountFields(null);
         Collection<AccountField> serachFileds = account.getAccountSearchs();
-        if(null != serachFileds && !serachFileds.isEmpty()){
-        	//将itemtype赋值
-        	for(AccountField afl:serachFileds){
-            	for(AccountField afd:collection){
-            		if(afl.getItemCode().equals(afd.getItemCode())&&"DATE".equals(afd.getItemType())&&(!"".equals(afl.getValue()))){
-            			afl.setItemType(afd.getItemType());
-            		}
-            	}
+        if (null != serachFileds && !serachFileds.isEmpty()) {
+            //将itemtype赋值
+            for (AccountField afl : serachFileds) {
+                for (AccountField afd : collection) {
+                    if (afl.getItemCode().equals(afd.getItemCode()) && "DATE".equals(afd.getItemType()) && (!"".equals(afl.getValue()))) {
+                        afl.setItemType(afd.getItemType());
+                    }
+                }
             }
-        	//进行循环
+            //进行循环
             for (AccountField item : serachFileds) {
                 String code = item.getItemCode();
                 if (item.getValue() != null) {
@@ -86,30 +86,30 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                         sql.append(" = '" + item.getValue() + "' ");
                     } else if ("DATE".equals(item.getItemType())) {
                         sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
-                    }else {
+                    } else {
                         sql.append(" like '%" + item.getValue() + "%' ");
                     }
                 }
             }
         }
         accountTemplate.setAccountFields(collection);
-        StringBuffer totalsum=new StringBuffer();
+        StringBuffer totalsum = new StringBuffer();
         totalsum.append("with a as ( \n");
         totalsum.append(sql);
         totalsum.append(" ) A) \n");
         totalsum.append(")select count(*) from a ");
-        
+
         sql.append(") A" +
-                "       WHERE rownum <= " + (accountProcessVo.getPageNum()*accountProcessVo.getPageSize())+
+                "       WHERE rownum <= " + (accountProcessVo.getPageNum() * accountProcessVo.getPageSize()) +
                 "     ) B " +
-                "         WHERE r >= "+((accountProcessVo.getPageNum()-1)*accountProcessVo.getPageSize()+1));
+                "         WHERE r >= " + ((accountProcessVo.getPageNum() - 1) * accountProcessVo.getPageSize() + 1));
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map1 = new HashMap<>();
-        List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql.toString(),map);
+        List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql.toString(), map);
         System.out.println(sql.toString());
 //        List<Map<String, Object>> totalList = this.getNamedParameterJdbcTemplate().queryForList(totalsum.toString(),map1);
         int totalList = this.getNamedParameterJdbcTemplate().queryForObject(
-        		totalsum.toString(), map1, Integer.class);
+                totalsum.toString(), map1, Integer.class);
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
             AccountLine ledgerLine = new AccountLine();
@@ -121,39 +121,40 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                     continue;
                 }
                 item.setItemCode(s);
-                String value=String.valueOf(ledgerLineMap.get(s));
-                if(value.indexOf("\"")!=-1){
-                	value=value.replaceAll("\"", "&#34;");
-                	item.setValue(value);
-                }else if(value.indexOf("\t")!=-1){
-                	value=value.replaceAll("\t", "");
-                	item.setValue(value);
-                }else{
-                	item.setValue(ledgerLineMap.get(s));
-                }       
+                String value = String.valueOf(ledgerLineMap.get(s));
+                if (value.indexOf("\"") != -1) {
+                    value = value.replaceAll("\"", "&#34;");
+                    item.setValue(value);
+                } else if (value.indexOf("\t") != -1) {
+                    value = value.replaceAll("\t", "");
+                    item.setValue(value);
+                } else {
+                    item.setValue(ledgerLineMap.get(s));
+                }
                 set.add(item);
             }
             ledgerLine.setAccountFields(set);
             lineList.add(ledgerLine);
         }
         //将sqltype从template复制到accountline
-        for(AccountLine a:lineList){
-        	for(AccountField af:a.getAccountFields()){
-        		for(AccountField ac:collection){
-        			if(af.getItemCode().equals(ac.getItemCode())){
-        				af.setSqlType(ac.getSqlType());
+        for (AccountLine a : lineList) {
+            for (AccountField af : a.getAccountFields()) {
+                for (AccountField ac : collection) {
+                    if (af.getItemCode().equals(ac.getItemCode())) {
+                        af.setSqlType(ac.getSqlType());
                         af.setItemType(ac.getItemType());
-        			}
-        		}
-        	}
+                    }
+                }
+            }
         }
 //        long totalNum = findMaxNumDataByCondition(accountProcessVo);
         Pageable pageable = new PageRequest(accountProcessVo.getPageNum() - 1, accountProcessVo.getPageSize());
         Page<AccountLine> ledgerLinePage = new PageImpl<>(lineList, pageable, totalList);
         account.setAccountLine(ledgerLinePage);
 
-        return  ledgerLinePage;
+        return ledgerLinePage;
     }
+
     //用于下载
     @Override
     public List<AccountLine> downLoadDataByCondition(AccountProcessVo accountProcessVo) {
@@ -168,8 +169,13 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         list.add("id");
         list.add("reportId");
         for (AccountField item : collection) {
-            sql.append(item.getItemCode() + ",");
-            list.add(item.getItemCode());
+            if (item.getItemType().equals("DATE")) {
+                sql.append("to_date(to_char("+item.getItemCode()+", 'yyyy-MM-dd')"+",'yyyy-mm-dd') as "+item.getItemCode()+""+ ",");
+                list.add(item.getItemCode());
+            } else {
+                sql.append(item.getItemCode() + ",");
+                list.add(item.getItemCode());
+            }
         }
         sql.deleteCharAt(sql.length() - 1);
         sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
@@ -177,16 +183,16 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
 
         accountTemplate.setAccountFields(null);
         Collection<AccountField> serachFileds = account.getAccountSearchs();
-        if(null != serachFileds && !serachFileds.isEmpty()){
-        	//将itemtype赋值
-        	for(AccountField afl:serachFileds){
-            	for(AccountField afd:collection){
-            		if(afl.getItemCode().equals(afd.getItemCode())&&"DATE".equals(afd.getItemType())&&(!"".equals(afl.getValue()))){
-            			afl.setItemType(afd.getItemType());
-            		}
-            	}
+        if (null != serachFileds && !serachFileds.isEmpty()) {
+            //将itemtype赋值
+            for (AccountField afl : serachFileds) {
+                for (AccountField afd : collection) {
+                    if (afl.getItemCode().equals(afd.getItemCode()) && "DATE".equals(afd.getItemType()) && (!"".equals(afl.getValue()))) {
+                        afl.setItemType(afd.getItemType());
+                    }
+                }
             }
-        	//进行循环
+            //进行循环
             for (AccountField item : serachFileds) {
                 String code = item.getItemCode();
                 if (item.getValue() != null) {
@@ -197,17 +203,17 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                         sql.append(" = '" + item.getValue() + "' ");
                     } else if ("DATE".equals(item.getItemType())) {
                         sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
-                    }else {
+                    } else {
                         sql.append(" like '%" + item.getValue() + "%' ");
                     }
                 }
             }
         }
         accountTemplate.setAccountFields(collection);
-        
+
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map1 = new HashMap<>();
-        List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql.toString(),map);
+        List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql.toString(), map);
 //        List<Map<String, Object>> totalList = this.getNamedParameterJdbcTemplate().queryForList(totalsum.toString(),map1);
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
@@ -220,35 +226,35 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                     continue;
                 }
                 item.setItemCode(s);
-                String value=String.valueOf(ledgerLineMap.get(s));
-                if(value.indexOf("\"")!=-1){
-                	value=value.replaceAll("\"", "&#34;");
-                	item.setValue(value);
-                }else if(value.indexOf("\t")!=-1){
-                	value=value.replaceAll("\t", "");
-                	item.setValue(value);
-                }else{
-                	item.setValue(ledgerLineMap.get(s));
-                }       
+                String value = String.valueOf(ledgerLineMap.get(s));
+                if (value.indexOf("\"") != -1) {
+                    value = value.replaceAll("\"", "&#34;");
+                    item.setValue(value);
+                } else if (value.indexOf("\t") != -1) {
+                    value = value.replaceAll("\t", "");
+                    item.setValue(value);
+                } else {
+                    item.setValue(ledgerLineMap.get(s));
+                }
                 set.add(item);
             }
             ledgerLine.setAccountFields(set);
             lineList.add(ledgerLine);
         }
         //将sqltype从template复制到accountline
-        for(AccountLine a:lineList){
-        	for(AccountField af:a.getAccountFields()){
-        		for(AccountField ac:collection){
-        			if(af.getItemCode().equals(ac.getItemCode())){
-        				af.setSqlType(ac.getSqlType());
+        for (AccountLine a : lineList) {
+            for (AccountField af : a.getAccountFields()) {
+                for (AccountField ac : collection) {
+                    if (af.getItemCode().equals(ac.getItemCode())) {
+                        af.setSqlType(ac.getSqlType());
                         af.setItemType(ac.getItemType());
-        			}
-        		}
-        	}
+                    }
+                }
+            }
         }
 //        long totalNum = findMaxNumDataByCondition(accountProcessVo);
-        
-        return  lineList;
+
+        return lineList;
     }
 
     @Override
@@ -258,19 +264,19 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         AccountTemplate accountTemplate = account.getAccountTemplate();
 
         Collection<AccountField> collection = accountTemplate.getAccountFields();
-        
+
         Collection<AccountField> serachFileds = account.getAccountSearchs();
         //将搜索值赋给模板
-        if(!serachFileds.isEmpty()){
-        	for(AccountField aff:collection){
-        		for(AccountField afs:serachFileds){
-        			if(aff.getItemCode().equals(afs.getItemCode())&&(!"".equals(afs.getValue()))&&null!=afs.getValue()){
-        				aff.setValue(afs.getValue());
-        			}
-        		}
-        	}
+        if (!serachFileds.isEmpty()) {
+            for (AccountField aff : collection) {
+                for (AccountField afs : serachFileds) {
+                    if (aff.getItemCode().equals(afs.getItemCode()) && (!"".equals(afs.getValue())) && null != afs.getValue()) {
+                        aff.setValue(afs.getValue());
+                    }
+                }
+            }
         }
-        
+
         StringBuffer sql = new StringBuffer();
         sql.append("select count(1) from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
         //没有查询条件 查询所有
@@ -282,7 +288,7 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                     sql.append(" = " + item.getValue() + " ");
                 } else if (item instanceof CodeField) {
                     sql.append(" = '" + item.getValue() + "' ");
-                }else if (item instanceof DateField) {
+                } else if (item instanceof DateField) {
                     sql.append("to_date('" + item.getValue() + "','yyyy-mm-dd')");
                 } else {
                     sql.append(" like '%" + item.getValue() + "%' ");
@@ -290,19 +296,19 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             }
         }
         Map<String, Object> map = new HashMap<>();
-        Long totalNum = this.getNamedParameterJdbcTemplate().queryForObject(sql.toString(),map,Long.class);
+        Long totalNum = this.getNamedParameterJdbcTemplate().queryForObject(sql.toString(), map, Long.class);
 
-        return  totalNum;
+        return totalNum;
     }
 
     @Override
     public void insertData(AccountLine accountLine, Account account) {
         String sql = "insert into " + account.getAccountTemplate().getTableName() + "(";
         Collection<AccountField> items = accountLine.getAccountFields();
-        Collection<AccountField> itemegs=account.getAccountTemplate().getAccountFields();
-        for(AccountField af:items){
-            for(AccountField ag:itemegs){
-                if(af.getItemCode().equals(ag.getItemCode())){
+        Collection<AccountField> itemegs = account.getAccountTemplate().getAccountFields();
+        for (AccountField af : items) {
+            for (AccountField ag : itemegs) {
+                if (af.getItemCode().equals(ag.getItemCode())) {
                     af.setSqlType(ag.getSqlType());
                 }
             }
@@ -319,11 +325,11 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             } else {
                 if (SqlTypeEnum.DATE.equals(item.getSqlType())) {
                     sql = sql + "to_date('" + item.getValue() + "', 'yyyy-MM-dd') ,";
-                } else if(SqlTypeEnum.INTEGER.equals(item.getSqlType())){
-                    sql = sql + "'" + Integer.parseInt(item.getValue()+"") + "',";
-                }else if(SqlTypeEnum.DOUBLE.equals(item.getSqlType())){
-                    sql = sql + "'" + Double.parseDouble(item.getValue()+"") + "',";
-                }else{
+                } else if (SqlTypeEnum.INTEGER.equals(item.getSqlType())) {
+                    sql = sql + "'" + Integer.parseInt(item.getValue() + "") + "',";
+                } else if (SqlTypeEnum.DOUBLE.equals(item.getSqlType())) {
+                    sql = sql + "'" + Double.parseDouble(item.getValue() + "") + "',";
+                } else {
                     sql = sql + "'" + item.getValue() + "',";
                 }
             }
@@ -338,10 +344,10 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
     public void updateData(AccountLine accountLine, Account account) {
         String sql = "update " + account.getAccountTemplate().getTableName() + " set ";
         Collection<AccountField> items = accountLine.getAccountFields();
-        Collection<AccountField> itemegs=account.getAccountTemplate().getAccountFields();
-        for(AccountField af:items){
-            for(AccountField ag:itemegs){
-                if(af.getItemCode().equals(ag.getItemCode())){
+        Collection<AccountField> itemegs = account.getAccountTemplate().getAccountFields();
+        for (AccountField af : items) {
+            for (AccountField ag : itemegs) {
+                if (af.getItemCode().equals(ag.getItemCode())) {
                     af.setSqlType(ag.getSqlType());
                 }
             }
@@ -354,12 +360,12 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                     if (SqlTypeEnum.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
 //                        String date = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(item.getValue().toString()));
                         sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
-                    } else if(SqlTypeEnum.INTEGER.equals(item.getSqlType())){
-                        sql = sql+item.getItemCode()+"="+ "'" + Integer.parseInt(item.getValue()+"") + "',";
-                    }else if(SqlTypeEnum.DOUBLE.equals(item.getSqlType())){
-                        sql = sql +item.getItemCode()+"="+ "'" + Double.parseDouble(item.getValue()+"") + "',";
-                    }else{
-                        sql = sql+item.getItemCode()+"="+ "'" + item.getValue() + "',";
+                    } else if (SqlTypeEnum.INTEGER.equals(item.getSqlType())) {
+                        sql = sql + item.getItemCode() + "=" + "'" + Integer.parseInt(item.getValue() + "") + "',";
+                    } else if (SqlTypeEnum.DOUBLE.equals(item.getSqlType())) {
+                        sql = sql + item.getItemCode() + "=" + "'" + Double.parseDouble(item.getValue() + "") + "',";
+                    } else {
+                        sql = sql + item.getItemCode() + "=" + "'" + item.getValue() + "',";
                     }
                 }
             }
@@ -381,7 +387,7 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                     if (SqlTypeEnum.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
 //                        String date = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(item.getValue().toString()));
                         sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
-                    } else{
+                    } else {
                         sql = sql + item.getItemCode() + "='" + item.getValue() + "',";
                     }
                 }
@@ -389,10 +395,10 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             sql = sql.substring(0, sql.length() - 1);
             String idList = "";
             for (int i = 0; i < lineId.size(); i++) {
-                idList += lineId.get(i)+",";
+                idList += lineId.get(i) + ",";
             }
-            idList = idList.substring(0,idList.length()-1);
-            sql = sql + " where id in("+idList+")";
+            idList = idList.substring(0, idList.length() - 1);
+            sql = sql + " where id in(" + idList + ")";
             this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
         }
     }
@@ -405,9 +411,9 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         AccountLine ledgerLine = new AccountLine();
         Set<AccountField> set = new LinkedHashSet<>();
         Collection<AccountField> accountFields = account.getAccountTemplate().getAccountFields();
-        if(null != accountFields){
-            for(AccountField accountField : accountFields){
-                if(map.containsKey(accountField.getItemCode())){
+        if (null != accountFields) {
+            for (AccountField accountField : accountFields) {
+                if (map.containsKey(accountField.getItemCode())) {
                     accountField.setValue(map.get(accountField.getItemCode()));
                     accountField.setEditBeforeValue(map.get(accountField.getItemCode()));
                     set.add(accountField);
@@ -422,19 +428,19 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
     @Override
     public Boolean queryDataisExist(AccountLine accountLine, Account account) {
         Boolean result = false;
-        Boolean point=false;
+        Boolean point = false;
         Collection<AccountField> items = accountLine.getAccountFields();
         StringBuffer sql = new StringBuffer();
         sql.append("select count(1) from " + account.getAccountTemplate().getTableName() + " where reportId=" + account.getId() + "  ");
         //没有查询条件 查询所有
         for (AccountField item : items) {
             String code = item.getItemCode();
-            if (item.getValue() != null ) {
+            if (item.getValue() != null) {
 
                 Collection<AccountField> accountFields = account.getAccountTemplate().getAccountFields();
-                for(AccountField accountField : accountFields){
-                    if(accountField.isPkable() && accountField.getItemCode().equals(item.getItemCode())){
-                    	point=true;
+                for (AccountField accountField : accountFields) {
+                    if (accountField.isPkable() && accountField.getItemCode().equals(item.getItemCode())) {
+                        point = true;
                         sql.append("and " + code);
                         if (item instanceof IntegerField || item instanceof DoubleField) {
                             sql.append(" = " + item.getValue() + " ");
@@ -450,9 +456,9 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             }
         }
         Map<String, Object> map = new HashMap<>();
-        Long totalNum = this.getNamedParameterJdbcTemplate().queryForObject(sql.toString(),map,Long.class);
+        Long totalNum = this.getNamedParameterJdbcTemplate().queryForObject(sql.toString(), map, Long.class);
 
-        if(null != totalNum && totalNum > 0 && point){
+        if (null != totalNum && totalNum > 0 && point) {
             result = true;
         }
         return result;
