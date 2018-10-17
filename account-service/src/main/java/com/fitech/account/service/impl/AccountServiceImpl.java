@@ -746,10 +746,13 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             sheetName += String.valueOf(time);
             List<List<String>> hList = new ArrayList<>();
             List<String> lineFirst = new ArrayList<>();
+            List<String> lineSecond = new ArrayList<>();
             for (AccountField accountFieldnew : accountFields) {
-                lineFirst.add(accountFieldnew.getItemName());
+                lineFirst.add(accountFieldnew.getItemCode());
+                lineSecond.add(accountFieldnew.getItemName());
             }
             hList.add(lineFirst);
+            hList.add(lineSecond);
             for (AccountLine accline : accountLines) {
                 List<String> lineone = new ArrayList<>();
                 for (AccountField accf : accline.getAccountFields()) {
