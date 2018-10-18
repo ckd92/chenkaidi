@@ -1,6 +1,5 @@
 package com.fitech.account.controller;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fitech.account.service.AccountTemplateService;
+import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.AccountTemplate;
-import com.fitech.domain.report.BusSystem;
 import com.fitech.framework.lang.result.GenericResult;
 
 @RestController
@@ -26,51 +25,16 @@ public class AccountTemplateController {
     private AccountTemplateService accountTemplateService;
 
     /**
-     * 获取制度下所有补录模板
-     * @param id
-     * @param request
-     * @return
-     */
-    @GetMapping("/ReportSubSystem/BusSystem/{id}/AccountTemplate")
-    public GenericResult<Collection<AccountTemplate>> findByBusSystem(@PathVariable Long id, HttpServletRequest request) {
-        GenericResult<Collection<AccountTemplate>> result = new GenericResult<>();
-        try {
-            BusSystem busSystem = new BusSystem();
-            busSystem.setId(id);
-            Collection<AccountTemplate> collection = accountTemplateService.findByBusSystem(busSystem);
-            result.setData(collection);
-        } catch (Exception e) {
-            result.setSuccess(false);
-            e.printStackTrace();
-        } finally {
-        }
-        return result;
-    }
-    /**
-     * 高级查询
+     * 补录模板管理 - 模板列表查询
      * @param accountTemplate
      * @param request
      * @return
      */
-    @PostMapping("/accountTemplates")
-    public GenericResult<List<AccountTemplate>> findAll(@RequestBody  AccountTemplate accountTemplate,
-                                                        HttpServletRequest request) {
-        GenericResult<List<AccountTemplate>> result = new GenericResult<>();
-        try {
-            List<AccountTemplate> list = accountTemplateService.findAllAccountTemplate();
-            result.setData(list);
-        } catch (Exception e) {
-            result.setSuccess(false);
-            e.printStackTrace();
-        } finally {
-        }
-        return result;
-    }
     @GetMapping("/accountTemplates")
     public GenericResult<List<AccountTemplate>> findAll(HttpServletRequest request) {
         GenericResult<List<AccountTemplate>> result = new GenericResult<>();
         try {
-            List<AccountTemplate> collection = accountTemplateService.findAllAccountTemplate();
+            List<AccountTemplate> collection = accountTemplateService.findAll();
             result.setData(collection);
         } catch (Exception e) {
             result.setSuccess(false);
@@ -79,12 +43,13 @@ public class AccountTemplateController {
         }
         return result;
     }
+    
     @GetMapping("/accountTemplate/{id}")
     public GenericResult<AccountTemplate> findById(@PathVariable("id") Long id,
                                                           HttpServletRequest request) {
         GenericResult<AccountTemplate> result = new GenericResult<>();
         try {
-            AccountTemplate accountTemplate = accountTemplateService.findAccountTemplateById(id);
+            AccountTemplate accountTemplate = accountTemplateService.findById(id);
             result.setData(accountTemplate);
         } catch (Exception e) {
             result.setSuccess(false);
@@ -105,7 +70,7 @@ public class AccountTemplateController {
     public GenericResult<Boolean> save(@RequestBody AccountTemplate accountTemplate,HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
-            result = accountTemplateService.saveAccountTemplate(accountTemplate);
+            result = accountTemplateService.save(accountTemplate);
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();
@@ -123,7 +88,7 @@ public class AccountTemplateController {
     public GenericResult<Boolean> modity(@RequestBody AccountTemplate accountTemplate,HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
-            result = accountTemplateService.updateAccountTemplate(accountTemplate);
+            result = accountTemplateService.update(accountTemplate);
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();
@@ -141,7 +106,7 @@ public class AccountTemplateController {
     public GenericResult<Boolean> remove(@RequestParam("idList") List<Long> idList,HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
-            result = accountTemplateService.deleteAccountTemplateByList(idList);
+            result = accountTemplateService.deleteBatch(idList);
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();
@@ -161,7 +126,9 @@ public class AccountTemplateController {
                                                         HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
-            result = accountTemplateService.valiAccountTemplateNameIsExist(templateName);
+            if(!accountTemplateService.valiAccountTemplateNameIsExist(templateName)){
+            	result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
+            }
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();
@@ -169,6 +136,7 @@ public class AccountTemplateController {
         }
         return result;
     }
+    
     /**
      * 校验模板编号是否重复
      * @param templateCode
@@ -180,7 +148,9 @@ public class AccountTemplateController {
                                                           HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
-            result = accountTemplateService.valiAccountTemplateCodeIsExist(templateCode);
+            if(!accountTemplateService.valiAccountTemplateCodeIsExist(templateCode)){
+            	result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
+            }
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();

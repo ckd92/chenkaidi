@@ -2,15 +2,23 @@ package com.fitech.account.service.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fitech.account.dao.AccountFieldDAO;
+import com.fitech.account.dao.AccountTemplateDAO;
 import com.fitech.account.repository.AccountFieldRepository;
 import com.fitech.account.repository.AccountTemplateRepository;
 import com.fitech.account.repository.DictionaryRepository;
 import com.fitech.account.service.AccountFieldService;
+import com.fitech.account.service.AccountTemplateService;
 import com.fitech.account.util.AccountFieldUtil;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.AccountField;
@@ -18,13 +26,15 @@ import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.account.CodeField;
 import com.fitech.domain.account.DateField;
 import com.fitech.domain.account.DecimalField;
-import com.fitech.domain.account.Dictionary;
 import com.fitech.domain.account.DoubleField;
 import com.fitech.domain.account.IntegerField;
 import com.fitech.domain.account.StringField;
-import com.fitech.enums.SqlTypeEnum;
+import com.fitech.domain.system.FieldPermission;
+import com.fitech.enums.system.OperationEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
+import com.fitech.framework.lang.result.GenericResult;
+import com.fitech.system.repository.FieldPermissionRepository;
 
 /**
  * Created by wangxw on 2017/8/10.
@@ -32,16 +42,293 @@ import com.fitech.framework.lang.common.AppException;
 @Service
 @ServiceTrace
 public class AccountFieldServiceImpl implements AccountFieldService {
-
-    @Autowired
-    private AccountFieldRepository accountFieldRepository;
-
     @Autowired
     private AccountTemplateRepository accountTemplateRepository;
-    
+    @Autowired
+    private AccountFieldRepository accountFieldRepository;
+    @Autowired
+    private FieldPermissionRepository<FieldPermission> fieldPermissionRepository;
     @Autowired
 	private DictionaryRepository dictionaryRepository;
+    
+    @Autowired
+    private AccountTemplateDAO accountTemplateDAO;
+    @Autowired
+    private AccountTemplateService accountTemplateService;
 
+    @Override
+    @Transactional
+    public GenericResult<Boolean> save(AccountTemplate accountTemplate) {
+    	GenericResult<Boolean> result = new GenericResult<>();
+        try {
+        	String flag = accountTemplateService.valiAccountTemplateIsDelete(accountTemplate.getId());
+        	if(!flag.equals("true")){
+				result.setSuccess(false);
+				result.setMessage(flag + "，不可新增");;
+				return result;
+			}
+        	//获取原本该模板
+			AccountTemplate acTemplate = accountTemplateRepository.findById(accountTemplate.getId());
+        	//如果报文模板对应的数据表没有数据,则可以修改此报文下的字段信息
+            Boolean f = accountTemplateDAO.dataIsExist(acTemplate);
+            if (!f) {
+                //原有字段集合
+                Collection<AccountField> oldAcField = acTemplate.getAccountFields();      
+                //新增字段集合
+                Collection<AccountField> acField = accountTemplate.getAccountFields();
+                Iterator<AccountField> itaf = acField.iterator();
+                //循环将字段编码转为大写
+                while (itaf.hasNext()){
+     				AccountField af = itaf.next();
+     				Iterator<AccountField> it = oldAcField.iterator();
+     				while (it.hasNext()){
+     					AccountField a = it.next();
+     					if(a.getItemCode().toUpperCase().equals(af.getItemCode().toUpperCase())){
+     						result.setSuccess(false);
+     		                result.setMessage("列名重复!");
+     		                return result;
+     					}
+     				}
+     				af.setItemCode(af.getItemCode().toUpperCase());
+     				oldAcField.add(af);
+                }
+                acTemplate.setAccountFields(this.convertAccountField(oldAcField));
+                accountTemplateRepository.save(acTemplate);                
+                //初始化补录字段权限
+                addAccountFieldPermessionsBatch(acTemplate);
+                accountTemplateService.createODSAccount(acTemplate);
+            }else{
+            	result.setSuccess(false);
+                result.setMessage("台账表已存在数据，新增字段失败!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
+        }
+        return result;
+    }
+    
+    @Override
+    @Transactional
+    public GenericResult<Boolean> modify(AccountTemplate accountTemplate) {
+    	GenericResult<Boolean> result = new GenericResult<>();
+		try {
+			//获取修改的字段集合
+			Collection<AccountField> acField = accountTemplate.getAccountFields();
+            //获取原本该模板
+            AccountTemplate acTemplate = accountTemplateRepository.findById(accountTemplate.getId());
+            //原本的字段集合
+            Collection<AccountField> oldAcField = acTemplate.getAccountFields();
+
+            Map<Boolean,AccountField> map = this.valiAccountTemplateIsUpdate(acField,oldAcField);
+            //key为true的值不为空，说明可以直接修改
+            if(map.get(true) != null){
+                this.accountFieldRepository.save(map.get(true));
+                return result;
+            }
+
+			String flag = accountTemplateService.valiAccountTemplateIsDelete(accountTemplate.getId());
+        	if(!flag.equals("true")){
+				result.setSuccess(false);
+				result.setMessage(flag + "，不可修改");;
+				return result;
+			}
+
+			//如果报文模板对应的数据表没有数据,则可以修改此报文下的字段信息
+            Boolean f = accountTemplateDAO.dataIsExist(acTemplate);
+            if (!f) {
+    			//迭代修改字段集合
+    			Iterator<AccountField> itaf = acField.iterator();
+    			Long oid = null;
+    			AccountField newAcField = new AccountField();
+    			while (itaf.hasNext()) {
+    				AccountField af = itaf.next();
+    				af.setItemCode(af.getItemCode().toUpperCase());
+    				Iterator<AccountField> it = oldAcField.iterator();
+    				//迭代原本的字段集合
+    				while (it.hasNext()) {
+    					AccountField a = it.next();
+    					//判断列名是否重复(除了本身)
+    					if(af.getItemCode().toUpperCase().equals(a.getItemCode().toUpperCase()) && !a.getId().equals(af.getId())){
+    						result.setSuccess(false);
+    		                result.setMessage("列名重复!");
+    		                return result;
+    					}else{
+    						//找到修改字段id在原本字段集合中的位置
+        					if (a.getId().equals(af.getId())) {
+        						//从集合中删除
+        						oid = a.getId();
+        						newAcField = af;
+        						oldAcField.remove(a);
+        						delFieldPermission(a.getId());
+        						break;
+        					}
+    					}
+    				}
+    			}
+    			//清空关联表，并删除字段
+    			accountTemplateRepository.save(acTemplate);
+    			accountFieldRepository.delete(oid);
+    			//保存新字段
+    			oldAcField.add(newAcField);
+    			acTemplate.setAccountFields(this.convertAccountField(oldAcField));
+    			accountTemplateRepository.save(acTemplate);
+    			//初始化补录字段权限
+    	        addAccountFieldPermessionsBatch(acTemplate);
+    	        accountTemplateService.createODSAccount(acTemplate);
+            }else{
+            	result.setSuccess(false);
+                result.setMessage("台账表已存在数据，修改字段失败!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
+        }
+        return result;
+    }
+    
+    @Override
+    public GenericResult<Boolean> delete(Long accountTemplateId, Long accountFieldId) {
+    	GenericResult<Boolean> result = new GenericResult<>();
+		try {
+			String flag = accountTemplateService.valiAccountTemplateIsDelete(accountTemplateId);
+        	if(!flag.equals("true")){
+				result.setSuccess(false);
+				result.setMessage(flag + "，不可删除");;
+				return result;
+			}
+			AccountTemplate accountTemplate = accountTemplateRepository.findById(accountTemplateId);
+			//如果报文模板对应的数据表没有数据,则可以修改此报文下的字段信息
+            Boolean f = accountTemplateDAO.dataIsExist(accountTemplate);
+            if (!f) {
+            	delFieldPermission(accountFieldId);
+    			//获取原本该模板
+    			AccountTemplate acTemplate = accountTemplateRepository.findById(accountTemplateId);
+    			//原本的字段集合
+    			Collection<AccountField> oldAcField = acTemplate.getAccountFields();
+    			Iterator<AccountField> it = oldAcField.iterator();
+    			//迭代原本的字段集合
+    			while (it.hasNext()) {
+    				AccountField a = it.next();
+    				//找到修改字段id在原本字段集合中的位置
+    				if (a.getId().equals(accountFieldId)) {
+    					//从集合中删除
+    					oldAcField.remove(a);
+    					break;
+    				}
+    			}
+    			accountTemplateRepository.save(acTemplate);
+    			accountFieldRepository.delete(accountFieldId);
+
+    			accountTemplateService.createODSAccount(acTemplate);
+            }else{
+            	result.setSuccess(false);
+                result.setMessage("台账表已存在数据，删除字段失败!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
+        }
+        return result;
+    }
+    
+    @Override
+    @Transactional
+    public void deleteAccountFields(AccountTemplate accountTemplate) {
+        if(null != accountTemplate){
+            AccountTemplate fullAccountTemplate = accountTemplateRepository.findOne(accountTemplate.getId());
+            try {
+                if(null != fullAccountTemplate.getAccountFields() && !fullAccountTemplate.getAccountFields().isEmpty()){
+                    for (AccountField accountField : fullAccountTemplate.getAccountFields()){
+                        accountFieldRepository.delete(accountField);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+            }
+        }
+    }
+    
+    @Override
+	public Collection<AccountField> findVisableField(Long id) {
+        AccountTemplate accountTemplate = null;
+        Collection<AccountField> newCollection = new ArrayList<AccountField>();
+        if(null != id){
+            try{
+            	accountTemplate = accountTemplateRepository.findOne(id);
+            	Collection<AccountField> collection = accountTemplate.getAccountFields();
+                for(AccountField accountField:collection){
+                	if(accountField.isVisible()){
+                		newCollection.add(accountField);
+                	}
+                }
+            }catch (Exception e) {
+                e.printStackTrace();
+                throw new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
+            }
+        }
+        return newCollection;
+    }
+    
+    @Override
+    public Collection<FieldPermission> addFieldPermessions(AccountTemplate accountTemplate) {
+        //最新的报文字段
+        Collection<AccountField> ledgerItems=accountTemplate.getAccountFields();
+        //数据库中已有的报文权限数据
+        Collection<FieldPermission> hasPermission = fieldPermissionRepository.findByReportTemplate(accountTemplate);
+        List<Long> hasPermissionId = new ArrayList<Long>();
+        for (FieldPermission permission : hasPermission) {
+            //对 没有权限的字段 进行权限初始化分配
+        	hasPermissionId.add(permission.getAccountField().getId());
+        }
+        //待生成的报文权限
+        Collection<FieldPermission> fieldPermissions=new ArrayList<FieldPermission>();
+        Iterator<AccountField> it=ledgerItems.iterator();
+        while(it.hasNext()){
+            AccountField ledgerItem=it.next();
+            if(ledgerItem.isPkable()){
+                continue;
+            }
+            if(null != hasPermission && hasPermission.size()>0){
+                if(!hasPermissionId.contains(ledgerItem.getId())){
+                    FieldPermission fieldPermission=new FieldPermission();
+                    fieldPermission.setAccountField(ledgerItem);
+                    fieldPermission.setReportTemplate(accountTemplate);
+                    fieldPermission.setOperationType(OperationEnum.LOOK);
+                    FieldPermission operateFieldPermission=new FieldPermission();
+                    operateFieldPermission.setOperationType(OperationEnum.OPERATE);
+                    operateFieldPermission.setAccountField(ledgerItem);
+                    operateFieldPermission.setReportTemplate(accountTemplate);
+                    fieldPermissions.add(operateFieldPermission);
+                    fieldPermissions.add(fieldPermission);
+                    break;
+                }
+            }else{
+                FieldPermission fieldPermission=new FieldPermission();
+                fieldPermission.setAccountField(ledgerItem);
+                fieldPermission.setReportTemplate(accountTemplate);
+                fieldPermission.setOperationType(OperationEnum.LOOK);
+                FieldPermission operateFieldPermission=new FieldPermission();
+                operateFieldPermission.setOperationType(OperationEnum.OPERATE);
+                operateFieldPermission.setAccountField(ledgerItem);
+                operateFieldPermission.setReportTemplate(accountTemplate);
+                fieldPermissions.add(operateFieldPermission);
+                fieldPermissions.add(fieldPermission);
+            }
+
+        }
+        return fieldPermissionRepository.save(fieldPermissions);
+    }
+    
+    @Override
+	public void delFieldPermessions(AccountTemplate accountTemplate) {
+		 Collection<FieldPermission> rfps=fieldPermissionRepository.findByReportTemplate(accountTemplate);
+		 if (rfps!=null && rfps.size()>0){
+			 fieldPermissionRepository.delete(rfps);
+		 }
+	}
+    
     @Override
     public Collection<AccountField> convertAccountField(Collection<AccountField> ledgerItems) {
         Collection<AccountField> newItems = null;
@@ -62,162 +349,116 @@ public class AccountFieldServiceImpl implements AccountFieldService {
         return newItems;
     }
 
-    @Override
-    @Transactional
-    public void deleteAccountFieldByAccountTemplate(AccountTemplate accountTemplate) {
-        if(null != accountTemplate){
-            AccountTemplate fullAccountTemplate = accountTemplateRepository.findOne(accountTemplate.getId());
-            try {
-                if(null != fullAccountTemplate.getAccountFields() && !fullAccountTemplate.getAccountFields().isEmpty()){
-                    for (AccountField accountField : fullAccountTemplate.getAccountFields()){
-                        accountFieldRepository.delete(accountField);
+	/**
+     * 判断是否可以直接修改，只修改  （查询，修改，只读 ，字段描述）  部分时，可以直接修改
+     * @param acField
+     * @param oldAcField
+     * @return  key值表示是否可以修改，value表示修改的AccountField
+     */
+    private Map<Boolean,AccountField> valiAccountTemplateIsUpdate(Collection<AccountField> acField, Collection<AccountField> oldAcField ){
+        Map<Boolean,AccountField> result = new HashMap<>();
+        Boolean flag = false;
+        AccountField resultAccountField = null;
+        for(AccountField accountField:acField){
+            for(AccountField accountField1:oldAcField){
+                if(accountField.getId().equals(accountField1.getId())){
+                    //先判断 查询，修改，只读 是否被修改
+                    if(
+                            accountField.isVisible() != accountField1.isVisible() ||
+                            accountField.isEditable() != accountField1.isEditable() ||
+                            accountField.isSearchable() != accountField1.isSearchable() ||
+                            (accountField.getItemDescription() == null ? "" : accountField.getItemDescription() ).equals( (accountField1.getItemDescription() == null ? "" : accountField1.getItemDescription() ) )
+                    ){
+                        if( accountField.getItemType().equals( accountField1.getItemType() ) ){
+                            //再判断字段类型是否字典项
+                            //if(
+                            //        accountField.getItemType().equals("CODELIB")
+                            //){
+                                //再判断其他属性没有被修改
+                                if(
+                                        accountField.getItemCode().equals( accountField1.getItemCode() ) &&
+                                        accountField.getItemName().equals( accountField1.getItemName() ) &&
+                                        (accountField.getLength() == null ? "" : accountField.getLength() ).equals( (accountField1.getLength() == null ? "" : accountField1.getLength() ) ) &&
+                                        accountField.getOrderNumber() == accountField1.getOrderNumber()  &&
+                                        accountField.isRequire() == accountField1.isRequire()  &&
+                                        accountField.isPkable() == accountField1.isPkable()
+                                        //accountField.getDictionaryItems() == accountField1.getDictionaryItems()
+                                ){
+                                    flag = true;
+                                    accountField1.setVisible(accountField.isVisible());
+                                    accountField1.setEditable(accountField.isEditable());
+                                    accountField1.setSearchable(accountField.isSearchable());
+                                    accountField1.setItemDescription(accountField.getItemDescription());
+                                    resultAccountField = accountField1;
+
+                                }else{
+                                    flag = false;
+                                }
+
+                            //}
+                        }else{
+                            flag = false;
+                        }
+
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
             }
         }
+        result.put(flag,resultAccountField);
+        return result;
     }
-
-	@Override
-	public AccountField getLedgerItem(AccountField ledgerItem) {
-		if ("CODELIB".equals(ledgerItem.getItemType())) {
-            CodeField codeLedgerItem = new CodeField();
-            codeLedgerItem.setId(null);
-            codeLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
-            codeLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
-            codeLedgerItem.setSearchable(ledgerItem.isSearchable());
-            codeLedgerItem.setSqlType(SqlTypeEnum.VARCHAR);
-            codeLedgerItem.setPkable(ledgerItem.isPkable());
-            codeLedgerItem.setEditable(ledgerItem.isEditable());
-            codeLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
-            codeLedgerItem.setVisible(ledgerItem.isVisible());
-            codeLedgerItem.setRequire(ledgerItem.isRequire());
-            codeLedgerItem.setCover(ledgerItem.isCover());
-            codeLedgerItem.setOrderNumber(ledgerItem.getOrderNumber());
-            codeLedgerItem.setTemplateId(ledgerItem.getTemplateId());
-            codeLedgerItem.setItemDescription(ledgerItem.getItemDescription()==null?"":ledgerItem.getItemDescription());
-            codeLedgerItem.setDicId(ledgerItem.getDicId());
-            if (ledgerItem.getDicId() != null&&!"".equals(ledgerItem.getDicId())) {
-            	Long id = Long.valueOf(ledgerItem.getDicId());
-                Dictionary codeLib = dictionaryRepository.findOne(id);
-                codeLedgerItem.setDictionary(codeLib);
-            }
-            return codeLedgerItem;
-
-        } else if ("DOUBLE".equals(ledgerItem.getItemType())) {
-            DoubleField doubleLedgerItem = new DoubleField();
-            doubleLedgerItem.setId(null);
-            doubleLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
-            doubleLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
-            doubleLedgerItem.setSearchable(ledgerItem.isSearchable());
-            doubleLedgerItem.setSqlType(SqlTypeEnum.DOUBLE);
-            doubleLedgerItem.setPkable(ledgerItem.isPkable());
-            doubleLedgerItem.setEditable(ledgerItem.isEditable());
-            doubleLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
-            doubleLedgerItem.setVisible(ledgerItem.isVisible());
-            doubleLedgerItem.setRequire(ledgerItem.isRequire());
-            doubleLedgerItem.setCover(ledgerItem.isCover());
-            doubleLedgerItem.setOrderNumber(ledgerItem.getOrderNumber());
-            doubleLedgerItem.setTemplateId(ledgerItem.getTemplateId());
-            doubleLedgerItem.setItemDescription(ledgerItem.getItemDescription()==null?"":ledgerItem.getItemDescription());
-            return doubleLedgerItem;
-
-        } else if ("INTEGER".equals(ledgerItem.getItemType())) {
-            IntegerField integerItem = new IntegerField();
-            integerItem.setId(null);
-            integerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
-            integerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
-            integerItem.setSearchable(ledgerItem.isSearchable());
-            integerItem.setSqlType(SqlTypeEnum.INTEGER);
-            integerItem.setPkable(ledgerItem.isPkable());
-            integerItem.setEditable(ledgerItem.isEditable());
-            integerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
-            integerItem.setVisible(ledgerItem.isVisible());
-            integerItem.setRequire(ledgerItem.isRequire());
-            integerItem.setCover(ledgerItem.isCover());
-            integerItem.setOrderNumber(ledgerItem.getOrderNumber());
-            integerItem.setTemplateId(ledgerItem.getTemplateId());
-            integerItem.setItemDescription(ledgerItem.getItemDescription()==null?"":ledgerItem.getItemDescription());
-            return integerItem;
-
-        } else if ("DATE".equals(ledgerItem.getItemType())) {
-            DateField dateLedgerItem = new DateField();
-            dateLedgerItem.setId(null);
-            dateLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
-            dateLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
-            dateLedgerItem.setSearchable(ledgerItem.isSearchable());
-            dateLedgerItem.setSqlType(SqlTypeEnum.DATE);
-            dateLedgerItem.setPkable(ledgerItem.isPkable());
-            dateLedgerItem.setEditable(ledgerItem.isEditable());
-            dateLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
-            dateLedgerItem.setVisible(ledgerItem.isVisible());
-            dateLedgerItem.setRequire(ledgerItem.isRequire());
-            dateLedgerItem.setCover(ledgerItem.isCover());
-            dateLedgerItem.setOrderNumber(ledgerItem.getOrderNumber());
-            dateLedgerItem.setTemplateId(ledgerItem.getTemplateId());
-            dateLedgerItem.setItemDescription(ledgerItem.getItemDescription()==null?"":ledgerItem.getItemDescription());
-            return dateLedgerItem;
-
-        } else if ("VARCHAR".equals(ledgerItem.getItemType())) {
-            StringField stringLedgerItem = new StringField();
-            stringLedgerItem.setId(null);
-            stringLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
-            stringLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
-            stringLedgerItem.setSearchable(ledgerItem.isSearchable());
-            stringLedgerItem.setSqlType(SqlTypeEnum.VARCHAR);
-            stringLedgerItem.setPkable(ledgerItem.isPkable());
-            stringLedgerItem.setEditable(ledgerItem.isEditable());
-            stringLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
-            stringLedgerItem.setVisible(ledgerItem.isVisible());
-            stringLedgerItem.setRequire(ledgerItem.isRequire());
-            stringLedgerItem.setCover(ledgerItem.isCover());
-            stringLedgerItem.setOrderNumber(ledgerItem.getOrderNumber());
-            stringLedgerItem.setTemplateId(ledgerItem.getTemplateId());
-            stringLedgerItem.setItemDescription(ledgerItem.getItemDescription()==null?"":ledgerItem.getItemDescription());
-            stringLedgerItem.setLength(ledgerItem.getLength());
-            return stringLedgerItem;
-        } else if("DECIMAL".equals(ledgerItem.getItemType())){
-			DecimalField decimalLedgerItem = new DecimalField();
-            decimalLedgerItem.setId(null);
-            decimalLedgerItem.setItemCode(ledgerItem.getItemCode() == null ? "" : ledgerItem.getItemCode());
-            decimalLedgerItem.setItemName(ledgerItem.getItemName() == null ? "" : ledgerItem.getItemName());
-            decimalLedgerItem.setSearchable(ledgerItem.isSearchable());
-            decimalLedgerItem.setSqlType(SqlTypeEnum.DECIMAL);
-            decimalLedgerItem.setPkable(ledgerItem.isPkable());
-            decimalLedgerItem.setEditable(ledgerItem.isEditable());
-            decimalLedgerItem.setItemType(ledgerItem.getItemType() == null ? "" : ledgerItem.getItemType());
-            decimalLedgerItem.setVisible(ledgerItem.isVisible());
-            decimalLedgerItem.setRequire(ledgerItem.isRequire());
-            decimalLedgerItem.setCover(ledgerItem.isCover());
-            decimalLedgerItem.setOrderNumber(ledgerItem.getOrderNumber());
-            decimalLedgerItem.setTemplateId(ledgerItem.getTemplateId());
-            decimalLedgerItem.setItemDescription(ledgerItem.getItemDescription()==null?"":ledgerItem.getItemDescription());
-            return decimalLedgerItem;
-
-        }else {
-            return null;
+	
+	private Collection<FieldPermission> addAccountFieldPermessionsBatch(AccountTemplate accountTemplate) throws Exception {
+        //最新的报文字段
+        Collection<AccountField> ledgerItems=accountTemplate.getAccountFields();
+        //数据库中已有的报文权限数据
+        Collection<FieldPermission> hasPermission = fieldPermissionRepository.findByReportTemplate(accountTemplate);
+        List<Long> hasPermissionId = new ArrayList<Long>();
+        for (FieldPermission permission : hasPermission) {
+            //对 没有权限的字段 进行权限初始化分配
+        	hasPermissionId.add(permission.getAccountField().getId());
         }
-	}
-
-	@Override
-	public Collection<AccountField> modifyAccountField(Collection<AccountField> ledgerItems) {
-		Collection<AccountField> newItems = null;
-        try {
-            newItems = new ArrayList<>();
-            for (AccountField ledgerItem : ledgerItems) {
-                if (ledgerItem instanceof CodeField || ledgerItem instanceof DateField || ledgerItem instanceof DoubleField
-                        || ledgerItem instanceof StringField || ledgerItem instanceof IntegerField || ledgerItem instanceof DecimalField) {
-                    newItems.add(ledgerItem);
-                } else {
-                    newItems.add(getLedgerItem(ledgerItem));
+        //待生成的报文权限
+        Collection<FieldPermission> fieldPermissions=new ArrayList<FieldPermission>();
+        Iterator<AccountField> it=ledgerItems.iterator();
+        while(it.hasNext()){
+            AccountField ledgerItem=it.next();
+            if(ledgerItem.isPkable()){
+                continue;
+            }
+            if(null != hasPermission && hasPermission.size()>0){
+                if(!hasPermissionId.contains(ledgerItem.getId())){
+                    FieldPermission fieldPermission=new FieldPermission();
+                    fieldPermission.setAccountField(ledgerItem);
+                    fieldPermission.setReportTemplate(accountTemplate);
+                    fieldPermission.setOperationType(OperationEnum.LOOK);
+                    FieldPermission operateFieldPermission=new FieldPermission();
+                    operateFieldPermission.setOperationType(OperationEnum.OPERATE);
+                    operateFieldPermission.setAccountField(ledgerItem);
+                    operateFieldPermission.setReportTemplate(accountTemplate);
+                    fieldPermissions.add(operateFieldPermission);
+                    fieldPermissions.add(fieldPermission);
+                    break;
                 }
+            }else{
+                FieldPermission fieldPermission=new FieldPermission();
+                fieldPermission.setAccountField(ledgerItem);
+                fieldPermission.setReportTemplate(accountTemplate);
+                fieldPermission.setOperationType(OperationEnum.LOOK);
+                FieldPermission operateFieldPermission=new FieldPermission();
+                operateFieldPermission.setOperationType(OperationEnum.OPERATE);
+                operateFieldPermission.setAccountField(ledgerItem);
+                operateFieldPermission.setReportTemplate(accountTemplate);
+                fieldPermissions.add(operateFieldPermission);
+                fieldPermissions.add(fieldPermission);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+
         }
-        return newItems;
+        return fieldPermissionRepository.save(fieldPermissions);
+    }
+	
+	private void delFieldPermission(Long accountFieldId) {
+		Collection<FieldPermission> fieldPermissions = fieldPermissionRepository.findByAccountFieldId(accountFieldId);
+		fieldPermissionRepository.delete(fieldPermissions);
 	}
 }

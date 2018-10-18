@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitech.account.service.AccountFieldService;
 import com.fitech.account.service.AccountTemplateService;
 import com.fitech.domain.account.AccountField;
 import com.fitech.domain.account.AccountTemplate;
@@ -28,6 +29,8 @@ public class AccountFieldController {
     private AccountTemplateService accountTemplateService;
 	@Autowired
     private FieldPermissionService fieldPermissionService;
+	@Autowired
+	private AccountFieldService accountFieldService;
 	
 	
 	/**
@@ -41,7 +44,7 @@ public class AccountFieldController {
                                                           HttpServletRequest request) {
     	GenericResult<Collection<AccountField>> result = new GenericResult<>();
         try {
-        	Collection<AccountField> collection = accountTemplateService.findAccountFieldByIdVisable(id);
+        	Collection<AccountField> collection = accountFieldService.findVisableField(id);
             result.setData(collection);
         } catch (Exception e) {
             result.setSuccess(false);
@@ -62,7 +65,7 @@ public class AccountFieldController {
                                                         HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
-            result = accountTemplateService.addAccountTemplateField(accountTemplate);
+            result = accountFieldService.save(accountTemplate);
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();
@@ -82,7 +85,7 @@ public class AccountFieldController {
                                                         HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
-            result = accountTemplateService.modifyAccountTemplateField(accountTemplate);
+            result = accountFieldService.modify(accountTemplate);
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();
@@ -103,7 +106,7 @@ public class AccountFieldController {
     		@PathVariable("accountFieldId") Long accountFieldId, HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
-            result = accountTemplateService.deleteAccountTemplateField(accountTemplateId,accountFieldId);
+            result = accountFieldService.delete(accountTemplateId,accountFieldId);
         } catch (Exception e) {
             result.setSuccess(false);
             e.printStackTrace();
