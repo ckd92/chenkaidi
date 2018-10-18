@@ -818,6 +818,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
         } else {
             result.setSuccess(true);
             result.setMessage("校验通过");
+            account.setValidateStatus(ValidateStatusEnum.SUCCESS);
             Collection<ValidateAnalyzeResult> rules = validateAnalyzeResultService.findByObjectID(validateTableName,
                     accountProcessVo.getOperateFieldArr());
             if (!rules.isEmpty()) {
@@ -827,8 +828,10 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                 Collection<ValidateResult> list = validateResultService.findByValidatebatch(validateBatch.getBatchId());
                 if (list.size() > 0) {
                     result.setMessage("校验不通过");
+                    account.setValidateStatus(ValidateStatusEnum.FAIL);
                 }
             }
+            accountRepository.save(account);
         }
         return result;
     }
