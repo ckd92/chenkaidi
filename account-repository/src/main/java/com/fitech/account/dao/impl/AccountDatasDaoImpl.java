@@ -40,8 +40,8 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
         HashMap<String, Object> pkMap = this.generatePKMap(columnHeaderlist, accountTemplate);
 
         // 头参数
-        Map<String,Object> fieldMap = new HashMap<String, Object>();
-        fieldMap.put("tablename", tableName);
+        Map<String,Object> sqlMap = new HashMap<String, Object>();
+        sqlMap.put("tablename", tableName);
         
         //组装批量导入SQL
         List<String> fields = new ArrayList<String>();
@@ -56,8 +56,8 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             	}
             }
         }
-        fieldMap.put("fields", fields);
-        fieldMap.put("id", accountId);
+        sqlMap.put("fields", fields);
+        sqlMap.put("id", accountId);
 
         //集合存放复合主键的值，用于对比是否有重复数据
         List<String> pkValueStr = new ArrayList<>();
@@ -98,6 +98,10 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
         
         //递归数据行
         for (int i = 0; i < datas.size(); i++) {
+        	
+        	Map<String,Object> fieldMap = new HashMap<String, Object>();
+        	fieldMap.putAll(sqlMap);
+        	
         	List<String> valueList = new ArrayList<String>(); 
             //待录入值
             List<String> values = datas.get(i);
@@ -106,7 +110,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 try{
                 	field = (AccountField) items.toArray()[k];
             	}catch(IndexOutOfBoundsException e){
-            		throw new AppException(ExceptionCode.SYSTEM_ERROR, "请确认导入模板是否正确！字典项字段功能暂未完善，请确认是否导入字典项内容");
+            		throw new AppException(ExceptionCode.SYSTEM_ERROR, "请确认导入模板是否正确！或字典项字段功能暂未完善，请确认是否导入字典项内容");
             	}
                 
                 if (pkMap.containsKey(field.getItemCode())) {
@@ -139,14 +143,12 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 } else {
                     valueList.add(null);
                 }
-
             }
             // 赋值
             fieldMap.put("values", valueList);
             dataMap.add(fieldMap);
-
-            
         }
+        
         // 所有该台账所有补录数据
         Map<String,String> sql = new HashMap<>();
         sql.put("sql", "delete from "+tableName);
