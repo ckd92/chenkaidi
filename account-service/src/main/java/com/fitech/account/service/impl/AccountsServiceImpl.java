@@ -267,7 +267,7 @@ public class AccountsServiceImpl implements AccountsService {
 		try{
 			em = entityManagerFactory.createEntityManager();
 			String hql = "select i.institutionname,t.templatename,to_char(to_date(a.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,a.accountstate from ACCOUNT a left join INSTITUTION i on"+
-						" a.institution_id=i.id left join accounttemplate t on a.accounttemplate_id=t.id "+
+						" a.institution_id=i.id left join reporttemplate t on a.accounttemplate_id=t.id "+
 						" where a.accountstate=:accountState and to_char(to_date(a.term,'yyyy-MM-dd'),'yyyy-MM-dd')=:term and i.institutionname=:institutionName";
 			Query query = em.createNativeQuery(hql);
 			query.setParameter("accountState",accountState);
