@@ -726,8 +726,10 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             for (AccountLine accountLine : accountLines) {
                 Collection<AccountField> accountFields = accountLine.getAccountFields();
                 for (AccountField field : accountFields) {
-                    if (field.getItemType() != null && field.getItemType().equals("DATE")){
-                        field.setValue(new SimpleDateFormat("yyyy-MM-dd").format(field.getValue()));
+                    if (field.getSqlType() != null && field.getSqlType().equals(SqlTypeEnum.DATE)){
+                        if(StringUtil.isNotEmpty(field.getValue())){
+                            field.setValue(new SimpleDateFormat("yyyy-MM-dd").format(field.getValue()));
+                        }
                     }
                 }
             }
