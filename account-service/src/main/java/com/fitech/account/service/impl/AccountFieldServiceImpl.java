@@ -113,10 +113,11 @@ public class AccountFieldServiceImpl implements AccountFieldService {
     public GenericResult<Boolean> modify(AccountTemplate accountTemplate) {
     	GenericResult<Boolean> result = new GenericResult<>();
 		try {
-			//获取修改的字段集合
-			Collection<AccountField> acField = accountTemplate.getAccountFields();
             //获取原本该模板
             AccountTemplate acTemplate = accountTemplateRepository.findById(accountTemplate.getId());
+            
+            //获取待修改的字段集合
+			Collection<AccountField> acField = accountTemplate.getAccountFields();
             //原本的字段集合
             Collection<AccountField> oldAcField = acTemplate.getAccountFields();
 
@@ -351,56 +352,52 @@ public class AccountFieldServiceImpl implements AccountFieldService {
 
 	/**
      * 判断是否可以直接修改，只修改  （查询，修改，只读 ，字段描述）  部分时，可以直接修改
-     * @param acField
-     * @param oldAcField
+     * @param acField 修改的值
+     * @param oldAcField 原有值
      * @return  key值表示是否可以修改，value表示修改的AccountField
      */
     private Map<Boolean,AccountField> valiAccountTemplateIsUpdate(Collection<AccountField> acField, Collection<AccountField> oldAcField ){
         Map<Boolean,AccountField> result = new HashMap<>();
         Boolean flag = false;
+        // 待修改的字段实例
         AccountField resultAccountField = null;
+        
         for(AccountField accountField:acField){
             for(AccountField accountField1:oldAcField){
                 if(accountField.getId().equals(accountField1.getId())){
-                    //先判断 查询，修改，只读 是否被修改
-                    if(
-                            accountField.isVisible() != accountField1.isVisible() ||
-                            accountField.isEditable() != accountField1.isEditable() ||
-                            accountField.isSearchable() != accountField1.isSearchable() ||
-                            (accountField.getItemDescription() == null ? "" : accountField.getItemDescription() ).equals( (accountField1.getItemDescription() == null ? "" : accountField1.getItemDescription() ) )
-                    ){
-                        if( accountField.getItemType().equals( accountField1.getItemType() ) ){
-                            //再判断字段类型是否字典项
-                            //if(
-                            //        accountField.getItemType().equals("CODELIB")
-                            //){
-                                //再判断其他属性没有被修改
-                                if(
-                                        accountField.getItemCode().equals( accountField1.getItemCode() ) &&
-                                        accountField.getItemName().equals( accountField1.getItemName() ) &&
-                                        (accountField.getLength() == null ? "" : accountField.getLength() ).equals( (accountField1.getLength() == null ? "" : accountField1.getLength() ) ) &&
-                                        accountField.getOrderNumber() == accountField1.getOrderNumber()  &&
-                                        accountField.isRequire() == accountField1.isRequire()  &&
-                                        accountField.isPkable() == accountField1.isPkable()
-                                        //accountField.getDictionaryItems() == accountField1.getDictionaryItems()
-                                ){
-                                    flag = true;
-                                    accountField1.setVisible(accountField.isVisible());
-                                    accountField1.setEditable(accountField.isEditable());
-                                    accountField1.setSearchable(accountField.isSearchable());
-                                    accountField1.setItemDescription(accountField.getItemDescription());
-                                    resultAccountField = accountField1;
-
-                                }else{
-                                    flag = false;
-                                }
-
-                            //}
-                        }else{
-                            flag = false;
-                        }
-
-                    }
+                	// 如果列名，字段类型和字段长度发生变更，则不可直接修改字段实例
+                	if(accountField.getItemCode() != accountField1.getItemCode() ||
+                			accountField.getItemType() != accountField1.getItemType() ||
+                			accountField.getLength() != accountField1.getLength()){
+                		flag = false;
+                	}else{
+                		if("CODELIB".equals(accountField.getItemType())){
+                			CodeField codeField = (CodeField)accountField1;
+                			codeField.getDictionary().setId(Long.parseLong(accountField.getDicId()));
+                			codeField.setVisible(accountField.isVisible());
+                			codeField.setEditable(accountField.isEditable());
+                			codeField.setSearchable(accountField.isSearchable());
+                			codeField.setOrderNumber(accountField.getOrderNumber());
+                			codeField.setRequire(accountField.isRequire());
+                			codeField.setPkable(accountField.isPkable());
+                			codeField.setItemName(accountField.getItemName());
+                			codeField.setItemDescription(accountField.getItemDescription());
+                			codeField.setDicId(accountField.getDicId());
+                			resultAccountField = codeField;
+                		}else{
+                			flag = true;
+    						accountField1.setVisible(accountField.isVisible());
+    						accountField1.setEditable(accountField.isEditable());
+    						accountField1.setSearchable(accountField.isSearchable());
+    						accountField1.setOrderNumber(accountField.getOrderNumber());
+    						accountField1.setRequire(accountField.isRequire());
+    						accountField1.setPkable(accountField.isPkable());
+    						accountField1.setItemName(accountField.getItemName());
+    						accountField1.setItemDescription(accountField.getItemDescription());
+    						accountField1.setDicId(accountField.getDicId());
+    						resultAccountField = accountField1;
+                		}
+                	}
                 }
             }
         }
