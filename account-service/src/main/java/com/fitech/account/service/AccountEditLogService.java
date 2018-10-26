@@ -3,9 +3,12 @@ package com.fitech.account.service;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountEditLog;
 import com.fitech.domain.account.AccountField;
-import org.springframework.data.domain.Page;
+
+
+import com.fitech.framework.lang.page.Page;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by wangxw on 2017/8/24.
@@ -18,17 +21,20 @@ public interface AccountEditLogService {
 			, Collection<AccountField> accountFieldList,Account account);
 
 	/**
-	 * 多条件查询修改痕迹
+	 * 修改痕迹查询
 	 * @param accountEditLog
+	 * @param page
 	 * @return
 	 */
-	public Page<AccountEditLog> findAccountEditLog(AccountEditLog accountEditLog);
-
-	public Page<AccountEditLog> findAccountEditLogByPage(AccountEditLog accountEditLog);
+	public List<AccountEditLog> findAccountEditLogByPage(AccountEditLog accountEditLog,Page page);
+	/**
+	 * 修改痕迹统计查询
+	 * @param accountEditLog
+	 * @param page
+	 * @return
+	 */
+	public List<AccountEditLog> findAccountEditLogTJByPage(AccountEditLog accountEditLog,Page page);
 	
-	public Page<AccountEditLog> findAccountEditLogTJByPage(AccountEditLog accountEditLog);
-	
-	public String downLoadEditLogsTJ(String where);
+//	public String downLoadEditLogsTJ(String where);
 
-	public Integer findAccountEditLogByPageCount(AccountEditLog accountEditLog);
 }
