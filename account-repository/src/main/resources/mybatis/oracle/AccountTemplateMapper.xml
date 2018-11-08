@@ -13,7 +13,15 @@
                         <when test="item.sqlType != null">
                             <choose>
                                 <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'VARCHAR'">
-                                    VARCHAR(${item.length}),
+                                    <choose>
+                                        <when test="item.length == null or item.length == ''">
+                                            VARCHAR(255),
+                                        </when>
+                                        <otherwise>
+                                            VARCHAR(${item.length}),
+                                        </otherwise>
+                                    </choose>
+
                                 </when>
                                 <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.itemType) == 'CODELIB'">
                                     ${item.sqlType}(255),
