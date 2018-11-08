@@ -264,4 +264,7 @@
 		)
 	 </select>
 	
+	<select id="exculteCall" statementType="CALLABLE" parameterType="java.util.Map">  
+       {call PROC_ACCOUNT(#{term,mode=IN,jdbcType=VARCHAR},#{result,mode=OUT,jdbcType=VARCHAR})}  
+    </select>  
 </mapper>

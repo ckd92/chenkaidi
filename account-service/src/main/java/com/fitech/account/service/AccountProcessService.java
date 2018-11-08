@@ -4,6 +4,7 @@ package com.fitech.account.service;
 import java.util.List;
 
 
+
 import com.fitech.domain.account.Account;
 import com.fitech.domain.system.ProcessConfig;
 import com.fitech.framework.lang.page.Page;
@@ -57,4 +58,9 @@ public interface AccountProcessService {
     
     public List<Long> getReceiverIdList(String term,String freq);
 
+    /**
+	 * 创建待上报记录
+	 * @param term
+	 */
+	public void createAccountTask(String term);
 }

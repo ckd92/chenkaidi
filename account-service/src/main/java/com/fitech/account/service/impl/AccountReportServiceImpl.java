@@ -46,6 +46,7 @@ public class AccountReportServiceImpl implements AccountReportService {
     @Override
     @Transactional
     public void startProcess(Account account){
+    	accountProcessService.createAccountTask(account.getTerm());
         //根据报文期数获取待开启的报文实例
         Collection<Account> ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(), SubmitStateEnum.NOTSUBMIT);
         for (Account report : ledgerReportList) {
@@ -57,7 +58,7 @@ public class AccountReportServiceImpl implements AccountReportService {
                     accountProcessService.processStart(processConfig, report);
                     report.setSubmitStateType(SubmitStateEnum.SUBMITING);
                     report.setAccountState(AccountStateEnum.DBL);
-                    accountRepository.save(account);
+//                    accountRepository.save(account);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

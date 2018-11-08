@@ -1,6 +1,5 @@
 package com.fitech.account.service.impl;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,11 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.fitech.framework.lang.page.Page;
-import com.fitech.report.dao.AccountProcDao;
-
 import org.activiti.engine.RuntimeService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +29,7 @@ import com.fitech.domain.account.AccountProcess;
 import com.fitech.domain.account.AccountTask;
 import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.system.FieldPermission;
-import com.fitech.domain.system.Institution;
 import com.fitech.domain.system.ProcessConfig;
-import com.fitech.domain.system.ReportPermission;
 import com.fitech.domain.system.Role;
 import com.fitech.domain.system.User;
 import com.fitech.enums.ValidateStatusEnum;
@@ -47,12 +40,11 @@ import com.fitech.framework.activiti.service.ProcessService;
 import com.fitech.framework.activiti.service.TodoTaskService;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
-import com.fitech.framework.lang.common.CommonConst;
+import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.result.GenericResult;
-import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
+import com.fitech.report.dao.AccountProcDao;
 import com.fitech.system.dao.UserDataDao;
-import com.fitech.system.repository.InstitutionRepository;
 import com.fitech.system.repository.RoleRepository;
 import com.fitech.system.repository.UserRepository;
 import com.fitech.validate.domain.ValidateAnalyzeResult;
@@ -389,5 +381,10 @@ public class AccountProcessServiceImpl implements AccountProcessService {
 	@Override
 	public List<Long> getReceiverIdList(String term, String freq) {
 		return accountProcessServiceDao.getReceiverIdList(term, freq);
+	}
+
+	@Override
+	public void createAccountTask(String term) {
+		accountProcessDao.createAccountTask(term);
 	}
 }

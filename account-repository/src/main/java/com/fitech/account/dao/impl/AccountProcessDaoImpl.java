@@ -252,4 +252,11 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
 		return vos;
 	}
 
+	@Override
+	public void createAccountTask(String term) {
+		HashMap<String,String> map =new HashMap<String,String>();
+		map.put("term", term);
+		super.selectList("accProServiceMapper.exculteCall",map);
+	}
+
 }

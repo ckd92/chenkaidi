@@ -40,5 +40,9 @@ public interface AccountProcessDao {
 	 */
 	public List<AccountProcessVo> findDoneTaskBySql(AccountProcessVo vo, User user,Page page);
 
-
+	/**
+	 * 创建待上报记录
+	 * @param term
+	 */
+	public void createAccountTask(String term);
 }
