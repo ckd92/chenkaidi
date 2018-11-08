@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="accountsMapper">
+    <!--任务统计-->
+    <select id="getrwtj" resultType="com.fitech.vo.account.AccountVo">
+        select k.term as term,
+            k.institutionname as institutionname,
+            k.totalcount as totalcount,
+            to_char(k.dbl / k.totalcount * 100, '9990') dbl,
+            to_char(k.dsh / k.totalcount * 100, '9990') dsh,
+            to_char(k.shtg / k.totalcount * 100, '9990') shtg,
+            to_char(k.th / k.totalcount * 100, '9990') th
+        from (select a.term,
+                 (select institutionname
+                  from INSTITUTION
+                  where id = a.institution_id) institutionname,
+                      a.totalcount,
+                      nvl(b.dbl, 0) dbl,
+                      nvl(c.dsh, 0) dsh,
+                      nvl(d.shtg, 0) shtg,
+                      nvl(e.th, 0) th
+                  from (select count(1) totalcount, t.term, t.institution_id
+                        from ACCOUNT t
+                        group by t.term, t.institution_id) a
+                  left join (select count(1) dbl, term, institution_id
+                              from account
+                              where accountstate = 0
+                              group by term, institution_id) b
+                  on a.term = b.term
+                  and a.institution_id = b.institution_id
+                  left join (select count(1) dsh, term, institution_id
+                              from account
+                              where accountstate = 1
+                              group by term, institution_id) c
+                  on a.term = c.term
+                  and a.institution_id = c.institution_id
+                  left join (select count(1) shtg, term, institution_id
+                              from account
+                              where accountstate = 2
+                              group by term, institution_id) d
+                  on a.term = d.term
+                  and a.institution_id = d.institution_id
+                  left join (select count(1) th, term, institution_id
+                              from account
+                              where accountstate = 3
+                              group by term, institution_id) e
+                  on a.term = e.term
+                  and a.institution_id = e.institution_id) k
+    </select>
+
+    <select id="getrwtjByCondition" parameterType="map" resultType="map">
+    	select * from(
+    		select to_char(to_date(k.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,k.institutionname,
+    		k.totalcount,to_char(k.dbl/k.totalcount*100,'9990') dbl,
+			to_char(k.dsh/k.totalcount*100,'9990') dsh,to_char(k.shtg/k.totalcount*100,'9990') shtg,
+			to_char(k.th/k.totalcount*100,'9990') th from (select a.term,(
+				select institutionname from INSTITUTION where id=a.institution_id
+			) institutionname,a.totalcount,nvl(b.dbl, 0) dbl,
+			nvl(c.dsh, 0) dsh,nvl(d.shtg, 0) shtg,nvl(e.th, 0) th from (select count(1) totalcount,t.term,
+			t.institution_id from ACCOUNT t group by t.term, t.institution_id) a left join (select count(1) dbl,
+			term,institution_id from account where accountstate = 0 group by term, institution_id) b on a.term = b.term
+			and a.institution_id = b.institution_id left join (select count(1) dsh, term, institution_id from account
+			where accountstate = 1 group by term, institution_id) c on a.term = c.term and a.institution_id = c.institution_id 
+			left join (select count(1) shtg, term, institution_id from account where accountstate = 2 group by term,
+			institution_id) d on a.term = d.term and a.institution_id = d.institution_id left join (select count(1) th,
+			term, institution_id from account where accountstate = 3 group by term, institution_id) e on a.term = e.term
+			and a.institution_id = e.institution_id)k
+		)j where 
+		<choose>  
+            <when test="institutionName !=null and institutionName != '' ">  
+               to_char(to_date(j.term,'yyyy-MM-dd'),'yyyy-MM-dd')= #{term} 
+               and j.institutionname like  '%#{institutionName}%'
+            </when >  
+            <otherwise>  
+            	to_char(to_date(j.term,'yyyy-MM-dd'),'yyyy-MM-dd')= #{term}
+            </otherwise>  
+        </choose>  
+
+    </select>
+
+    <select id="getAccountIdByTaskId" parameterType="Long" resultType="Long">
+        SELECT ACC.ID as accountId FROM ACCOUNT ACC
+        inner JOIN AccountProcess ACCPRO ON ACC.id=ACCPRO.ACCOUNT_ID
+        inner JOIN ACT_RU_TASK task on task.proc_inst_id_=ACCPRO.PROCINSETID
+        where  TASK.ID_= #{taskId}
+    </select>
+    
+    
+    <select id="findrwtjAccounts" parameterType="map" resultType="map">
+    	select i.institutionname,t.templatename,to_char(to_date(a.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,
+    	a.accountstate from ACCOUNT a left join INSTITUTION i on
+		a.institution_id=i.id left join reporttemplate t on a.accounttemplate_id=t.id 
+		where a.accountstate= #{accountState} and to_char(to_date(a.term,'yyyy-MM-dd'),'yyyy-MM-dd')= #{term} 
+		and i.institutionname=#{institutionName}
+
+    </select>
+    
+    
+    
+    
+</mapper>

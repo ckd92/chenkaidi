@@ -3,10 +3,10 @@ package com.fitech.account.service;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 
 import com.fitech.domain.account.Account;
 import com.fitech.domain.system.ProcessConfig;
+import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.vo.account.AccountProcessVo;
 
@@ -22,21 +22,21 @@ public interface AccountProcessService {
      * @param where 查询条件
      * @return
      */
-    public Page<AccountProcessVo> findTodoTask(AccountProcessVo where);
+    public List<AccountProcessVo> findTodoTask(AccountProcessVo where, Page page);
     
     /**
      * 台账补录-已办任务查询
      * @param vo
      * @return
      */
-    public Page<AccountProcessVo> findDoneTask(AccountProcessVo vo);
+    public List<AccountProcessVo> findDoneTask(AccountProcessVo vo, Page page);
     
     /**
      * 数据查询---数据查询的初始化和高级查询
      * @param where
      * @return
      */
-    public Page<AccountProcessVo> findPageAccounts(AccountProcessVo where);
+    public List<AccountProcessVo> findPageAccounts(AccountProcessVo where,Page page);
     
     /**
      * 流程开启

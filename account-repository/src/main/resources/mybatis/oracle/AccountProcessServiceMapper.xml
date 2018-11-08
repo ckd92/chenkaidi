@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="accProServiceMapper">
+
+	<select id="isMultiInstanceTaskExecOver" parameterType="map" resultType="long">
+       select LONG_ from ACT_RU_VARIABLE where NAME_='nrOfActiveInstances' and PROC_INST_ID_= #{proInstId}
+    </select>
+	<select id="getReceiverIdList" parameterType="map" resultType="long">
+		select distinct  t3.sysuser_id as userId from account t 
+		inner join accountprocess t1 on t.id = t1.account_id
+		inner join act_ru_task t2 on t1.procinsetid = t2.proc_inst_id_ 
+		inner join sysuser_role t3 on t2.assignee_ = t3.roles_id 
+		where 1=1 
+		<if test=" freq != null and freq != '' ">
+			and t.freq = #{freq}
+		</if>
+		<if test=" term != null and term != '' ">
+			and t.term = #{term}
+		</if>
+	</select>
+	
+	<select id="findDoneQuerySqltwo" parameterType="map" resultType="map">
+       select ac.id,it.institutionname,to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,rt.templatename from account ac 
+       INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN ReportTemplate rt ON ac.ACCOUNTTEMPLATE_ID=rt.id 
+       where ac.accountstate=2
+		<if test=" term != null and term != '' ">
+			and to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') = #{term}
+		</if>
+		<if test=" templateName != null and templateName != '' ">
+			and rt.templatename like  concat(concat('%',#{templateName}),'%') 
+		</if>
+		<if test=" institutionname != null and institutionname != '' ">
+			and it.institutionname like concat(concat('%',#{institutionname}),'%')  
+		</if>
+		order by ac.id
+    </select>
+    
+    
+	<select id="findDoneQuerySql" parameterType="map" resultType="map">
+		select ac.id,it.institutionname,to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,ap.templatename from account ac 
+		INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN reporttemplate ap ON ac.ACCOUNTTEMPLATE_ID=ap.id 
+		where ac.accountstate=2
+		<if test=" term != null and term != '' ">
+			and to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') = #{term}
+		</if>
+		<if test=" templateName != null and templateName != '' ">
+			and ap.templatename like concat(concat('%',#{templateName}),'%')
+		</if>
+		<if test=" institutionname != null and institutionname != '' ">
+			and it.institutionname like concat(concat('%',#{institutionname}),'%')
+		</if>
+		order by ac.id
+    </select>
+	<select id="findDoneQuerySqlCount" parameterType="map" resultType="long">
+		select count(*) from (
+			select ac.id,it.institutionname,to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,ap.templatename from account ac 
+			INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN reporttemplate ap ON ac.ACCOUNTTEMPLATE_ID=ap.id 
+			where ac.accountstate=2
+			<if test=" term != null and term != '' ">
+				and to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') = #{term}
+			</if>
+			<if test=" templateName != null and templateName != '' ">
+				and ap.templatename like  concat(concat('%',#{templateName}),'%')  
+			</if>
+			<if test=" institutionname != null and institutionname != '' ">
+				and it.institutionname like concat(concat('%',#{institutionname}),'%') 
+			</if>
+			order by ac.id
+		)a 
+    </select>
+	
+	<select id="findTodoTaskBySql" parameterType="map" resultType="map">
+		select Translate(task.id_ USING CHAR_CS) as id,it.institutionId,it.institutionName,lrt.templateCode as 
+        templateId,lrt.templateName,to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ 
+        USING CHAR_CS) as processName,lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,o.ACCOUNT_ID,
+        Translate(task.description_ USING CHAR_CS) as description,
+        lr.freq,o.procInsetId,Translate(task.category_ USING CHAR_CS) as category,lr.accountState,o.id pid,lr.id lid,
+        o.refuseCause
+        from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
+        inner join Institution it on it.id=lr.institution_id
+        inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
+        inner join BusSystem bs on bs.id = lrt.busSystem_id
+        inner join ACT_RU_TASK task on task.proc_inst_id_=o.procInsetId
+        inner join sysuser_role ur on ur.roles_id=task.ASSIGNEE_
+        where 1=1 
+        <if test=" templateCode != null and templateCode != '' ">
+			and lrt.templateCode like concat(concat('%',#{templateCode,jdbcType=VARCHAR}),'%')
+		</if>
+        <if test=" templateName != null and templateName != '' ">
+			and lrt.templateName like concat(concat('%',#{templateName,jdbcType=VARCHAR}),'%')
+		</if>
+        <if test=" freq != null and freq != '' ">
+			and lr.freq= #{freq,jdbcType=VARCHAR}
+		</if>
+        <if test=" term != null and term != '' ">
+			and to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term,jdbcType=VARCHAR}
+		</if>
+		<if test=" institutionName != null and institutionName != '' ">
+			and it.institutionName like concat(concat('%',#{institutionName,jdbcType=VARCHAR}),'%') 
+		</if>
+		<if test=" @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != null and @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != '' ">
+			and lr.validatestatus = #{validatestatus}
+		</if>
+		
+		<if test=" @com.fitech.enums.account.AccountStateEnum@transferValue(accountState) != null and 
+					@com.fitech.enums.account.AccountStateEnum@transferValue(accountState) != '' ">
+			and lr.accountState  =  #{accountState}
+		</if>
+		<if test=" proc_inst_id_ != null and proc_inst_id_ != '' ">
+			and task.proc_inst_id_ = #{proc_inst_id_,jdbcType=INTEGER}
+		</if>
+		<if test=" sysuser_id != null and sysuser_id != '' ">
+			and ur.sysuser_id = #{sysuser_id,jdbcType=INTEGER}
+		</if>
+		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
+			and bs.reportSubSystem_id = #{reportSubSystem_id,jdbcType=INTEGER}
+		</if>
+		<if test=" institution_id != null and institution_id != '' ">
+			and lr.institution_id = #{institution_id,jdbcType=INTEGER}
+		</if>
+		<if test=" category_ != null and category_ != '' ">
+			and task.category_ = #{category_,jdbcType=VARCHAR}
+		</if>
+		order by term desc,templateid,institutionid
+     </select>
+	<select id="findTodoTaskBySqlCount" parameterType="map" resultType="long">
+		select count(*) from (
+		select Translate(task.id_ USING CHAR_CS) as id,it.institutionId,it.institutionName,lrt.templateCode as 
+        templateId,lrt.templateName,to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ 
+        USING CHAR_CS),lr.validateStatus,Translate(task.id_ USING CHAR_CS),o.ACCOUNT_ID,Translate(task.description_ USING CHAR_CS),
+        lr.freq,o.procInsetId,Translate(task.category_ USING CHAR_CS),lr.accountState,o.id pid,lr.id lid,o.refuseCause
+        from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
+        inner join Institution it on it.id=lr.institution_id
+        inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
+        inner join BusSystem bs on bs.id = lrt.busSystem_id
+        inner join ACT_RU_TASK task on task.proc_inst_id_=o.procInsetId
+        inner join sysuser_role ur on ur.roles_id=task.ASSIGNEE_
+        where 1=1 
+        <if test=" templateCode != null and templateCode != '' ">
+			and lrt.templateCode like concat(concat('%',#{templateCode,jdbcType=VARCHAR}),'%')  
+		</if>
+        <if test=" templateName != null and templateName != '' ">
+			and lrt.templateName like concat(concat('%',#{templateName,jdbcType=VARCHAR}),'%') 
+		</if>
+        <if test=" freq != null and freq != '' ">
+			and lr.freq= #{freq,jdbcType=VARCHAR}
+		</if>
+        <if test=" term != null and term != '' ">
+			and to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term,jdbcType=VARCHAR}
+		</if>
+		<if test=" institutionName != null and institutionName != '' ">
+			and it.institutionName like concat(concat('%',#{institutionName,jdbcType=VARCHAR}),'%')  
+		</if>
+		<if test=" @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != null and @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != '' ">
+			and lr.validatestatus = #{validatestatus}
+		</if>
+		
+		<if test=" @com.fitech.enums.account.AccountStateEnum@transferValue(accountState) != null and 
+					@com.fitech.enums.account.AccountStateEnum@transferValue(accountState) != '' ">
+			and lr.accountState  =  #{accountState}
+		</if>
+		<if test=" proc_inst_id_ != null and proc_inst_id_ != '' ">
+			and task.proc_inst_id_ = #{proc_inst_id_,jdbcType=INTEGER}
+		</if>
+		<if test=" sysuser_id != null and sysuser_id != '' ">
+			and ur.sysuser_id = #{sysuser_id,jdbcType=INTEGER}
+		</if>
+		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
+			and bs.reportSubSystem_id = #{reportSubSystem_id,jdbcType=INTEGER}
+		</if>
+		<if test=" institution_id != null and institution_id != '' ">
+			and lr.institution_id = #{institution_id,jdbcType=INTEGER}
+		</if>
+		<if test=" category_ != null and category_ != '' ">
+			and task.category_ = #{category_,jdbcType=VARCHAR}
+		</if>
+		)
+     </select>
+     <select id="findDoneTaskBySql" parameterType="map" resultType="map">
+		select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
+		to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ USING CHAR_CS) AS NAME,
+		lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,task.end_time_,lr.freq  
+        from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
+        inner join Institution it on it.id=lr.institution_id
+        inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
+        inner join BusSystem bs on bs.id = lrt.busSystem_id
+        inner join ACT_HI_TASKINST task on task.proc_inst_id_=o.procInsetId
+        inner join sysuser_role ur on to_char(ur.roles_id)=task.ASSIGNEE_
+        where 1=1
+        <if test=" templateCode != null and templateCode != '' ">
+			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
+		</if> 
+        <if test=" templateName != null and templateName != '' ">
+			and lrt.templateName like concat(concat('%',#{templateName}),'%') 
+		</if>
+        <if test=" freq != null and freq != '' ">
+			and lr.freq= #{freq}
+		</if>
+        <if test=" term != null and term != '' ">
+			and to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term}
+		</if>
+		<if test=" institutionName != null and institutionName != '' ">
+			and it.institutionName like concat(concat('%',#{institutionName}),'%')  
+		</if>
+		<if test=" processId != null and processId != '' ">
+			and task.proc_inst_id_ = #{processId}
+		</if>
+		<if test=" sysuser_id != null and sysuser_id != '' ">
+			and ur.sysuser_id = #{sysuser_id}
+		</if>
+		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
+			and bs.reportSubSystem_id = #{reportSubSystem_id}
+		</if>
+		<if test=" institution_id != null and institution_id != '' ">
+			and lr.institution_id = #{institution_id}
+		</if>
+		and task.end_time_ is not null
+		order by o.id
+     </select>
+     <select id="findDoneTaskBySqlCount" parameterType="map" resultType="long">
+		 select count(*) from (
+		 select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
+		 to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ USING CHAR_CS),
+		 lr.validateStatus,Translate(task.id_ USING CHAR_CS),task.end_time_,lr.freq
+		 from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
+		 inner join Institution it on it.id=lr.institution_id
+		 inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
+		 inner join BusSystem bs on bs.id = lrt.busSystem_id
+		 inner join ACT_HI_TASKINST task on task.proc_inst_id_=o.procInsetId
+		 inner join sysuser_role ur on to_char(ur.roles_id)=task.ASSIGNEE_
+		 where 1=1
+		 <if test=" templateCode != null and templateCode != '' ">and lrt.templateCode like
+			 concat(concat('%',#{templateCode}),'%')
+		 </if>
+        <if test=
+					" templateName != null and templateName != '' ">
+			and lrt.templateName like concat(concat('%',#{templateName}),'%') 
+		</if>
+        <if test=" freq != null and freq != '' ">
+			and lr.freq= #{freq}
+		</if>
+        <if test=" term != null and term != '' ">
+			and to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term}
+		</if>
+		<if test=" institutionName != null and institutionName != '' ">
+			and it.institutionName like concat(concat('%',#{institutionName}),'%')  
+		</if>
+		<if test=" processId != null and processId != '' ">
+			and task.proc_inst_id_ = #{processId}
+		</if>
+		<if test=" sysuser_id != null and sysuser_id != '' ">
+			and ur.sysuser_id = #{sysuser_id}
+		</if>
+		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
+			and bs.reportSubSystem_id = #{reportSubSystem_id}
+		</if>
+		<if test=" institution_id != null and institution_id != '' ">
+			and lr.institution_id = #{institution_id}
+		</if>
+		and task.end_time_ is not null
+		order by o.id
+		)
+	 </select>
+	
+</mapper>

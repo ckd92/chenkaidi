@@ -4,14 +4,11 @@ import java.io.File;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+import com.fitech.framework.lang.page.Page;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,13 +17,9 @@ import com.fitech.account.service.AccountProcessService;
 import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
-import com.fitech.framework.activiti.service.ProcessRegistryService;
-import com.fitech.framework.activiti.service.TodoTaskService;
-import com.fitech.framework.activiti.vo.TaskVo;
+
 import com.fitech.framework.lang.result.GenericResult;
-import com.fitech.framework.lang.util.FileUtil;
 import com.fitech.framework.security.util.TokenUtils;
-import com.fitech.system.service.ProcessConfigService;
 import com.fitech.system.service.SysLogService;
 import com.fitech.vo.account.AccountProcessVo;
 
@@ -39,13 +32,7 @@ import com.fitech.vo.account.AccountProcessVo;
 @RequestMapping("accountTask")
 public class AccountProcessController {
     @Autowired
-    private TodoTaskService todoTaskService;
-    @Autowired
     private AccountProcessService accountProcessService;
-    @Autowired
-    private ProcessRegistryService fProcessRegistry;
-    @Autowired
-    private ProcessConfigService processConfigService;
     @Autowired
     private SysLogService sysLogService;
     @Autowired
@@ -57,14 +44,18 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccountProcess")
-    public GenericResult<Page<AccountProcessVo>> findTodoTask(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-        GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
+    public GenericResult<List<AccountProcessVo>> findTodoTask(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
+        GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
            // 获取token
             Long userId = TokenUtils.getLoginId(request);
             accountProcessVo.setUserId(userId);
-            Page<AccountProcessVo> pageVo = this.accountProcessService.findTodoTask(accountProcessVo);
+            Page page = new Page();
+            page.setCurrentPage(accountProcessVo.getPageNum());
+            page.setPageSize(accountProcessVo.getPageSize());
+            List<AccountProcessVo> pageVo = this.accountProcessService.findTodoTask(accountProcessVo,page);
             result.setData(pageVo);
+            result.setPage(page);
         }catch (Exception e){
             e.printStackTrace();
             result.setSuccess(false);
@@ -81,14 +72,18 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findAssignedTask")
-    public GenericResult<Page<AccountProcessVo>> findDoneTask(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
-        GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
+    public GenericResult<List<AccountProcessVo>> findDoneTask(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
+        GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
             //获取token
             Long userId = TokenUtils.getLoginId(request);
             accountProcessVo.setUserId(userId);
-            Page<AccountProcessVo> pageVo = this.accountProcessService.findDoneTask(accountProcessVo);
+            Page page = new Page();
+            page.setCurrentPage(accountProcessVo.getPageNum());
+            page.setPageSize(accountProcessVo.getPageSize());
+            List<AccountProcessVo> pageVo = this.accountProcessService.findDoneTask(accountProcessVo,page);
             result.setData(pageVo);
+            result.setPage(page);
         } catch (Exception e) {
             e.printStackTrace();
             result.setSuccess(false);
@@ -104,11 +99,15 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccounts")
-    public GenericResult<Page<AccountProcessVo>> findCurrentAccounts(@RequestBody AccountProcessVo accountProcessVo){
-        GenericResult<Page<AccountProcessVo>> result = new GenericResult<>();
+    public GenericResult<List<AccountProcessVo>> findCurrentAccounts(@RequestBody AccountProcessVo accountProcessVo){
+        GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
-            Page<AccountProcessVo> pageVo = this.accountProcessService.findPageAccounts(accountProcessVo);
+            Page page = new Page();
+            page.setPageSize(accountProcessVo.getPageSize());
+            page.setCurrentPage(accountProcessVo.getPageNum());
+            List<AccountProcessVo> pageVo = this.accountProcessService.findPageAccounts(accountProcessVo,page);
             result.setData(pageVo);
+            result.setPage(page);
         }catch (Exception e){
             e.printStackTrace();
             result.setSuccess(false);

@@ -1,11 +1,11 @@
 package com.fitech.account.dao;
 
 import com.fitech.domain.system.User;
+import com.fitech.framework.lang.page.Page;
 import com.fitech.vo.account.AccountProcessVo;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
 
 public interface AccountProcessDao {
 	
@@ -15,15 +15,14 @@ public interface AccountProcessDao {
 	 * @param user
 	 * @return
 	 */
-	public Page<AccountProcessVo> findTodoTaskBySql(AccountProcessVo vo, User user);
+	public List<AccountProcessVo> findTodoTaskBySql(AccountProcessVo vo, User user, Page page);
 	
 	/**
 	 * 分页获取已审核过得任务(查询)
 	 * @param vo
-	 * @param user
 	 * @return
 	 */
-	public Page<AccountProcessVo> findDoneQuerySql(AccountProcessVo vo);
+	public List<AccountProcessVo> findDoneQuerySql(AccountProcessVo vo,Page page);
 	
 	/**
 	 * 获取全部已审核过得任务(下载)
@@ -39,7 +38,7 @@ public interface AccountProcessDao {
 	 * @param user
 	 * @return
 	 */
-	public Page<AccountProcessVo> findDoneTaskBySql(AccountProcessVo vo, User user);
+	public List<AccountProcessVo> findDoneTaskBySql(AccountProcessVo vo, User user,Page page);
 
 
 }
