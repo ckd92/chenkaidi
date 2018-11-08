@@ -2,10 +2,9 @@ package com.fitech.account.dao;
 
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountLine;
+import com.fitech.framework.lang.page.Page;
 import com.fitech.vo.account.AccountProcessVo;
 
 public interface AccountDataDao {
@@ -24,7 +23,7 @@ public interface AccountDataDao {
 	 * @param accountProcessVo
 	 * @return
 	 */
-	public Page<AccountLine> findDataByCondition(AccountProcessVo accountProcessVo);
+	public List<AccountLine> findDataByCondition(AccountProcessVo accountProcessVo, Page page);
 	
 	
 	/**

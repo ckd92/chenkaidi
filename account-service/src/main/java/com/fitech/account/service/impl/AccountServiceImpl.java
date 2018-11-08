@@ -13,11 +13,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.fitech.account.dao.AccountsDao;
+import com.fitech.framework.lang.page.Page;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +48,6 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
-import com.fitech.system.repository.RoleRepository;
 import com.fitech.system.repository.UserRepository;
 import com.fitech.system.service.FieldPermissionService;
 import com.fitech.validate.domain.ObjectValidateRule;
@@ -65,12 +64,11 @@ import com.fitech.vo.account.AccountProcessVo;
  */
 @Service
 @ServiceTrace
-public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements AccountService {
+public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
-    @Autowired
-    private RoleRepository<Role> roleRepository;
+
     @Autowired
     private UserRepository<User> userRepository;
     
@@ -91,9 +89,11 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
     private DictionaryItemRepository dictionaryItemRepository;
     @Autowired
     private FieldPermissionService fieldPermissionService;
+    @Autowired
+    private AccountsDao accountsDao;
 
     @Override
-    public GenericResult<AccountProcessVo> findAccounDatas(AccountProcessVo accountProcessVo) {
+    public GenericResult<AccountProcessVo> findAccounDatas(AccountProcessVo accountProcessVo, Page page) {
         GenericResult<AccountProcessVo> result = new GenericResult<>();
         try {
             if (accountProcessVo == null || accountProcessVo.getAccount() == null) {
@@ -154,14 +154,14 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             Account ac = accountProcessVo.getAccount();
             ac.setAccountTemplate(account.getAccountTemplate());
 
-            Page<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo);
-            account.setAccountLine(accountLines);
+            List<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo,page);
+            account.setAccountLines(accountLines);
 
             accountProcessVo.setAccount(account);
 
             result.setData(accountProcessVo);
 
-            Collection<AccountLine> accountLineCol = accountProcessVo.getAccount().getAccountLine().getContent();
+            Collection<AccountLine> accountLineCol = accountProcessVo.getAccount().getAccountLines();
             Iterator accountIt = accountLineCol.iterator();
             while (accountIt.hasNext()) {
                 AccountLine accountLine = (AccountLine) accountIt.next();
@@ -238,15 +238,15 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
 	}
     
     @Override
-    public AccountProcessVo findAccountDatatwo(AccountProcessVo accountProcessVo) {
+    public AccountProcessVo findAccountDatatwo(AccountProcessVo accountProcessVo, Page page) {
         try {
             Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
 
             Account ac = accountProcessVo.getAccount();
             ac.setAccountTemplate(account.getAccountTemplate());
 
-            Page<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo);
-            account.setAccountLine(accountLines);
+            List<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo,page);
+            account.setAccountLines(accountLines);
 
             accountProcessVo.setAccount(account);
         } catch (Exception e) {
@@ -264,7 +264,7 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
             List<AccountLine> accountLines = accountProcessVo.getAccount().getAccountLines();
             Collection<AccountField> accountFieldList = accountLines.get(0).getAccountFields();
-
+            
             // 判断业务主键数据是否已经存在
             if (accountDataDao.queryDataisExist(accountLines.get(0), account)) {
                 String result = "addAccountData pk is exist!";
@@ -313,6 +313,14 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
             Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
             List<AccountLine> accountLines = accountProcessVo.getAccount().getAccountLines();
             Collection<AccountField> accountFieldList = accountLines.get(0).getAccountFields();
+            for (AccountLine accountLine : accountLines) {
+                Collection<AccountField> fields = accountLine.getAccountFields();
+                for (AccountField field : fields) {
+                    if ("1970-01-01".equals(field.getValue())){
+                        field.setValue("");
+                    }
+                }
+            }
             // 查询数据库中原来数据的值
             AccountLine albefore = accountDataDao.findDataById(account, accountLines.get(0).getId());
             // 业务条线：表名
@@ -361,8 +369,17 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
                     for (AccountField ab : afbefore) {
                         if (ab.getItemCode().equals(af.getItemCode())) {
                             String before = String.valueOf(ab.getValue());
-                            String after = String.valueOf(af.getValue());
-                            if (af.getSqlType().equals(SqlTypeEnum.DATE)) {
+//                            String after = String.valueOf(af.getValue());
+//                            if (af.getSqlType().equals(SqlTypeEnum.DATE)) {
+                            String after = "null";
+                            if (af.getValue() != "" && !String.valueOf(af.getValue()).contains("-") && af.getSqlType().equals(SqlTypeEnum.DATE)){
+                                after = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(String.valueOf(af.getValue())));
+                            }else if (af.getValue() == ""){
+                                after = after;
+                            }else {
+                                after = String.valueOf(af.getValue());
+                            }
+                            if (before != "null" && af.getSqlType().equals(SqlTypeEnum.DATE)) {
                                 before = before.substring(0, 10);
                             }
                             if (before.equals(after)) {
@@ -848,19 +865,17 @@ public class AccountServiceImpl extends NamedParameterJdbcDaoSupport implements 
         AccountProcessVo accountProcessVo = new AccountProcessVo();
         for (Long id : idList) {
             // 根据taskid查找accountid
-            String sql = "SELECT ACC.ID FROM ACCOUNT ACC  inner JOIN AccountProcess ACCPRO ON ACC.id=ACCPRO.ACCOUNT_ID inner JOIN ACT_RU_TASK task on task.proc_inst_id_=ACCPRO.PROCINSETID where  TASK.ID_="
-                    + id;
-            long accountId = 0;
-            List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql,
-                    new HashMap<String, Object>());
-            accountId = Long.parseLong(resultList.get(0).get("ID").toString());
+            long accountId = accountsDao.getAccountIdByTaskId(id);
             account = accountRepository.findById(accountId);
             // 模拟AccountProcessVo实体，根据accountid查找用户有操作权限的字段
             accountProcessVo.setAccount(account);
-            accountProcessVo.setPageNum(1);
-            accountProcessVo.setPageSize(10);
+//            accountProcessVo.setPageNum(1);
+//            accountProcessVo.setPageSize(10);
+            Page page = new Page();
+            page.setCurrentPage(1);
+            page.setPageSize(10);
             accountProcessVo.setUserId(userId);
-            GenericResult<AccountProcessVo> accountProcessVoGenericResult = findAccounDatas(accountProcessVo);
+            GenericResult<AccountProcessVo> accountProcessVoGenericResult = findAccounDatas(accountProcessVo,page);
             Collection<AccountField> accountFieldCollection = accountProcessVoGenericResult.getData().getAccount()
                     .getAccountTemplate().getAccountFields();
             String[] operateFieldStrAll = new String[accountFieldCollection.size()]; // 以accountFieldCollection的长度建一个string

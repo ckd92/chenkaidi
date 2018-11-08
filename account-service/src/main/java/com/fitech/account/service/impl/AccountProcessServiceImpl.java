@@ -10,16 +10,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.fitech.framework.lang.page.Page;
 import com.fitech.report.dao.AccountProcDao;
+
 import org.activiti.engine.RuntimeService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fitech.account.dao.AccountBaseDao;
 import com.fitech.account.dao.AccountProcessDao;
+import com.fitech.account.dao.AccountProcessServiceDao;
 import com.fitech.account.repository.AccountProcessRepository;
 import com.fitech.account.repository.AccountRepository;
 import com.fitech.account.repository.AccountTaskRepository;
@@ -101,38 +103,40 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     private UserDataDao userDataDao;
     @Autowired
     private AccountProcDao accountProcDao;
+    @Autowired
+    private AccountProcessServiceDao accountProcessServiceDao;
 
-    public Page<AccountProcessVo> findTodoTask(AccountProcessVo vo){
+    public List<AccountProcessVo> findTodoTask(AccountProcessVo vo, Page page){
         try {
         	//查询用户
             User user = null;
             if (vo.getUserId() != null) {
                 user = userDataDao.findUserById(vo.getUserId());
             }
-            return accountProcessDao.findTodoTaskBySql(vo, user);
+            return accountProcessDao.findTodoTaskBySql(vo, user,page);
         }catch (Exception e){
             e.printStackTrace();
             throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
         }
     }
     
-    public Page<AccountProcessVo> findDoneTask(AccountProcessVo vo){
+    public List<AccountProcessVo> findDoneTask(AccountProcessVo vo, Page page){
         try {
             //查询用户
             User user = null;
             if (vo.getUserId() != null) {
                 user = userDataDao.findUserById(vo.getUserId());
             }
-            return accountProcessDao.findDoneTaskBySql(vo, user);
+            return accountProcessDao.findDoneTaskBySql(vo, user,page);
         }catch (Exception e){
             e.printStackTrace();
             throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
         }
     }
     
-    public Page<AccountProcessVo> findPageAccounts(AccountProcessVo vo){
+    public List<AccountProcessVo> findPageAccounts(AccountProcessVo vo, Page page){
         try {
-            return accountProcessDao.findDoneQuerySql(vo);
+            return accountProcessDao.findDoneQuerySql(vo,page);
         }catch (Exception e){
             e.printStackTrace();
             throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
@@ -364,46 +368,26 @@ public class AccountProcessServiceImpl implements AccountProcessService {
         return result;
     }
 
+    /**
+     * 判断多任务是否执行完成（接盘侠的猜测）
+     * @param proInstId
+     * @return
+     */
     private Boolean isMultiInstanceTaskExecOver(String proInstId){
         boolean result = true;
         if(StringUtil.isNotEmpty(proInstId)){
-
-            String sql = "select LONG_ from ACT_RU_VARIABLE where NAME_='nrOfActiveInstances' and PROC_INST_ID_='"+proInstId+"'";
-
-            Object object = accountBaseDao.findObjectBysql(new StringBuffer(sql),null);
-
-            if(null != object){
-                BigDecimal decimal = (BigDecimal)object;
-
-                if(decimal.intValue() > 0){
-                    return false;
-                }
+        	long value = accountProcessServiceDao.isMultiInstanceTaskExecOver(proInstId);
+            if(value > 0){
+                return false;
             }
         }
         return result;
     }
     
+    
 
 	@Override
 	public List<Long> getReceiverIdList(String term, String freq) {
-		StringBuffer sb = new StringBuffer();
-		sb.append("select distinct  t3.sysuser_id as userId from account t  \n");
-		sb.append("inner join accountprocess t1 on t.id = t1.account_id \n");
-		sb.append("inner join act_ru_task t2 on t1.procinsetid = t2.proc_inst_id_ \n");
-		sb.append("inner join sysuser_role t3 on t2.assignee_ = t3.roles_id \n");
-		sb.append("where 1=1 \n");
-		if(StringUtils.isNotEmpty(freq)){
-			sb.append("and t.term = '"+term+"' \n");
-		}
-		if(StringUtils.isNotEmpty(term)){
-			sb.append("and t.freq = '"+freq+"' \n");
-		}
-		List<Object[]> list=accountBaseDao.findBySql(sb, null);
-		List<Long> receiverIdList = new ArrayList<Long>();
-		for(Object[] obj : list){
-			receiverIdList.add(Long.parseLong(obj[0].toString()));
-		}
-		return receiverIdList;
-		
+		return accountProcessServiceDao.getReceiverIdList(term, freq);
 	}
 }

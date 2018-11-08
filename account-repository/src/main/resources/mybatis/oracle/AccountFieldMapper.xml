@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="accountFieldMapper">
+
+    <select id="isDeleteAble" parameterType="Long" resultType="Long" >
+        SELECT count(*)
+        FROM FieldPermission f,Role_FieldPermission r
+        WHERE f.id=r.fieldPermission_id AND f.ACCOUNTFIELD_ID = #{id}
+    </select>
+
+    <select id="dicIsDeleteAble" parameterType="Long" resultType="Long">
+        SELECT count(*)
+        FROM ACCOUNTFIELD f
+        WHERE f.DICTIONARY_ID = #{id}
+    </select>
+
+</mapper>

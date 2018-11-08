@@ -1,7 +1,9 @@
 package com.fitech.account.service.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -18,9 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fitech.account.dao.AccountFieldDAO;
+import com.fitech.account.dao.DictionaryDao;
 import com.fitech.account.repository.DictionaryItemRepository;
 import com.fitech.account.service.DictionaryItemService;
 import com.fitech.constant.ExceptionCode;
+import com.fitech.domain.account.Dictionary;
 import com.fitech.domain.account.DictionaryItem;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
@@ -48,6 +52,8 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	private DictionaryItemRepository dictionaryItemRepository;
 	@Autowired
 	private AccountFieldDAO accountFieldDAO;
+	@Autowired
+	private DictionaryDao dictionaryDao;
 
 	/**
 	 * 动态条件查询
@@ -162,11 +168,19 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	 * 根据字典id查询字典项
 	 */
 	public List<DictionaryItem> getDictionaryItemByDictionaryId(Long id){
-		EntityManager em = entityManagerFactory.createEntityManager();
-		Query query = em.createQuery("from DictionaryItem d where d.dictionary.id=? order by d.id desc");
-		query.setParameter(1,id);
-		List<DictionaryItem> list = query.getResultList();
-		em.close();
+		
+		List<Map<String,String>> tempList = dictionaryDao.getDictionaryItemByDictionaryId(id);
+		List<DictionaryItem> list = new ArrayList<DictionaryItem>();
+		Dictionary dictionary = new Dictionary();
+		dictionary.setId(id);
+		for(Map<String,String> map : tempList){
+			DictionaryItem di = new DictionaryItem();
+			di.setDicItemDesc(map.get("DICITEMDESC"));
+			di.setDicItemId(map.get("DICITEMID"));
+			di.setId(Long.parseLong(map.get("ID").toString()));
+			di.setDicItemName(map.get("DICITEMNAME"));
+			list.add(di);
+		}
 		return list;
 	}
 
@@ -174,20 +188,18 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	 * 根据字典id条件查询字典项,高级搜索
 	 */
 	public List<DictionaryItem> getDictionaryItemByDicItemName(Long id,String dicItemName){
-		EntityManager em = entityManagerFactory.createEntityManager();
-		String hql = "from DictionaryItem d where d.dictionary.id=:id";
-		if(null!=dicItemName&&""!=dicItemName){
-			hql+=" and d.dicItemName like:dicItemName";
-			dicItemName = "%"+dicItemName+"%";
+		List<Map<String,String>> tempList = dictionaryDao.getDictionaryItemByDicItemName(id, dicItemName);
+		List<DictionaryItem> list = new ArrayList<DictionaryItem>();
+		Dictionary dictionary = new Dictionary();
+		dictionary.setId(id);
+		for(Map<String,String> map : tempList){
+			DictionaryItem di = new DictionaryItem();
+			di.setDicItemDesc(map.get("DICITEMDESC"));
+			di.setDicItemId(map.get("DICITEMID"));
+			di.setId(Long.parseLong(map.get("ID").toString()));
+			di.setDicItemName(map.get("DICITEMNAME"));
+			list.add(di);
 		}
-		hql+=" order by d.id desc";
-		Query query = em.createQuery(hql);
-		query.setParameter("id",id);
-		if(null!=dicItemName&&""!=dicItemName){
-			query.setParameter("dicItemName",dicItemName);
-		}
-		List<DictionaryItem> list = query.getResultList();
-		em.close();
 		return list;
 	}
 

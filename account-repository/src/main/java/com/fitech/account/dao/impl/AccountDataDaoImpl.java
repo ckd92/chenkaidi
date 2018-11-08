@@ -1,4 +1,4 @@
-package com.fitech.account.dao.impl.oracle;
+package com.fitech.account.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,15 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcDaoSupport;
-
+import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
+import com.fitech.framework.lang.page.Page;
+import org.omg.CORBA.Object;
 import com.fitech.account.dao.AccountDataDao;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountField;
@@ -29,43 +24,50 @@ import com.fitech.domain.account.IntegerField;
 import com.fitech.enums.SqlTypeEnum;
 import com.fitech.framework.lang.util.StringUtil;
 import com.fitech.vo.account.AccountProcessVo;
+import org.springframework.stereotype.Service;
 
-public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements AccountDataDao {
-    @Autowired
-    public AccountDataDaoImpl(DataSource dataSource) {
-        setDataSource(dataSource);
-        try {
-            dataSource.getConnection().setAutoCommit(true);
-        } catch (Exception e) {
-        }
-    }
+@Service
+public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 
     @Override
-    public Page<AccountLine> findDataByCondition(AccountProcessVo accountProcessVo) {
+    public List<AccountLine> findDataByCondition(AccountProcessVo accountProcessVo, Page page) {
         Account account = accountProcessVo.getAccount();
 
         AccountTemplate accountTemplate = account.getAccountTemplate();
 
         Collection<AccountField> collection = accountTemplate.getAccountFields();
+
+        //sql参数列表
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("collection",collection);
+        sqlParameterMap.put("tableName",accountTemplate.getTableName());
+        sqlParameterMap.put("accountId",account.getId());
+        sqlParameterMap.put("serachFileds",account.getAccountSearchs());
+
+
         List<String> list = new ArrayList<>();
-        StringBuffer sql = new StringBuffer();
-        sql.append("SELECT * FROM " +
-                "     (SELECT A.*, rownum r " +
-                "       FROM " +
-                "          (");
-        sql.append("select id,reportId,");
+//        StringBuffer sql = new StringBuffer();
+//        sql.append("SELECT * FROM " +
+//                "     (SELECT A.*, rownum r " +
+//                "       FROM " +
+//                "          (");
+//        sql.append("select id,reportId,");
         list.add("id");
         list.add("reportId");
-        for (AccountField item : collection) {
-            sql.append(item.getItemCode() + ",");
-            list.add(item.getItemCode());
-        }
-        sql.deleteCharAt(sql.length() - 1);
-        sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
+//        for (AccountField item : collection) {
+//            sql.append(item.getItemCode() + ",");
+//            list.add(item.getItemCode());
+//        }
+//        sql.deleteCharAt(sql.length() - 1);
+//        sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
         //没有查询条件 查询所有
 
         accountTemplate.setAccountFields(null);
         Collection<AccountField> serachFileds = account.getAccountSearchs();
+        //字段类型
+        Map<String,List<String>> itemInstanceMap = new HashMap<>();
+        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
+        List<String> codeFieldList = new ArrayList<>();
         if (null != serachFileds && !serachFileds.isEmpty()) {
             //将itemtype赋值
             for (AccountField afl : serachFileds) {
@@ -76,40 +78,48 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                 }
             }
             //进行循环
+
             for (AccountField item : serachFileds) {
                 String code = item.getItemCode();
                 if (item.getValue() != null) {
-                    sql.append("and " + code);
+                    //sql.append("and " + code);
+                    //IntegerField和DoubleField类型itemCode集合
                     if (item instanceof IntegerField || item instanceof DoubleField) {
-                        sql.append(" = " + item.getValue() + " ");
+                        integerFieldAndDoubleFieldList.add(code);
+                        //sql.append(" = " + item.getValue() + " ");
                     } else if (item instanceof CodeField) {
-                        sql.append(" = '" + item.getValue() + "' ");
+                        codeFieldList.add(code);
+                        //sql.append(" = '" + item.getValue() + "' ");
                     } else if ("DATE".equals(item.getItemType())) {
-                        sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
+                        //sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
                     } else {
-                        sql.append(" like '%" + item.getValue() + "%' ");
+                        //sql.append(" like '%" + item.getValue() + "%' ");
                     }
                 }
             }
+            itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
+            itemInstanceMap.put("codeFieldList",codeFieldList);
         }
-        accountTemplate.setAccountFields(collection);
-        StringBuffer totalsum = new StringBuffer();
-        totalsum.append("with a as ( \n");
-        totalsum.append(sql);
-        totalsum.append(" ) A) \n");
-        totalsum.append(")select count(*) from a ");
 
-        sql.append(") A" +
-                "       WHERE rownum <= " + (accountProcessVo.getPageNum() * accountProcessVo.getPageSize()) +
-                "     ) B " +
-                "         WHERE r >= " + ((accountProcessVo.getPageNum() - 1) * accountProcessVo.getPageSize() + 1));
-        Map<String, Object> map = new HashMap<>();
+
+        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
+
+        accountTemplate.setAccountFields(collection);
+//        StringBuffer totalsum = new StringBuffer();
+//        totalsum.append("with a as ( \n");
+//        totalsum.append(sql);
+//        totalsum.append(" ) A) \n");
+//        totalsum.append(")select count(*) from a ");
+//
+//        sql.append(") A" +
+//                "       WHERE rownum <= " + (accountProcessVo.getPageNum() * accountProcessVo.getPageSize()) +
+//                "     ) B " +
+//                "         WHERE r >= " + ((accountProcessVo.getPageNum() - 1) * accountProcessVo.getPageSize() + 1));
         Map<String, Object> map1 = new HashMap<>();
-        List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql.toString(), map);
-        System.out.println(sql.toString());
-//        List<Map<String, Object>> totalList = this.getNamedParameterJdbcTemplate().queryForList(totalsum.toString(),map1);
-        int totalList = this.getNamedParameterJdbcTemplate().queryForObject(
-                totalsum.toString(), map1, Integer.class);
+        List<Map<String, Object>> resultList = super.selectByPage("accountDataMapper.findDataByConditionCount","accountDataMapper.findDataByCondition",sqlParameterMap,page);
+//        System.out.println(sql.toString());
+//        int totalList = this.getNamedParameterJdbcTemplate().queryForObject(
+//                totalsum.toString(), map1, Integer.class);
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
             AccountLine ledgerLine = new AccountLine();
@@ -148,11 +158,11 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             }
         }
 //        long totalNum = findMaxNumDataByCondition(accountProcessVo);
-        Pageable pageable = new PageRequest(accountProcessVo.getPageNum() - 1, accountProcessVo.getPageSize());
-        Page<AccountLine> ledgerLinePage = new PageImpl<>(lineList, pageable, totalList);
-        account.setAccountLine(ledgerLinePage);
+//        Pageable pageable = new PageRequest(accountProcessVo.getPageNum() - 1, accountProcessVo.getPageSize());
+//        List<AccountLine> ledgerLinePage = new PageImpl<>(lineList, pageable, totalList);
+//        account.setAccountLine(ledgerLinePage);
 
-        return ledgerLinePage;
+        return lineList;
     }
 
     //用于下载
@@ -163,6 +173,14 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         AccountTemplate accountTemplate = account.getAccountTemplate();
 
         Collection<AccountField> collection = accountTemplate.getAccountFields();
+
+        //sql参数列表
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("collection",collection);
+        sqlParameterMap.put("tableName",accountTemplate.getTableName());
+        sqlParameterMap.put("accountId",account.getId());
+        sqlParameterMap.put("serachFileds",account.getAccountSearchs());
+
         List<String> list = new ArrayList<>();
         StringBuffer sql = new StringBuffer();
         sql.append("select id,reportId,");
@@ -183,6 +201,12 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
 
         accountTemplate.setAccountFields(null);
         Collection<AccountField> serachFileds = account.getAccountSearchs();
+
+        //字段类型
+        Map<String,List<String>> itemInstanceMap = new HashMap<>();
+        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
+        List<String> codeFieldList = new ArrayList<>();
+
         if (null != serachFileds && !serachFileds.isEmpty()) {
             //将itemtype赋值
             for (AccountField afl : serachFileds) {
@@ -196,25 +220,30 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             for (AccountField item : serachFileds) {
                 String code = item.getItemCode();
                 if (item.getValue() != null) {
-                    sql.append("and " + code);
+                    //sql.append("and " + code);
                     if (item instanceof IntegerField || item instanceof DoubleField) {
-                        sql.append(" = " + item.getValue() + " ");
+                        integerFieldAndDoubleFieldList.add(code);
+                        //sql.append(" = " + item.getValue() + " ");
                     } else if (item instanceof CodeField) {
-                        sql.append(" = '" + item.getValue() + "' ");
-                    } else if ("DATE".equals(item.getItemType())) {
-                        sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
+                        codeFieldList.add(code);
+                        //sql.append(" = '" + item.getValue() + "' ");
+                    } /*else if ("DATE".equals(item.getItemType())) {
+                        //sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
                     } else {
-                        sql.append(" like '%" + item.getValue() + "%' ");
-                    }
+                        //sql.append(" like '%" + item.getValue() + "%' ");
+                    }*/
                 }
             }
+            itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
+            itemInstanceMap.put("codeFieldList",codeFieldList);
         }
+        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
+
         accountTemplate.setAccountFields(collection);
 
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map1 = new HashMap<>();
-        List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql.toString(), map);
-//        List<Map<String, Object>> totalList = this.getNamedParameterJdbcTemplate().queryForList(totalsum.toString(),map1);
+        List<Map<String, Object>> resultList = super.selectList("accountDataMapper.downLoadDataByCondition",sqlParameterMap);
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
             AccountLine ledgerLine = new AccountLine();
@@ -266,6 +295,9 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         Collection<AccountField> collection = accountTemplate.getAccountFields();
 
         Collection<AccountField> serachFileds = account.getAccountSearchs();
+
+
+
         //将搜索值赋给模板
         if (!serachFileds.isEmpty()) {
             for (AccountField aff : collection) {
@@ -277,34 +309,50 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
             }
         }
 
-        StringBuffer sql = new StringBuffer();
-        sql.append("select count(1) from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
+        //字段类型
+        Map<String,List<String>> itemInstanceMap = new HashMap<>();
+        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
+        List<String> codeFieldList = new ArrayList<>();
+
         //没有查询条件 查询所有
         for (AccountField item : collection) {
             String code = item.getItemCode();
             if (item.getValue() != null) {
-                sql.append("and " + code);
+                //sql.append("and " + code);
                 if (item instanceof IntegerField || item instanceof DoubleField) {
-                    sql.append(" = " + item.getValue() + " ");
+                    integerFieldAndDoubleFieldList.add(code);
+                    //sql.append(" = " + item.getValue() + " ");
                 } else if (item instanceof CodeField) {
-                    sql.append(" = '" + item.getValue() + "' ");
+                    codeFieldList.add(code);
+                    //sql.append(" = '" + item.getValue() + "' ");
                 } else if (item instanceof DateField) {
-                    sql.append("to_date('" + item.getValue() + "','yyyy-mm-dd')");
+                    //sql.append("to_date('" + item.getValue() + "','yyyy-mm-dd')");
                 } else {
-                    sql.append(" like '%" + item.getValue() + "%' ");
+                    //sql.append(" like '%" + item.getValue() + "%' ");
                 }
             }
         }
-        Map<String, Object> map = new HashMap<>();
-        Long totalNum = this.getNamedParameterJdbcTemplate().queryForObject(sql.toString(), map, Long.class);
+        //sql参数列表
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("collection",collection);
+        sqlParameterMap.put("tableName",accountTemplate.getTableName());
+        sqlParameterMap.put("accountId",account.getId());
+
+
+        Long totalNum = super.selectOne("accountDataMapper.findMaxNumDataByCondition",sqlParameterMap);
 
         return totalNum;
     }
 
     @Override
     public void insertData(AccountLine accountLine, Account account) {
-        String sql = "insert into " + account.getAccountTemplate().getTableName() + "(";
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName() );
+        sqlParameterMap.put("accountId",account.getId());
+
+//        String sql = "insert into " + account.getAccountTemplate().getTableName() + "(";
         Collection<AccountField> items = accountLine.getAccountFields();
+        sqlParameterMap.put("items",items);
         Collection<AccountField> itemegs = account.getAccountTemplate().getAccountFields();
         for (AccountField af : items) {
             for (AccountField ag : itemegs) {
@@ -313,37 +361,19 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                 }
             }
         }
-        sql = sql + "id,reportId, ";
-        for (AccountField item : items) {
-            sql = sql + item.getItemCode() + ",";
-        }
-        sql = sql.substring(0, sql.length() - 1) + ")values(seq_fitech.nextval,";
-        sql = sql + account.getId() + ",";
-        for (AccountField item : items) {
-            if (item.getValue() == null) {
-                sql = sql + "null,";
-            } else {
-                if (SqlTypeEnum.DATE.equals(item.getSqlType())) {
-                    sql = sql + "to_date('" + item.getValue() + "', 'yyyy-MM-dd') ,";
-                } else if (SqlTypeEnum.INTEGER.equals(item.getSqlType())) {
-                    sql = sql + "'" + Integer.parseInt(item.getValue() + "") + "',";
-                } else if (SqlTypeEnum.DOUBLE.equals(item.getSqlType())) {
-                    sql = sql + "'" + Double.parseDouble(item.getValue() + "") + "',";
-                } else {
-                    sql = sql + "'" + item.getValue() + "',";
-                }
-            }
-        }
-        sql = sql.substring(0, sql.length() - 1) + ")";
-
-        this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
+        super.insert("accountDataMapper.insertData",sqlParameterMap);
 
     }
 
     @Override
     public void updateData(AccountLine accountLine, Account account) {
-        String sql = "update " + account.getAccountTemplate().getTableName() + " set ";
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName() );
+        sqlParameterMap.put("accountLineId",accountLine.getId());
+
+//        String sql = "update " + account.getAccountTemplate().getTableName() + " set ";
         Collection<AccountField> items = accountLine.getAccountFields();
+        sqlParameterMap.put("items",items);
         Collection<AccountField> itemegs = account.getAccountTemplate().getAccountFields();
         for (AccountField af : items) {
             for (AccountField ag : itemegs) {
@@ -352,61 +382,70 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
                 }
             }
         }
-        if (items.size() > 0) {
-            for (AccountField item : items) {
-                if (StringUtil.isEmpty(String.valueOf(item.getValue()))) {
-                    sql = sql + item.getItemCode() + "=null,";
-                } else {
-                    if (SqlTypeEnum.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
-//                        String date = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(item.getValue().toString()));
-                        sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
-                    } else if (SqlTypeEnum.INTEGER.equals(item.getSqlType())) {
-                        sql = sql + item.getItemCode() + "=" + "'" + Integer.parseInt(item.getValue() + "") + "',";
-                    } else if (SqlTypeEnum.DOUBLE.equals(item.getSqlType())) {
-                        sql = sql + item.getItemCode() + "=" + "'" + Double.parseDouble(item.getValue() + "") + "',";
-                    } else {
-                        sql = sql + item.getItemCode() + "=" + "'" + item.getValue() + "',";
-                    }
-                }
-            }
-            sql = sql.substring(0, sql.length() - 1);
-            sql = sql + " where id=" + accountLine.getId();
-            this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
-        }
+//        if (items.size() > 0) {
+//            for (AccountField item : items) {
+//                if (StringUtil.isEmpty(String.valueOf(item.getValue()))) {
+//                    sql = sql + item.getItemCode() + "=null,";
+//                } else {
+//                    if (SqlTypeEnum.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
+////                        String date = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(item.getValue().toString()));
+//                        sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
+//                    } else if (SqlTypeEnum.INTEGER.equals(item.getSqlType())) {
+//                        sql = sql + item.getItemCode() + "=" + "'" + Integer.parseInt(item.getValue() + "") + "',";
+//                    } else if (SqlTypeEnum.DOUBLE.equals(item.getSqlType())) {
+//                        sql = sql + item.getItemCode() + "=" + "'" + Double.parseDouble(item.getValue() + "") + "',";
+//                    } else {
+//                        sql = sql + item.getItemCode() + "=" + "'" + item.getValue() + "',";
+//                    }
+//                }
+//            }
+//            sql = sql.substring(0, sql.length() - 1);
+//            sql = sql + " where id=" + accountLine.getId();
+//            this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
+//        }
+        super.update("accountDataMapper.updateData",sqlParameterMap);
+
     }
 
     @Override
     public void batchUpdateData(AccountLine accountLine, Account account, List<Long> lineId) {
-        String sql = "update " + account.getAccountTemplate().getTableName() + " set ";
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
+//        String sql = "update " + account.getAccountTemplate().getTableName() + " set ";
         Collection<AccountField> items = accountLine.getAccountFields();
+        sqlParameterMap.put("items",items);
         if (items.size() > 0) {
             for (AccountField item : items) {
                 if (StringUtil.isEmpty(String.valueOf(item.getValue()))) {
-                    sql = sql + item.getItemCode() + "=null,";
+//                    sql = sql + item.getItemCode() + "=null,";
                 } else {
                     if (SqlTypeEnum.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
-//                        String date = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(item.getValue().toString()));
-                        sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
+//                        sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
                     } else {
-                        sql = sql + item.getItemCode() + "='" + item.getValue() + "',";
+//                        sql = sql + item.getItemCode() + "='" + item.getValue() + "',";
                     }
                 }
             }
-            sql = sql.substring(0, sql.length() - 1);
+//            sql = sql.substring(0, sql.length() - 1);
             String idList = "";
             for (int i = 0; i < lineId.size(); i++) {
                 idList += lineId.get(i) + ",";
             }
             idList = idList.substring(0, idList.length() - 1);
-            sql = sql + " where id in(" + idList + ")";
-            this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
+            sqlParameterMap.put("idList",idList);
+//            sql = sql + " where id in(" + idList + ")";
+//            this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
+            super.update("accountDataMapper.batchUpdateData",sqlParameterMap);
         }
     }
 
     @Override
     public AccountLine findDataById(Account account, Long id) {
-        String sql = "select * from  " + account.getAccountTemplate().getTableName() + " where id=" + id;
-        List<Map<String, Object>> resultList = this.getNamedParameterJdbcTemplate().queryForList(sql, new HashMap<String, String>());
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("id",id);
+        //String sql = "select * from  " + account.getAccountTemplate().getTableName() + " where id=" + id;
+        List<Map<String, Object>> resultList = super.selectList("accountDataMapper.findDataById",sqlParameterMap);
         Map<String, Object> map = resultList.get(0);
         AccountLine ledgerLine = new AccountLine();
         Set<AccountField> set = new LinkedHashSet<>();
@@ -430,24 +469,37 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
         Boolean result = false;
         Boolean point = false;
         Collection<AccountField> items = accountLine.getAccountFields();
-        StringBuffer sql = new StringBuffer();
-        sql.append("select count(1) from " + account.getAccountTemplate().getTableName() + " where reportId=" + account.getId() + "  ");
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("items",items);
+        sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("accountId",account.getId());
+
+//        StringBuffer sql = new StringBuffer();
+//        sql.append("select count(1) from " + account.getAccountTemplate().getTableName() + " where reportId=" + account.getId() + "  ");
+        //字段类型
+        Map<String,List<String>> itemInstanceMap = new HashMap<>();
+        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
+        List<String> codeFieldList = new ArrayList<>();
+        Collection<AccountField> accountFields = account.getAccountTemplate().getAccountFields();
+//        sqlParameterMap.put("accountFields",accountFields);
+        Collection<AccountField> isPkableListAndItemCodeEqual = new ArrayList();
         //没有查询条件 查询所有
         for (AccountField item : items) {
             String code = item.getItemCode();
             if (item.getValue() != null) {
-
-                Collection<AccountField> accountFields = account.getAccountTemplate().getAccountFields();
                 for (AccountField accountField : accountFields) {
                     if (accountField.isPkable() && accountField.getItemCode().equals(item.getItemCode())) {
                         point = true;
-                        sql.append("and " + code);
+                        isPkableListAndItemCodeEqual.add(accountField);
+                        //sql.append("and " + code);
                         if (item instanceof IntegerField || item instanceof DoubleField) {
-                            sql.append(" = " + item.getValue() + " ");
+                            integerFieldAndDoubleFieldList.add(code);
+                            //sql.append(" = " + item.getValue() + " ");
                         } else if (item instanceof CodeField || item instanceof DateField) {
-                            sql.append(" = '" + item.getValue() + "' ");
+                            codeFieldList.add(code);
+                            //sql.append(" = '" + item.getValue() + "' ");
                         } else {
-                            sql.append(" = '" + item.getValue() + "' ");
+                            //sql.append(" = '" + item.getValue() + "' ");
                         }
                         break;
                     }
@@ -455,10 +507,14 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
 
             }
         }
+        itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
+        itemInstanceMap.put("codeFieldList",codeFieldList);
+        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
+        sqlParameterMap.put("isPkableListAndItemCodeEqual",isPkableListAndItemCodeEqual);
         Map<String, Object> map = new HashMap<>();
-        Long totalNum = this.getNamedParameterJdbcTemplate().queryForObject(sql.toString(), map, Long.class);
+        long totalNum = super.selectOne("accountDataMapper.queryDataisExist",sqlParameterMap);
 
-        if (null != totalNum && totalNum > 0 && point) {
+        if ( totalNum > 0 && point) {
             result = true;
         }
         return result;
@@ -466,7 +522,12 @@ public class AccountDataDaoImpl extends NamedParameterJdbcDaoSupport implements 
 
     @Override
     public void deleteData(AccountLine accountLine, Account account) {
-        String sql = "delete from " + account.getAccountTemplate().getTableName() + " where id=" + accountLine.getId();
-        this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("id",accountLine.getId());
+        super.delete("accountDataMapper.deleteData",sqlParameterMap);
+
+//        String sql = "delete from " + account.getAccountTemplate().getTableName() + " where id=" + accountLine.getId();
+//        this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
     }
 }

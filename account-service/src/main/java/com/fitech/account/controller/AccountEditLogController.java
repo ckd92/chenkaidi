@@ -1,14 +1,8 @@
 package com.fitech.account.controller;
 
-import java.io.File;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +11,6 @@ import com.fitech.account.service.AccountEditLogService;
 import com.fitech.domain.account.AccountEditLog;
 import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.result.GenericResult;
-import com.fitech.framework.lang.util.FileUtil;
 
 
 @RestController

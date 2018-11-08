@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import com.fitech.domain.account.AccountLine;
+import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.vo.account.AccountProcessVo;
 
@@ -17,7 +18,7 @@ public interface AccountService {
      * @param accountProcessVo
      * @return
      */
-    public GenericResult<AccountProcessVo> findAccounDatas(AccountProcessVo accountProcessVo);
+    public GenericResult<AccountProcessVo> findAccounDatas(AccountProcessVo accountProcessVo, Page page);
     
     /**
      * 获取台账行数据
@@ -32,7 +33,7 @@ public interface AccountService {
      * @param accountProcessVo
      * @return
      */
-    public AccountProcessVo findAccountDatatwo(AccountProcessVo accountProcessVo);
+    public AccountProcessVo findAccountDatatwo(AccountProcessVo accountProcessVo, Page page);
     
     /**
      * 新增台账数据

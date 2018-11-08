@@ -7,6 +7,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fitech.framework.lang.page.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fitech.account.service.AccountService;
-import com.fitech.account.service.DictionaryItemService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountLine;
@@ -28,7 +28,6 @@ import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.FileUtil;
 import com.fitech.framework.security.util.TokenUtils;
-import com.fitech.system.service.FieldPermissionService;
 import com.fitech.vo.account.AccountProcessVo;
 
 /**
@@ -40,29 +39,6 @@ import com.fitech.vo.account.AccountProcessVo;
 public class AccountController {
     @Autowired
     private AccountService accountService;
-    @Autowired
-    private DictionaryItemService dictionaryItemService;
-    @Autowired
-    private FieldPermissionService fieldPermissionService;
-
-//    /**
-//     * 查询台账字段
-//     * @param accountProcessVo
-//     * @param request
-//     * @return
-//     */
-//    @PostMapping("Account/accountFields")
-//    public GenericResult<AccountProcessVo> findAccountFieldList(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-//        GenericResult<AccountProcessVo> result=new GenericResult<>();
-//        try {
-//            result = accountService.initAccountTable(accountProcessVo);
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            result.setSuccess(false);
-//        }finally {
-//        }
-//        return result;
-//    }
 
     /**
      * 台账代办任务处理  - (数据列权限,列表和新增)
@@ -74,8 +50,12 @@ public class AccountController {
     public GenericResult<AccountProcessVo> findAccountDatas(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
         GenericResult<AccountProcessVo> result=new GenericResult<>();
         try {
+            Page page = new Page();
+            page.setPageSize(accountProcessVo.getPageSize());
+            page.setCurrentPage(accountProcessVo.getPageNum());
         	accountProcessVo.setUserId(TokenUtils.getLoginId(request));
-            result = accountService.findAccounDatas(accountProcessVo);
+            result = accountService.findAccounDatas(accountProcessVo,page);
+            result.setPage(page);
         }catch (Exception e){
             e.printStackTrace();
             result.setSuccess(false);
@@ -113,7 +93,11 @@ public class AccountController {
     public GenericResult<AccountProcessVo> findAccountDatatwo(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
         GenericResult<AccountProcessVo> result=new GenericResult<>();
         try {
-            result.setData(accountService.findAccountDatatwo(accountProcessVo));
+            Page page = new Page();
+            page.setPageSize(accountProcessVo.getPageSize());
+            page.setCurrentPage(accountProcessVo.getPageNum());
+            result.setData(accountService.findAccountDatatwo(accountProcessVo,page));
+            result.setPage(page);
         }catch (Exception e){
             e.printStackTrace();
             result.setSuccess(false);

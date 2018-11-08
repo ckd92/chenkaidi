@@ -1,22 +1,18 @@
 package com.fitech.account.service.impl;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
+import com.fitech.account.dao.AccountsDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-
 import com.fitech.account.dao.AccountTemplateDAO;
 import com.fitech.account.repository.AccountRepository;
 import com.fitech.account.service.AccountsService;
@@ -40,6 +36,9 @@ public class AccountsServiceImpl implements AccountsService {
 
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
+
+	@Autowired
+	private AccountsDao accountsDao;
 
 	/**
 	 * 条件查询返回前端动态列的数据
@@ -126,49 +125,11 @@ public class AccountsServiceImpl implements AccountsService {
 	@Override
 	public List getrwtj() {
 		List<AccountVo> accountVoList = new ArrayList<>();
-		EntityManager em = null;
 		try {
-			em = entityManagerFactory.createEntityManager();
-			String sql = "select k.term,k.institutionname,k.totalcount,to_char(k.dbl/k.totalcount*100,'9990') dbl," +
-					"to_char(k.dsh/k.totalcount*100,'9990') dsh,to_char(k.shtg/k.totalcount*100,'9990') shtg," +
-					"to_char(k.th/k.totalcount*100,'9990') th from (select a.term,(select institutionname " +
-					"from INSTITUTION where id=a.institution_id) institutionname,a.totalcount,nvl(b.dbl, 0) dbl,nvl(c.dsh, 0) dsh," +
-					"nvl(d.shtg, 0) shtg,nvl(e.th, 0) th from (select count(1) totalcount,t.term,t.institution_id from ACCOUNT t " +
-					"group by t.term, t.institution_id) a left join (select count(1) dbl,term,institution_id " +
-					"from account where accountstate = 0 group by term, institution_id) b on a.term = b.term and " +
-					"a.institution_id = b.institution_id left join (select count(1) dsh, term, institution_id " +
-					"from account where accountstate = 1 group by term, institution_id) c on a.term = c.term and" +
-					" a.institution_id = c.institution_id left join (select count(1) shtg, term, institution_id " +
-					"from account where accountstate = 2 group by term, institution_id) d on a.term = d.term and " +
-					"a.institution_id = d.institution_id left join (select count(1) th, term, institution_id " +
-					"from account where accountstate = 3 group by term, institution_id) e on a.term = e.term and " +
-					"a.institution_id = e.institution_id)k";
-			Query query = em.createNativeQuery(sql);
-			List list = query.getResultList();
-
-			if(null != list && !list.isEmpty()){
-                for (int i = 0; i < list.size(); i++) {
-                    Object[] objs = (Object[]) list.get(i);
-
-                    AccountVo accountVo = new AccountVo();
-                    accountVo.setDbl((String) objs[3]);
-                    accountVo.setDsh((String) objs[4]);
-                    accountVo.setInstitutionname((String) objs[1]);
-                    accountVo.setShtg((String) objs[5]);
-                    accountVo.setTerm((String) objs[0]);
-                    accountVo.setTh((String) objs[6]);
-                    accountVo.setTotalcount(((BigDecimal) objs[2]).intValue());
-
-                    accountVoList.add(accountVo);
-                }
-            }
+			accountVoList = accountsDao.getrwtj();
 		}catch (Exception e){
 			e.printStackTrace();
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-		}finally {
-			if(null != em){
-				em.close();
-			}
 		}
 		return accountVoList;
 	}
@@ -179,67 +140,34 @@ public class AccountsServiceImpl implements AccountsService {
 	 */
 	@Override
 	public List getrwtjByCondition(Account account){
+		Map<String,String> tempMap = new HashMap<String,String>();
 		List<AccountVo> accountVoList = new ArrayList<>();
-		EntityManager em = null;
 		String term = account.getTerm();
 		String institutionName=null;
 		if(account.getInstitution()!=null){
 			institutionName = account.getInstitution().getInstitutionName();
 		}
+		tempMap.put("term", term);
+		tempMap.put("institutionName", institutionName);
 		try {
-			em = entityManagerFactory.createEntityManager();
-			String sql = "select * from(select to_char(to_date(k.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,k.institutionname,k.totalcount,to_char(k.dbl/k.totalcount*100,'9990') dbl," +
-					"to_char(k.dsh/k.totalcount*100,'9990') dsh,to_char(k.shtg/k.totalcount*100,'9990') shtg," +
-					"to_char(k.th/k.totalcount*100,'9990') th from (select a.term,(select institutionname " +
-					"from INSTITUTION where id=a.institution_id) institutionname,a.totalcount,nvl(b.dbl, 0) dbl," +
-					"nvl(c.dsh, 0) dsh,nvl(d.shtg, 0) shtg,nvl(e.th, 0) th from (select count(1) totalcount,t.term," +
-					"t.institution_id from ACCOUNT t group by t.term, t.institution_id) a left join (select count(1) dbl," +
-					"term,institution_id from account where accountstate = 0 group by term, institution_id) b on a.term = b.term " +
-					"and a.institution_id = b.institution_id left join (select count(1) dsh, term, institution_id from account " +
-					"where accountstate = 1 group by term, institution_id) c on a.term = c.term and a.institution_id = c.institution_id " +
-					"left join (select count(1) shtg, term, institution_id from account where accountstate = 2 group by term," +
-					" institution_id) d on a.term = d.term and a.institution_id = d.institution_id left join (select count(1) th," +
-					" term, institution_id from account where accountstate = 3 group by term, institution_id) e on a.term = e.term " +
-					"and a.institution_id = e.institution_id)k)j where ";
-			
-			if(institutionName==null||"".equals(institutionName)){
-				sql = sql + " to_char(to_date(j.term,'yyyy-MM-dd'),'yyyy-MM-dd')=:term";
-			}else{
-				institutionName="%"+institutionName+"%";
-				sql = sql + " to_char(to_date(j.term,'yyyy-MM-dd'),'yyyy-MM-dd')=:term and j.institutionname like:institutionName";
-			}
-			Query query = em.createNativeQuery(sql);
-			if(institutionName==null||"".equals(institutionName)){
-				query.setParameter("term",term);
-			}else{
-				query.setParameter("term",term);
-				query.setParameter("institutionName",institutionName);
-			}
-			List list = query.getResultList();
-
+			List<Map<String,Object>> list = accountsDao.getrwtjByCondition(tempMap);
 			if(null != list && !list.isEmpty()){
                 for (int i = 0; i < list.size(); i++) {
-                    Object[] objs = (Object[]) list.get(i);
-
+                	Map<String,Object> map = list.get(i);
                     AccountVo accountVo = new AccountVo();
-                    accountVo.setDbl((String) objs[3]);
-                    accountVo.setDsh((String) objs[4]);
-                    accountVo.setInstitutionname((String) objs[1]);
-                    accountVo.setShtg((String) objs[5]);
-                    accountVo.setTerm((String) objs[0]);
-                    accountVo.setTh((String) objs[6]);
-                    accountVo.setTotalcount(((BigDecimal) objs[2]).intValue());
-
+                    accountVo.setDbl(map.get("DBL") == null?"":map.get("DBL").toString());
+                    accountVo.setDsh(map.get("DSH") == null?"":map.get("DSH").toString());
+                    accountVo.setInstitutionname(map.get("INSTITUTIONNAME") == null?"":map.get("INSTITUTIONNAME").toString());
+                    accountVo.setShtg(map.get("SHTG") == null?"":map.get("SHTG").toString());
+                    accountVo.setTerm(map.get("TERM") == null?"":map.get("TERM").toString() );
+                    accountVo.setTh(map.get("TH") == null?"":map.get("TH").toString());
+                    accountVo.setTotalcount( map.get("TOTALCOUNT") == null? 0 :Integer.parseInt(map.get("TOTALCOUNT").toString()));
                     accountVoList.add(accountVo);
                 }
             }
 		}catch (Exception e){
 			e.printStackTrace();
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-		}finally {
-			if(null != em){
-				em.close();
-			}
 		}
 		return accountVoList;
 	}
@@ -249,6 +177,7 @@ public class AccountsServiceImpl implements AccountsService {
 	 */
 	@Override
 	public List<Account> findrwtjAccounts(Account account) {
+		Map<String,String> tempMap = new HashMap<String,String>();
 		String term = account.getTerm();
 		String institutionName=account.getInstitution().getInstitutionName();
 		String accountState = String.valueOf(account.getAccountState());
@@ -261,32 +190,23 @@ public class AccountsServiceImpl implements AccountsService {
 		}else{
 			accountState="3";
 		}
-		System.out.println(accountState);
-		EntityManager em=null;
+		tempMap.put("accountState", accountState);
+		tempMap.put("term", term);
+		tempMap.put("institutionName", institutionName);
 		List<Account> accounts = new ArrayList<>();
 		try{
-			em = entityManagerFactory.createEntityManager();
-			String hql = "select i.institutionname,t.templatename,to_char(to_date(a.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,a.accountstate from ACCOUNT a left join INSTITUTION i on"+
-						" a.institution_id=i.id left join reporttemplate t on a.accounttemplate_id=t.id "+
-						" where a.accountstate=:accountState and to_char(to_date(a.term,'yyyy-MM-dd'),'yyyy-MM-dd')=:term and i.institutionname=:institutionName";
-			Query query = em.createNativeQuery(hql);
-			query.setParameter("accountState",accountState);
-			query.setParameter("term", term);
-			query.setParameter("institutionName", institutionName);
-			List list = query.getResultList();
+			List<Map<String,Object>> list = accountsDao.findrwtjAccounts(tempMap);
 			if(null != list && !list.isEmpty()){
                 for (int i = 0; i < list.size(); i++) {
-                    Object[] objs = (Object[]) list.get(i);
-
+                	Map<String,Object> map = list.get(i);
                     Account accounto = new Account();
                     Institution institutiono=new Institution();
                     AccountTemplate AccountTemplateo=new AccountTemplate();
-                  
-                    institutiono.setInstitutionName((String) objs[0]);
+                    institutiono.setInstitutionName(map.get("INSTITUTIONNAME") == null?"":map.get("INSTITUTIONNAME").toString());
                     accounto.setInstitution(institutiono);
-                    AccountTemplateo.setTemplateName((String) objs[1]);
+                    AccountTemplateo.setTemplateName(map.get("TEMPLATENAME") == null?"":map.get("TEMPLATENAME").toString());
                     accounto.setAccountTemplate(AccountTemplateo);
-                    accounto.setTerm((String) objs[2]);
+                    accounto.setTerm(map.get("TERM") == null?"":map.get("TERM").toString());
                     accounto.setAccountState(account.getAccountState());           
                     accounts.add(accounto);
                 }
@@ -297,10 +217,6 @@ public class AccountsServiceImpl implements AccountsService {
 		}catch (Exception e){
 			e.printStackTrace();
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-		}finally {
-			if(null != em){
-				em.close();
-			}
 		}
 		return accounts;
 	}
