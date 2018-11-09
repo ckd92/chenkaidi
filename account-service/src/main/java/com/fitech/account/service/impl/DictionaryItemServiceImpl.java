@@ -169,16 +169,16 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	 */
 	public List<DictionaryItem> getDictionaryItemByDictionaryId(Long id){
 		
-		List<Map<String,String>> tempList = dictionaryDao.getDictionaryItemByDictionaryId(id);
+		List<Map<String,Object>> tempList = dictionaryDao.getDictionaryItemByDictionaryId(id);
 		List<DictionaryItem> list = new ArrayList<DictionaryItem>();
 		Dictionary dictionary = new Dictionary();
 		dictionary.setId(id);
-		for(Map<String,String> map : tempList){
+		for(Map<String,Object> map : tempList){
 			DictionaryItem di = new DictionaryItem();
-			di.setDicItemDesc(map.get("DICITEMDESC"));
-			di.setDicItemId(map.get("DICITEMID"));
-			di.setId(Long.parseLong(map.get("ID").toString()));
-			di.setDicItemName(map.get("DICITEMNAME"));
+			di.setDicItemDesc(String.valueOf(map.get("DICITEMDESC")));
+			di.setDicItemId(String.valueOf(map.get("DICITEMID")));
+			di.setId(Long.parseLong(String.valueOf(map.get("ID"))));
+			di.setDicItemName(String.valueOf(map.get("DICITEMNAME")));
 			list.add(di);
 		}
 		return list;

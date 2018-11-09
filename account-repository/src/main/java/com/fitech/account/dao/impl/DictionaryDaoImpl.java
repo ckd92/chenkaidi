@@ -12,7 +12,7 @@ import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
 public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 
 	@Override
-	public List<Map<String, String>> getDictionaryItemByDictionaryId(Long id) {
+	public List<Map<String, Object>> getDictionaryItemByDictionaryId(Long id) {
 		return super.selectList("dictionary.getDictionaryItemByDictionaryId", id);
 	}
 
