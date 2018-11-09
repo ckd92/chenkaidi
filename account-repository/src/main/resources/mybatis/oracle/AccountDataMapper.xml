@@ -191,21 +191,9 @@
                     ${item.itemCode} = null
                 </when>
                 <otherwise>
-                    ${item.itemCode} =
                     <choose>
                         <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DATE' and item.value != null and item.value != ''">
-                            <choose>
-                                <when test="item.value.indexOf('-') !=-1 ">
-                                    to_date(    #{item.value} ,   'yyyy-MM-dd')
-                                </when>
-                                <otherwise>
-                                    to_date(
-                                    SELECT TO_CHAR(#{item.value} / (1000 * 60 * 60 * 24) +
-                                    TO_DATE('1970-01-01', 'YYYY-MM-DD'), 'YYYY-MM-DD') AS CDATE
-                                    FROM dual ,
-                                    'yyyy-MM-dd')
-                                </otherwise>
-                            </choose>
+                            ${item.itemCode} = to_date(#{item.value},'yyyy-MM-dd')
                         </when>
                         <!--<when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'INTEGER'">-->
                         <!--#{item.value}-->
@@ -214,7 +202,7 @@
                         <!--#{item.value}-->
                         <!--</when>-->
                         <otherwise>
-                            #{item.value}
+                            ${item.itemCode} = #{item.value}
                         </otherwise>
                     </choose>
                 </otherwise>

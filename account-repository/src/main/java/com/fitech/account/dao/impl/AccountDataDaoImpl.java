@@ -1,5 +1,7 @@
 package com.fitech.account.dao.impl;
 
+import java.sql.SQLType;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -373,15 +375,20 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 
 //        String sql = "update " + account.getAccountTemplate().getTableName() + " set ";
         Collection<AccountField> items = accountLine.getAccountFields();
-        sqlParameterMap.put("items",items);
         Collection<AccountField> itemegs = account.getAccountTemplate().getAccountFields();
         for (AccountField af : items) {
             for (AccountField ag : itemegs) {
                 if (af.getItemCode().equals(ag.getItemCode())) {
                     af.setSqlType(ag.getSqlType());
+                    if(af.getSqlType().equals(SqlTypeEnum.DATE)){
+                         if(!af.getValue().toString().contains("-")){
+                             af.setValue((new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(String.valueOf(af.getValue()))));
+                         }
+                    }
                 }
             }
         }
+        sqlParameterMap.put("items",items);
 //        if (items.size() > 0) {
 //            for (AccountField item : items) {
 //                if (StringUtil.isEmpty(String.valueOf(item.getValue()))) {
