@@ -383,6 +383,8 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                     if(af.getSqlType().equals(SqlTypeEnum.DATE)){
                          if(!af.getValue().toString().contains("-")){
                              af.setValue((new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(String.valueOf(af.getValue()))));
+                         }else if(af.getValue().toString().equals("NaN-aN-aN")){
+                        	 af.setValue(null);
                          }
                     }
                 }

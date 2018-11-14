@@ -80,14 +80,14 @@ public class AccountEditLogServiceImpl implements AccountEditLogService {
             Collection<AccountField> accountFields = account.getAccountTemplate().getAccountFields();
 
             for(AccountField accountField : accountFieldList){
-
+            	
                 AccountEditLogItem accountEditLogItem = new AccountEditLogItem();
 
                 accountEditLogItem.setAccountEditLog(accountEditLog);
-                accountEditLogItem.setEditAfterValue(accountField.getValue().toString());
+                accountEditLogItem.setEditAfterValue(String.valueOf(accountField.getValue()==null?"":accountField.getValue()));
                 if(accountField.getEditBeforeValue()!=null &&
-                        StringUtil.isNotEmpty(accountField.getEditBeforeValue().toString())){
-                    accountEditLogItem.setEditBeforeValue(accountField.getEditBeforeValue().toString());
+                        StringUtil.isNotEmpty(String.valueOf(accountField.getEditBeforeValue()))){
+                    accountEditLogItem.setEditBeforeValue(String.valueOf(accountField.getEditBeforeValue()));
                 }
 
                 for (AccountField accountField1 : accountFields){

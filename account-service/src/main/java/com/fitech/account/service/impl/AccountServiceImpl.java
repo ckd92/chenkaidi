@@ -275,10 +275,11 @@ public class AccountServiceImpl implements AccountService {
                 String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem().getSubKey()
                         + ":" + account.getAccountTemplate().getTableName();
                 Map<String, Object> map = new HashedMap(); // 待校验字段
+//                map.put("ID", value)
                 for (AccountField accountField : accountFieldList) {
                     map.put(accountField.getItemCode(), accountField.getValue());
                 }
-                Collection<ObjectValidateRule> rules = objectValidateRuleService.findByObjectID(validateTableName);
+                Collection<ObjectValidateRule> rules = objectValidateRuleService.findPageRule("SJBLSYS:".concat(validateTableName).toUpperCase());
                 // 校验结果
                 List<String> list = validateAnalyzeResultService.excuteFormuForOne(rules, map);
                 for (String s : list) {
@@ -372,10 +373,9 @@ public class AccountServiceImpl implements AccountService {
 //                            String after = String.valueOf(af.getValue());
 //                            if (af.getSqlType().equals(SqlTypeEnum.DATE)) {
                             String after = "null";
-                            if (af.getValue() != "" && !String.valueOf(af.getValue()).contains("-") && af.getSqlType().equals(SqlTypeEnum.DATE)){
+                            if (StringUtil.isNotEmpty(af.getValue()) && !String.valueOf(af.getValue()).contains("-") && af.getSqlType().equals(SqlTypeEnum.DATE)){
                                 after = (new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(String.valueOf(af.getValue())));
-                            }else if (af.getValue() == ""){
-                                after = after;
+                            }else if (StringUtil.isEmpty(String.valueOf(af.getValue()))){
                             }else {
                                 after = String.valueOf(af.getValue());
                             }

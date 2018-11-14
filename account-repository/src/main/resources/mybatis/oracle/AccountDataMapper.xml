@@ -146,7 +146,7 @@
         )values(seq_fitech.nextval,${accountId},
         <foreach collection="items" index="index" item="item" close="" separator="," open="">
             <choose>
-                <when test="item.value == null">
+                <when test="item.value == null or item.value == ''">
                     null
                 </when>
                 <otherwise>
@@ -187,7 +187,7 @@
         update ${tableName} set
         <foreach collection="items" index="index" item="item" close="" separator="," open="">
             <choose>
-                <when test="item.value == null">
+                <when test="item.value == null or item.value == ''">
                     ${item.itemCode} = null
                 </when>
                 <otherwise>
