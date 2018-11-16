@@ -1,11 +1,9 @@
 package com.fitech.account.controller;
 
-import java.io.File;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.fitech.framework.lang.page.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,10 +15,12 @@ import com.fitech.account.service.AccountProcessService;
 import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
-
+import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.security.util.TokenUtils;
+import com.fitech.report.service.FreqService;
 import com.fitech.system.service.SysLogService;
+import com.fitech.system.util.TermUtil;
 import com.fitech.vo.account.AccountProcessVo;
 
 
@@ -37,6 +37,8 @@ public class AccountProcessController {
     private SysLogService sysLogService;
     @Autowired
     private AccountReportService accountReportService;
+    @Autowired
+	private FreqService freqService;
     
     /**
      * 待办任务初始化分页
@@ -166,6 +168,24 @@ public class AccountProcessController {
     public GenericResult<Object> startProcess(@PathVariable String term,HttpServletRequest request) {
     	GenericResult<Object> result = new GenericResult<Object>();
         try {
+    		Account account = new Account();
+            account.setTerm(term);
+            accountReportService.startProcess(account);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        }finally {
+            sysLogService.addOperateLog("开启并指派一个新的任务",request);
+        }
+        return result;
+    }
+    @PostMapping(value = "statisticsProcess/{term}/{freq}")
+    public GenericResult<Object> startProcess(@PathVariable String term,@PathVariable String freq,HttpServletRequest request) {
+    	GenericResult<Object> result = new GenericResult<Object>();
+        try {
+        	//计算当前期数和频度对应的实际日期
+        	String freqName = freqService.findRepFreqByEtlFreqId(freq).getRepFreqName();
+        	term = TermUtil.getDateByFreqAndTerm(freqName, term, true);
     		Account account = new Account();
             account.setTerm(term);
             accountReportService.startProcess(account);
