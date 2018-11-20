@@ -56,7 +56,7 @@ public interface AccountProcessService {
 
 
     
-    public List<Long> getReceiverIdList(String term,String freq);
+//    public List<Long> getReceiverIdList(String term,String freq);
 
     /**
 	 * 创建待上报记录

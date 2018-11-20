@@ -378,10 +378,10 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     
     
 
-	@Override
-	public List<Long> getReceiverIdList(String term, String freq) {
-		return accountProcessServiceDao.getReceiverIdList(term, freq);
-	}
+//	@Override
+//	public List<Long> getReceiverIdList(String term, String freq) {
+//		return accountProcessServiceDao.getReceiverIdList(term, freq);
+//	}
 
 	@Override
 	public void createAccountTask(String term) {

@@ -27,12 +27,12 @@ public class AccountProcessServiceDaoImpl extends DaoMyBatis implements AccountP
 		return res;
 	}
 
-	@Override
-	public List<Long> getReceiverIdList(String term, String freq) {
-		Map<String,String> map = new HashMap<String,String>();
-		map.put("term", term);
-		map.put("freq", freq);
-		return super.selectList("accProServiceMapper.getReceiverIdList",map);
-	}
+//	@Override
+//	public List<Long> getReceiverIdList(String term, String freq) {
+//		Map<String,String> map = new HashMap<String,String>();
+//		map.put("term", term);
+//		map.put("freq", freq);
+//		return super.selectList("accProServiceMapper.getReceiverIdList",map);
+//	}
 	
 }

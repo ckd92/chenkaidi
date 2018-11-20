@@ -4,6 +4,7 @@ package com.fitech.account.service.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,10 @@ import com.fitech.domain.system.Institution;
 import com.fitech.domain.system.NoticeScene;
 import com.fitech.domain.system.ProcessConfig;
 import com.fitech.enums.SubmitStateEnum;
-import com.fitech.enums.account.AccountStateEnum;
 import com.fitech.enums.system.NoticeSceneEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
+import com.fitech.report.dao.ReportProcessDao;
 import com.fitech.system.repository.ProcessConfigRepository;
 import com.fitech.system.service.NoticeWaysService;
 import com.fitech.vo.system.NoticeSceneVo;
@@ -42,10 +43,24 @@ public class AccountReportServiceImpl implements AccountReportService {
     private AccountRepository accountRepository;
     @Autowired(required=false)
 	private NoticeWaysService noticeWaysService;
+    @Autowired
+    private ReportProcessDao reportProcessDao;
     
     @Override
-    @Transactional
     public void startProcess(Account account){
+    	this.createPorcess(account);
+        //通过流程id和期数查询出生成待办任务第一节点的用户
+        List<Long> receiverIdList = new ArrayList<>();
+        List<String> receiverPhones = new ArrayList<>();
+        List<Map<String,Object>> receivers = reportProcessDao.getReceiverIdList_bl(account.getTerm(), "");
+        for (Map<String, Object> map : receivers) {
+        	receiverIdList.add(Long.parseLong(String.valueOf(map.get("USERID"))));
+        	receiverPhones.add(String.valueOf(map.get("MOBILE")));
+		}
+		sendNotice(receiverIdList,receiverPhones);
+    }
+    @Transactional
+    private void createPorcess(Account account){
     	accountProcessService.createAccountTask(account.getTerm());
         //根据报文期数获取待开启的报文实例
         Collection<Account> ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(), SubmitStateEnum.NOTSUBMIT);
@@ -56,8 +71,8 @@ public class AccountReportServiceImpl implements AccountReportService {
                 if (null != processConfig) {
                     //开启流程
                     accountProcessService.processStart(processConfig, report);
-                    report.setSubmitStateType(SubmitStateEnum.SUBMITING);
-                    report.setAccountState(AccountStateEnum.DBL);
+//                    report.setSubmitStateType(SubmitStateEnum.SUBMITING);
+//                    report.setAccountState(AccountStateEnum.DBL);
 //                    accountRepository.save(account);
                 }
             } catch (Exception e) {
@@ -65,9 +80,6 @@ public class AccountReportServiceImpl implements AccountReportService {
                 throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
             }
         }
-        //通过流程id和期数查询出生成待办任务第一节点的用户
-		List<Long> receiverIdList = accountProcessService.getReceiverIdList(account.getTerm(), "");
-		sendNotice(receiverIdList);
     }
 
     private ProcessConfig findByAccountReport(Account account) throws Exception {
@@ -85,9 +97,10 @@ public class AccountReportServiceImpl implements AccountReportService {
     }
 
 
-    private void sendNotice(List<Long> receiverIdList){
+    private void sendNotice(List<Long> receiverIdList,List<String> receiverPhones){
 		NoticeSceneVo noticeSceneVo = new NoticeSceneVo();
 		noticeSceneVo.setReceiverIdList(receiverIdList);
+		noticeSceneVo.setReceiverPhones(receiverPhones);
     	NoticeScene noticeScene = new NoticeScene();
     	noticeScene.setUnum(NoticeSceneEnum.ActivitiStart002);
     	noticeSceneVo.setNoticeScene(noticeScene);
