@@ -47,8 +47,9 @@ public class AccountReportServiceImpl implements AccountReportService {
     private ReportProcessDao reportProcessDao;
     
     @Override
-    public void startProcess(Account account){
-    	if(this.createPorcess(account)){
+    public int startProcess(Account account){
+    	int num = this.createPorcess(account);
+    	if(num>0){
     		//通过流程id和期数查询出生成待办任务第一节点的用户
             List<Long> receiverIdList = new ArrayList<>();
             List<String> receiverPhones = new ArrayList<>();
@@ -59,9 +60,10 @@ public class AccountReportServiceImpl implements AccountReportService {
     		}
     		sendNotice(receiverIdList,receiverPhones);
     	}
+    	return num;
     }
     @Transactional
-    private boolean createPorcess(Account account){
+    private int createPorcess(Account account){
     	accountProcessService.createAccountTask(account.getTerm());
         //根据报文期数获取待开启的报文实例
         Collection<Account> ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(), SubmitStateEnum.NOTSUBMIT);
@@ -72,15 +74,13 @@ public class AccountReportServiceImpl implements AccountReportService {
                 if (null != processConfig) {
                     //开启流程
                     accountProcessService.processStart(processConfig, report);
-
-//                    accountRepository.save(account);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
             }
         }
-        return ledgerReportList.size()>0?true:false;
+        return ledgerReportList.size();
     }
 
     private ProcessConfig findByAccountReport(Account account) throws Exception {

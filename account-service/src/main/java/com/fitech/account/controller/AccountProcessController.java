@@ -170,7 +170,12 @@ public class AccountProcessController {
         try {
     		Account account = new Account();
             account.setTerm(term);
-            accountReportService.startProcess(account);
+            int count = accountReportService.startProcess(account);
+            if(count>0){
+            	result.setMessage("补录流程执行成功，并生成了【"+count+"】条代办事项");
+            }else{
+            	result.setMessage("没有可生成的补录代办任务！");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             result.setSuccess(false);
@@ -188,7 +193,12 @@ public class AccountProcessController {
         	term = TermUtil.getDateByFreqAndTerm(freqName, term, true);
     		Account account = new Account();
             account.setTerm(term);
-            accountReportService.startProcess(account);
+            int count = accountReportService.startProcess(account);
+            if(count>0){
+            	result.setMessage("补录流程执行成功，并生成了【"+count+"】条代办事项");
+            }else{
+            	result.setMessage("没有可生成的补录代办任务！");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             result.setSuccess(false);

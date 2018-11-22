@@ -11,6 +11,6 @@ public interface AccountReportService {
      * 流程开启服务
      * @param account
      */
-    public void startProcess(Account account);
+    public int startProcess(Account account);
 
 }
