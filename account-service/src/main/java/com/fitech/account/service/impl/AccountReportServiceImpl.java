@@ -47,20 +47,23 @@ public class AccountReportServiceImpl implements AccountReportService {
     private ReportProcessDao reportProcessDao;
     
     @Override
-    public void startProcess(Account account){
-    	this.createPorcess(account);
-        //通过流程id和期数查询出生成待办任务第一节点的用户
-        List<Long> receiverIdList = new ArrayList<>();
-        List<String> receiverPhones = new ArrayList<>();
-        List<Map<String,Object>> receivers = reportProcessDao.getReceiverIdList_bl(account.getTerm(), "");
-        for (Map<String, Object> map : receivers) {
-        	receiverIdList.add(Long.parseLong(String.valueOf(map.get("USERID"))));
-        	receiverPhones.add(String.valueOf(map.get("MOBILE")));
-		}
-		sendNotice(receiverIdList,receiverPhones);
+    public int startProcess(Account account){
+    	int num = this.createPorcess(account);
+    	if(num>0){
+    		//通过流程id和期数查询出生成待办任务第一节点的用户
+            List<Long> receiverIdList = new ArrayList<>();
+            List<String> receiverPhones = new ArrayList<>();
+            List<Map<String,Object>> receivers = reportProcessDao.getReceiverIdList_bl(account.getTerm(), "");
+            for (Map<String, Object> map : receivers) {
+            	receiverIdList.add(Long.parseLong(String.valueOf(map.get("USERID"))));
+            	receiverPhones.add(String.valueOf(map.get("MOBILE")));
+    		}
+    		sendNotice(receiverIdList,receiverPhones);
+    	}
+    	return num;
     }
     @Transactional
-    private void createPorcess(Account account){
+    private int createPorcess(Account account){
     	accountProcessService.createAccountTask(account.getTerm());
         //根据报文期数获取待开启的报文实例
         Collection<Account> ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(), SubmitStateEnum.NOTSUBMIT);
@@ -71,15 +74,13 @@ public class AccountReportServiceImpl implements AccountReportService {
                 if (null != processConfig) {
                     //开启流程
                     accountProcessService.processStart(processConfig, report);
-//                    report.setSubmitStateType(SubmitStateEnum.SUBMITING);
-//                    report.setAccountState(AccountStateEnum.DBL);
-//                    accountRepository.save(account);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
             }
         }
+        return ledgerReportList.size();
     }
 
     private ProcessConfig findByAccountReport(Account account) throws Exception {
