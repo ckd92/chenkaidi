@@ -1,5 +1,6 @@
 package com.fitech.account.repository;
 
+import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountProcess;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -8,5 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface AccountProcessRepository extends JpaRepository<AccountProcess,Long> {
 
+    public AccountProcess findByAccount(Account account);
 
 }
