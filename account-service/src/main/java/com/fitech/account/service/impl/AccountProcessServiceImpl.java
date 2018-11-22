@@ -53,6 +53,7 @@ import com.fitech.validate.domain.ValidateResult;
 import com.fitech.validate.service.ValidateAnalyzeResultService;
 import com.fitech.validate.service.ValidateResultService;
 import com.fitech.vo.account.AccountProcessVo;
+import com.fitech.enums.SubmitStateEnum;
 
 
 /**
@@ -147,7 +148,10 @@ public class AccountProcessServiceImpl implements AccountProcessService {
             FFInstance processInstance = processService.startInstance(processConfig.getProcessDefId(), variables);
             //保存业务流程关联数据
             AccountProcess ledgerProcess = new AccountProcess();
-            ledgerProcess.setAccount(accountRepository.findOne(rpt.getId()));
+            Account report = accountRepository.findOne(rpt.getId());
+            report.setSubmitStateType(SubmitStateEnum.SUBMITING);
+            report.setAccountState(AccountStateEnum.DBL);
+            ledgerProcess.setAccount(report);
             ledgerProcess.setProcInsetId(processInstance.getInstanceID());
             ledgerProcess.setStartTime(new Date());
             accountProcessRepository.save(ledgerProcess);
