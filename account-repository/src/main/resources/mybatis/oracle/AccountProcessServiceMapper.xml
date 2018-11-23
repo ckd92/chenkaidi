@@ -96,7 +96,7 @@
 	
 	
 	<resultMap type="map" id="accountMap">     
-		<id property="lid" column="lid" />	           
+		<id property="LID" column="lid" />
        <collection property="reportReasons" ofType="reasonDto"  column="lid" javaType="ArrayList"  select="selectReasonsByReportId" />  
     </resultMap>
 	

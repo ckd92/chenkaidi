@@ -4,6 +4,7 @@ import com.fitech.account.dao.AccountBaseDao;
 import com.fitech.account.dao.AccountProcessDao;
 import com.fitech.domain.account.*;
 import com.fitech.domain.system.User;
+import com.fitech.dto.ReasonDto;
 import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.page.Page;
@@ -182,6 +183,8 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
                 Account account = new Account();
                 account.setId(Long.valueOf(object.get("LID").toString()));
                 ledgerProcessVo.setAccount(account);
+                List<ReasonDto> reportReasons = (List<ReasonDto>) object.get("reportReasons");
+                ledgerProcessVo.setReportReasons(reportReasons);
                 vos.add(ledgerProcessVo);
             }
         }
