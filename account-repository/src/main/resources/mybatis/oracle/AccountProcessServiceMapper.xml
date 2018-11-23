@@ -71,7 +71,36 @@
 		)a 
     </select>
 	
-	<select id="findTodoTaskBySql" parameterType="map" resultType="map">
+	<select id="selectReasonsByReportId" resultType="reasonDto">
+		select *
+		from (select rs.*,
+		su.username,
+		case
+		when rs.reasonDescType = '2' then
+		1
+		else
+		row_number()
+		over(partition by rs.reasonDescType order by rs.time desc)
+		end as rn
+		from REPORTREASON rs
+		left join sysuser su
+		on rs.userid = su.id
+		inner join REPORTREASON_REPORT RR
+		ON rs.id = RR.REPORTREASON_ID
+		and rs.status = 1
+		inner join report r
+		on RR.REPORTS_ID = r.id
+		and RR.REPORTS_ID = #{lid})
+		where rn = 1
+	</select> 
+	
+	
+	<resultMap type="map" id="accountMap">     
+		<id property="lid" column="lid" />	           
+       <collection property="reportReasons" ofType="reasonDto"  column="lid" javaType="ArrayList"  select="selectReasonsByReportId" />  
+    </resultMap>
+	
+	<select id="findTodoTaskBySql" parameterType="map" resultMap="accountMap">
 		select Translate(task.id_ USING CHAR_CS) as id,it.institutionId,it.institutionName,lrt.templateCode as 
         templateId,lrt.templateName,to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ 
         USING CHAR_CS) as processName,lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,o.ACCOUNT_ID,
