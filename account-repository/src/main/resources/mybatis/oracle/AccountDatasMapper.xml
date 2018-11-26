@@ -5,7 +5,7 @@
 <mapper namespace="accountDatasMapper">
 	<!-- 删除该台账所有补录数据 -->
 	<delete id="delete" parameterType="Map">
-        delete from ${_parameter}
+        delete from ${tableName} where reportid=#{reportId}
     </delete>
 
 	<!-- 批量新增 -->

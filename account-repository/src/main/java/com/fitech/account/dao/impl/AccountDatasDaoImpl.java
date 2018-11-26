@@ -150,7 +150,10 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
         }
         
         // 所有该台账所有补录数据
-        super.delete("accountDatasMapper.delete",tableName);
+        Map<String,String> params = new HashMap<>();
+        params.put("tableName", tableName);
+        params.put("reportId", String.valueOf(accountId));
+        super.delete("accountDatasMapper.delete",params);
         // 批量新增
         super.batchInsert("accountDatasMapper.insert", dataMap);
         
