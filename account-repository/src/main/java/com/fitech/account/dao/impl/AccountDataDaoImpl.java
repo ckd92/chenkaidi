@@ -184,21 +184,21 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         sqlParameterMap.put("serachFileds",account.getAccountSearchs());
 
         List<String> list = new ArrayList<>();
-        StringBuffer sql = new StringBuffer();
-        sql.append("select id,reportId,");
+        //StringBuffer sql = new StringBuffer();
+        //sql.append("select id,reportId,");
         list.add("id");
         list.add("reportId");
         for (AccountField item : collection) {
             if (item.getItemType().equals("DATE")) {
-                sql.append("to_date(to_char("+item.getItemCode()+", 'yyyy-MM-dd')"+",'yyyy-mm-dd') as "+item.getItemCode()+""+ ",");
+                //sql.append("to_date(to_char("+item.getItemCode()+", 'yyyy-MM-dd')"+",'yyyy-mm-dd') as "+item.getItemCode()+""+ ",");
                 list.add(item.getItemCode());
             } else {
-                sql.append(item.getItemCode() + ",");
+                //sql.append(item.getItemCode() + ",");
                 list.add(item.getItemCode());
             }
         }
-        sql.deleteCharAt(sql.length() - 1);
-        sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
+        //sql.deleteCharAt(sql.length() - 1);
+        //sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
         //没有查询条件 查询所有
 
         accountTemplate.setAccountFields(null);
