@@ -26,6 +26,13 @@
         <report-service>1.1.1-SNAPSHOT</report-service>
         <validate-service>1.1.1-SNAPSHOT</validate-service>
     </properties>
+    
+    <scm>
+		<connection>scm:git:git@gitlab.fitech.tech:platform/fitech-account.git</connection>
+        <url>git@gitlab.fitech.tech:platform/fitech-account</url>
+        <developerConnection>scm:git:git@gitlab.fitech.tech:platform/fitech-account.git</developerConnection>
+	  	<tag>HEAD</tag>
+  	</scm>
     <!-- 设置 私服仓库地址-->
     <repositories>
         <repository>
