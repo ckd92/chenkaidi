@@ -753,7 +753,7 @@ public class AccountServiceImpl implements AccountService {
             
             //accountFields是用户可以查看的字段
             List<AccountField> accountFields = new ArrayList<>();
-            for (AccountField accountFieldnew : account.getAccountTemplate().getAccountFields()) {
+            for (AccountField accountFieldnew : accountField) {
                 //fieldPermission沒有OPERATE，则有操作权限
                 if (accountFieldnew.getFieldPermission().indexOf("OPERATE") == -1) {
                     accountFields.add(accountFieldnew);
@@ -772,10 +772,13 @@ public class AccountServiceImpl implements AccountService {
             }
             hList.add(lineFirst);
             hList.add(lineSecond);
+            //循环查询出得数据accountLines
             for (AccountLine accline : accountLines) {
                 List<String> lineone = new ArrayList<>();
-                for (AccountField accf : accline.getAccountFields()) {
-                    for (AccountField accountFieldnew : accountFields) {
+                //循环排序好的字段，控制输出顺序
+                for (AccountField accountFieldnew : accountFields) {
+                    //循环数据行仲的字段取值
+                    for (AccountField accf : accline.getAccountFields()) {
                         if (accountFieldnew.getItemCode().equals(accf.getItemCode())) {
                             if (accf.getValue() == null) {
                                 lineone.add("");
