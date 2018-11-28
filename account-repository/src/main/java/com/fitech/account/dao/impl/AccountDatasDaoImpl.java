@@ -21,6 +21,7 @@ import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
+import org.springframework.dao.DataAccessException;
 
 @Dao
 public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
@@ -154,9 +155,15 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
         params.put("tableName", tableName);
         params.put("reportId", String.valueOf(accountId));
         super.delete("accountDatasMapper.delete",params);
-        // 批量新增
-        super.batchInsert("accountDatasMapper.insert", dataMap);
-        
+        try{
+            // 批量新增
+            super.batchInsert("accountDatasMapper.insert", dataMap);
+        }catch (DataAccessException e){
+            if(e.getMessage().contains("ORA-12899")){
+                throw new AppException(ExceptionCode.SYSTEM_ERROR, "载入数据中存在超出模板定义长度的数据，请核实！");
+            }
+        }
+
         //成功返回加载条数
         resultList.add("true");
         resultList.add(String.valueOf(size));
