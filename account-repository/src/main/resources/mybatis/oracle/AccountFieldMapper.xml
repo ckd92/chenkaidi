@@ -5,9 +5,11 @@
 <mapper namespace="accountFieldMapper">
 
     <select id="isDeleteAble" parameterType="Long" resultType="Long" >
-        SELECT count(*)
-        FROM FieldPermission f,Role_FieldPermission r
-        WHERE f.id=r.fieldPermission_id AND f.ACCOUNTFIELD_ID = #{id}
+        select *
+          from role_fieldpermission t1
+          left join fieldpermission t2
+            on t1.fieldpermission_id = t2.id
+         where t2.reporttemplateid = #{id}
     </select>
 
     <select id="dicIsDeleteAble" parameterType="Long" resultType="Long">

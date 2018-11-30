@@ -61,9 +61,11 @@
     </update>
 
     <select id="isDeleteAble" parameterType="Long" resultType="Long">
-        select count(*) from ReportPermission f,Role_ReportPermission r
-        where f.id=r.reportPermission_id
-        and f.reporttemplateid = #{id}
+        select *
+          from role_reportpermission t1
+          left join reportpermission t2
+            on t1.reportpermission_id = t2.id
+         where t2.reporttemplateid = #{id}
     </select>
 
     <select id="dataIsExist" parameterType="String" resultType="Long">
