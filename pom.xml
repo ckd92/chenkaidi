@@ -19,10 +19,6 @@
     <properties>
         <account-repository>1.1.2-SNAPSHOT</account-repository>
         <account-service>1.1.2-SNAPSHOT</account-service>
-        <fitech-domain>1.1.1-SNAPSHOT</fitech-domain>
-        <system-service>1.1.1-SNAPSHOT</system-service>
-        <report-service>1.1.1-SNAPSHOT</report-service>
-        <validate-service>1.1.1-SNAPSHOT</validate-service>
     </properties>
     
     <scm>
@@ -49,11 +45,11 @@
     </repositories>
     <!-- account模块JAR依赖 -->
     <dependencies>
-        <dependency>
+        <!-- <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc6</artifactId>
-        </dependency>
-        <dependency>
+        </dependency> -->
+        <!-- <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
         </dependency>
@@ -68,7 +64,7 @@
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-        </dependency>
+        </dependency> -->
     </dependencies>
     <dependencyManagement>
     <dependencies>
