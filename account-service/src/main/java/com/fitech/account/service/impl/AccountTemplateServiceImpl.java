@@ -101,6 +101,8 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                             BusSystem busSystem = new BusSystem();
                             busSystem.setId(busSystemId);
                             accountTemplate.setBusSystem(busSystem);
+                            //添加模板设置模板启用状态
+                            accountTemplate.setEnabled(true);
                             accountTemplateRepository.save(accountTemplate);
 
                             //初始化补录台账权限
