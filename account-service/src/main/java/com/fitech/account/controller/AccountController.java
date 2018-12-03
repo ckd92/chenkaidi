@@ -2,7 +2,9 @@ package com.fitech.account.controller;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,309 +44,369 @@ public class AccountController {
 
     /**
      * 台账代办任务处理  - (数据列权限,列表和新增)
+     *
      * @param accountProcessVo
      * @param request
      * @return
      */
     @PostMapping("Account/accountdatas")
-    public GenericResult<AccountProcessVo> findAccountDatas(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-        GenericResult<AccountProcessVo> result=new GenericResult<>();
+    public GenericResult<AccountProcessVo> findAccountDatas(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
+        GenericResult<AccountProcessVo> result = new GenericResult<>();
         try {
             Page page = new Page();
             page.setPageSize(accountProcessVo.getPageSize());
             page.setCurrentPage(accountProcessVo.getPageNum());
-        	accountProcessVo.setUserId(TokenUtils.getLoginId(request));
-            result = accountService.findAccounDatas(accountProcessVo,page);
+            accountProcessVo.setUserId(TokenUtils.getLoginId(request));
+            result = accountService.findAccounDatas(accountProcessVo, page);
             result.setPage(page);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setSuccess(false);
-        }finally {
+        } finally {
         }
         return result;
     }
+
     /**
      * 台账代办任务处理  - (数据列权限,修改功能)
-     * @param accountId	报文ID
-     * @param id	台账行ID
+     *
+     * @param accountId 报文ID
+     * @param id        台账行ID
      * @param response
      * @param request
      * @return
      */
     @GetMapping("Account/{accountId}/AccountLine/{id}")
-    public GenericResult<AccountLine> findAccountDatas(@PathVariable Long accountId,@PathVariable Long id, HttpServletResponse response, HttpServletRequest request) {
-        GenericResult<AccountLine> result=new GenericResult<>();
+    public GenericResult<AccountLine> findAccountDatas(@PathVariable Long accountId, @PathVariable Long id, HttpServletResponse response, HttpServletRequest request) {
+        GenericResult<AccountLine> result = new GenericResult<>();
         try {
             result.setData(accountService.findAccountDatas(TokenUtils.getLoginId(request), accountId, id));
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setSuccess(false);
-        }finally {
+        } finally {
         }
         return result;
     }
+
     /**
      * 台账数据查询  ,无权限的字段查询(hx)
+     *
      * @param accountProcessVo
      * @param request
      * @return
      */
     @PostMapping("Account/accountdatastwo")
-    public GenericResult<AccountProcessVo> findAccountDatatwo(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-        GenericResult<AccountProcessVo> result=new GenericResult<>();
+    public GenericResult<AccountProcessVo> findAccountDatatwo(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
+        GenericResult<AccountProcessVo> result = new GenericResult<>();
         try {
             Page page = new Page();
             page.setPageSize(accountProcessVo.getPageSize());
             page.setCurrentPage(accountProcessVo.getPageNum());
-            result.setData(accountService.findAccountDatatwo(accountProcessVo,page));
+            result.setData(accountService.findAccountDatatwo(accountProcessVo, page));
             result.setPage(page);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setSuccess(false);
-        }finally {
+        } finally {
         }
         return result;
     }
-    
-    /**
-    *
-    * 新增单条明细
-    * @param accountProcessVo
-    * @param request
-    * @return
-    */
-   @PostMapping("Account/accountdata")
-   public GenericResult<Object> addAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-       GenericResult<Object> result = new GenericResult<>();
-       try {
-           Long userId = TokenUtils.getLoginId(request);
-           accountProcessVo.setUserId(userId);
-           List<String> data = accountService.addAccountData(accountProcessVo);//校验结果。如果存在校验不通过的数据，则data不为空，返回校验不通过
-           if (data.size() != 0) {
-           	if("addAccountData pk is exist!".equals(data.get(0))){
-           		result.setMessage("addAccountData pk is exist!");
-           		result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
-           	}
-               result.setSuccess(false);
-           }
-           result.setData(data);
-       }catch (Exception e){
-           e.printStackTrace();
-           result.setSuccess(false);
-       }finally {
-       }
-       return result;
-   }
 
-   /**
-    * 修改单条明细
-    * @param accountProcessVo
-    * @param request
-    * @return
-    */
-   @PutMapping("Account/accountdata")
-   public GenericResult<Object> updateAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-       GenericResult<Object> result = new GenericResult<>();
-       try {
-           List<String> data = new ArrayList<>();
-           Long userId = TokenUtils.getLoginId(request);
-           accountProcessVo.setUserId(userId);
-           data = accountService.modifyAccountData(accountProcessVo); //校验结果。如果存在校验不通过的数据，则data不为空，返回校验不通过
-           if (data.size() != 0) {
-               result.setSuccess(false);
-           }
-           result.setData(data);
-       }catch (Exception e){
-           e.printStackTrace();
-           result.setSuccess(false);
-       }finally {
-       }
-       return result;
-   }
-   /**
-	 * 批量更新台账数据
-	 * @param accountProcessVo
-	 * @param request
-	 * @return
-	 */
-	@PutMapping("Account/accountdatas")
-	public GenericResult<Object> updateBatchAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-		GenericResult<Object> result = new GenericResult<>();
-		try {
-			List<String> data = new ArrayList<>();
-			Long userId = TokenUtils.getLoginId(request);
-			accountProcessVo.setUserId(userId);
-			data = accountService.batchUpdateAccounData(accountProcessVo);
-			if (data.size() != 0) {
-				result.setSuccess(false);
-			}
-			result.setData(data);
-		}catch (Exception e){
-			e.printStackTrace();
-			result.setSuccess(false);
-		}finally {
-		}
-		return result;
-	}
-	
-   /**
-    * 删除补录台账数据
-    * @param accountId
-    * @param id
-    * @param request
-    * @return
-    */
-   @DeleteMapping("Account/{accountId}/AccountLine/{id}")
-   public GenericResult<Boolean> deleteAccountData(@PathVariable Long accountId,@PathVariable Long id, HttpServletRequest request){
-       GenericResult<Boolean> result=new GenericResult<>();
-       try {
-           Long userId = TokenUtils.getLoginId(request);
-           AccountProcessVo accountProcessVo = new AccountProcessVo();
-           accountProcessVo.setUserId(userId);
-           Account account = new Account();
-           account.setId(accountId);
-           accountProcessVo.setAccount(account);
-           AccountLine accountLine = new AccountLine();
-           accountLine.setId(id);
-           List<AccountLine> accountLines = new ArrayList<>();
-           accountLines.add(accountLine);
-           account.setAccountLines(accountLines);
-           result = accountService.deleteAccountData(accountProcessVo);
-       }catch (Exception e){
-           e.printStackTrace();
-           result.setSuccess(false);
-       }finally {
-       }
-       return result;
-   }
-   
-   /**
-    * 下载模板到本地，并返回fileName
-    * @param accountId	台账ID
-    * @param response
-    * @param request
-    * @return
-    */
-   @GetMapping("CreateTemplate/{accountId}")
-   public GenericResult<Object> createTemplate(@PathVariable Long accountId, HttpServletResponse response,HttpServletRequest request) {
-       try {
-           GenericResult<Object> obj = new GenericResult<Object>();
-           Long userId = TokenUtils.getLoginId(request);
-           String fileName = this.accountService.generateAccountTemplate(accountId,userId);
-           obj.setData(fileName);
-           return obj;
-       } catch (Exception e) {
-           e.printStackTrace();
-       }
-       return null;
-   }
-   
-   /**
-    * 台账数据装载-全量批量导入
-    * @param file
-    * @param accountId
-    * @param operateFieldStr   待校验的字段
-    * @param request
-    * @return
-    */
-   @PostMapping("AccountTemplate/{accountId}/{operateFieldStr}/accountdatas")
-   public GenericResult<Boolean> loadDataFromTemplate (@RequestParam(value = "file", required = true) MultipartFile file,
-                                                      @PathVariable("accountId") Long accountId, @PathVariable("operateFieldStr") String  operateFieldStr,
-                                                      HttpServletRequest request) {
-   	GenericResult<Boolean> result=new GenericResult<>();
-       try {
-    	   Long userId = TokenUtils.getLoginId(request);
-           result = accountService.loadDataByTemplate(file.getInputStream(), file.getOriginalFilename(), accountId,userId,operateFieldStr);
-       } catch (Exception e){
-           e.printStackTrace();
-           result.setSuccess(false);
-       }finally {
-       }
-       return result;
-   }
-   
-   /**
-    * 下载台账数据(先生成到服务器) - EXCEL导出
-    * @param accountProcessVo
-    * @param request
-    * @return
-    */
-   @PostMapping("Account/downloaddatas")
-   public GenericResult<AccountProcessVo> createData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
-       GenericResult<AccountProcessVo> result=new GenericResult<>();
-       try {
-       		accountProcessVo.setUserId(TokenUtils.getLoginId(request));
-           String filename = accountService.downLoadAccounData(accountProcessVo);
-           if(filename.indexOf("/")!=-1){
-           	String[] name = filename.split("/");
-               filename=name[name.length-1];
-           }else if(filename.indexOf("\\")!=-1){
-           	String[] name = filename.split("\\\\");
-               filename=name[name.length-1];
-           }            
-           result.setSuccess(true);
-           result.setMessage(filename);
-       }catch (Exception e){
-           e.printStackTrace();
-           result.setSuccess(false);
-       }finally {
-       }
-       return result;
-   }
-   /**
-    * 下载模板到本地
-    * @param fileName
-    * @param response
-    * @param request
-    */
-   @GetMapping("AccountTemplate/{fileName}")
-   public void downloadDatas(@PathVariable String fileName, HttpServletResponse response,HttpServletRequest request) {
-       try {
-           fileName = CommonConst.getProperties("template_path")+fileName+".xlsx";
-           File file = new File(fileName);
-           FileUtil.downLoadFile(file, response);
-       } catch (Exception e) {
-           e.printStackTrace();
-       }
-	}
-   
+    /**
+     * 新增单条明细
+     *
+     * @param accountProcessVo
+     * @param request
+     * @return
+     */
+    @PostMapping("Account/accountdata")
+    public GenericResult<Object> addAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
+        GenericResult<Object> result = new GenericResult<>();
+        try {
+            Long userId = TokenUtils.getLoginId(request);
+            accountProcessVo.setUserId(userId);
+            List<String> data = accountService.addAccountData(accountProcessVo);//校验结果。如果存在校验不通过的数据，则data不为空，返回校验不通过
+            if (data.size() != 0) {
+                if ("addAccountData pk is exist!".equals(data.get(0))) {
+                    result.setMessage("addAccountData pk is exist!");
+                    result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+                }
+                result.setSuccess(false);
+            }
+            result.setData(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        } finally {
+        }
+        return result;
+    }
+
+    /**
+     * 修改单条明细
+     *
+     * @param accountProcessVo
+     * @param request
+     * @return
+     */
+    @PutMapping("Account/accountdata")
+    public GenericResult<Object> updateAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
+        GenericResult<Object> result = new GenericResult<>();
+        try {
+            List<String> data = new ArrayList<>();
+            Long userId = TokenUtils.getLoginId(request);
+            accountProcessVo.setUserId(userId);
+            data = accountService.modifyAccountData(accountProcessVo); //校验结果。如果存在校验不通过的数据，则data不为空，返回校验不通过
+            if (data.size() != 0) {
+                result.setSuccess(false);
+            }
+            result.setData(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        } finally {
+        }
+        return result;
+    }
+
+    /**
+     * 批量更新台账数据
+     *
+     * @param accountProcessVo
+     * @param request
+     * @return
+     */
+    @PutMapping("Account/accountdatas")
+    public GenericResult<Object> updateBatchAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
+        GenericResult<Object> result = new GenericResult<>();
+        try {
+            List<String> data = new ArrayList<>();
+            Long userId = TokenUtils.getLoginId(request);
+            accountProcessVo.setUserId(userId);
+            data = accountService.batchUpdateAccounData(accountProcessVo);
+            if (data.size() != 0) {
+                result.setSuccess(false);
+            }
+            result.setData(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        } finally {
+        }
+        return result;
+    }
+
+    /**
+     * 删除补录台账数据
+     *
+     * @param accountId
+     * @param id
+     * @param request
+     * @return
+     */
+    @DeleteMapping("Account/{accountId}/AccountLine/{id}")
+    public GenericResult<Boolean> deleteAccountData(@PathVariable Long accountId, @PathVariable Long id, HttpServletRequest request) {
+        GenericResult<Boolean> result = new GenericResult<>();
+        try {
+            Long userId = TokenUtils.getLoginId(request);
+            AccountProcessVo accountProcessVo = new AccountProcessVo();
+            accountProcessVo.setUserId(userId);
+            Account account = new Account();
+            account.setId(accountId);
+            accountProcessVo.setAccount(account);
+            AccountLine accountLine = new AccountLine();
+            accountLine.setId(id);
+            List<AccountLine> accountLines = new ArrayList<>();
+            accountLines.add(accountLine);
+            account.setAccountLines(accountLines);
+            result = accountService.deleteAccountData(accountProcessVo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        } finally {
+        }
+        return result;
+    }
+
+    /**
+     * 下载模板到本地，并返回fileName
+     *
+     * @param accountId 台账ID
+     * @param response
+     * @param request
+     * @return
+     */
+    @GetMapping("CreateTemplate/{accountId}")
+    public GenericResult<Object> createTemplate(@PathVariable Long accountId, HttpServletResponse response, HttpServletRequest request) {
+        try {
+            GenericResult<Object> obj = new GenericResult<Object>();
+            Long userId = TokenUtils.getLoginId(request);
+            String fileName = this.accountService.generateAccountTemplate(accountId, userId);
+            obj.setData(fileName);
+            return obj;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 台账数据装载-全量批量导入
+     *
+     * @param file
+     * @param accountId
+     * @param operateFieldStr 待校验的字段
+     * @param request
+     * @return
+     */
+    @PostMapping("AccountTemplate/{accountId}/{operateFieldStr}/accountdatas")
+    public GenericResult<Boolean> loadDataFromTemplate(@RequestParam(value = "file", required = true) MultipartFile file,
+                                                       @PathVariable("accountId") Long accountId, @PathVariable("operateFieldStr") String operateFieldStr,
+                                                       HttpServletRequest request) {
+        GenericResult<Boolean> result = new GenericResult<>();
+        try {
+            Long userId = TokenUtils.getLoginId(request);
+            result = accountService.loadDataByTemplate(file.getInputStream(), file.getOriginalFilename(), accountId, userId, operateFieldStr);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        } finally {
+        }
+        return result;
+    }
+
+    /**
+     * 下载台账数据(先生成到服务器) - EXCEL导出
+     *
+     * @param accountProcessVo
+     * @param request
+     * @return
+     */
+    @PostMapping("Account/downloaddatas")
+    public GenericResult<AccountProcessVo> createData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
+        GenericResult<AccountProcessVo> result = new GenericResult<>();
+        try {
+            accountProcessVo.setUserId(TokenUtils.getLoginId(request));
+            String filename = accountService.downLoadAccounData(accountProcessVo);
+            if (filename.indexOf("/") != -1) {
+                String[] name = filename.split("/");
+                filename = name[name.length - 1];
+            } else if (filename.indexOf("\\") != -1) {
+                String[] name = filename.split("\\\\");
+                filename = name[name.length - 1];
+            }
+            result.setSuccess(true);
+            result.setMessage(filename);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        } finally {
+        }
+        return result;
+    }
+
+    /**
+     * 下载模板到本地
+     *
+     * @param fileName
+     * @param response
+     * @param request
+     */
+    @GetMapping("AccountTemplate/{fileName}")
+    public void downloadDatas(@PathVariable String fileName, HttpServletResponse response, HttpServletRequest request) {
+        try {
+            fileName = CommonConst.getProperties("template_path") + fileName + ".xlsx";
+            File file = new File(fileName);
+            FileUtil.downLoadFile(file, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 全表校验
+     *
      * @param accountProcessVo
      * @param request
      * @return
      */
     @PostMapping("Account/validateAll")
-    public GenericResult<Object> validateAll(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
+    public GenericResult<Object> validateAll(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<Object> result = new GenericResult<>();
         try {
             return accountService.validateAll(accountProcessVo);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             result.setSuccess(false);
-        }finally {
+        } finally {
         }
         return result;
     }
 
     /**
      * 批量校验
-     * @param idList :任务id
+     *
+     * @param idList  :任务id
      * @param request
      * @return
      */
     @GetMapping("Account/validatePL")
-    public GenericResult<Object> validatePl(@RequestParam("idList") List<Long> idList, HttpServletRequest request){
+    public GenericResult<Object> validatePl(@RequestParam("idList") List<Long> idList, HttpServletRequest request) {
         GenericResult<Object> result = new GenericResult<>();
         try {
             Long userId = TokenUtils.getLoginId(request);
-            return accountService.validatePL(idList,userId);
-        }catch (Exception e){
+            return accountService.validatePL(idList, userId);
+        } catch (Exception e) {
             e.printStackTrace();
             result.setSuccess(false);
-        }finally {
+        } finally {
         }
         return result;
+    }
+
+    /**
+     * 批量删除补录台账数据
+     *
+     * @param list
+     * @param request
+     */
+    @PostMapping("/BatchDelete")
+    public GenericResult<Object> batchDeleteAccountData(@RequestBody List<AccountProcessVo> list, HttpServletRequest request) {
+        GenericResult<Object> genericResult = new GenericResult<>();
+        List<Object> arrayList = new ArrayList<>();
+        try {
+            Long userId = TokenUtils.getLoginId(request);
+            for (AccountProcessVo accountProcessVo : list) {
+                accountProcessVo.setUserId(userId);
+                Account account = new Account();
+                account.setId(Long.parseLong(accountProcessVo.getReportId()));
+                AccountLine accountLine = new AccountLine();
+                accountLine.setId(Long.parseLong(accountProcessVo.getId()));
+                List<AccountLine> accountLines = new ArrayList<AccountLine>();
+                accountLines.add(accountLine);
+                account.setAccountLines(accountLines);
+                accountProcessVo.setAccount(account);
+                GenericResult<Boolean> result = accountService.deleteAccountData(accountProcessVo);
+                arrayList.add(result);
+            }
+            for (Object o : arrayList) {
+                GenericResult<Boolean> result = (GenericResult<Boolean>) o;
+                if (result.isSuccess()) {
+                    genericResult.setSuccess(true);
+                    genericResult.setMessage("删除成功");
+                } else {
+                    genericResult.setSuccess(false);
+                    genericResult.setMessage(result.getMessage());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            genericResult.setSuccess(false);
+        } finally {
+        }
+        return genericResult;
     }
 }
 
