@@ -61,7 +61,7 @@
     </update>
 
     <select id="isDeleteAble" parameterType="Long" resultType="Long">
-        select *
+        select count(*)
           from role_reportpermission t1
           left join reportpermission t2
             on t1.reportpermission_id = t2.id
