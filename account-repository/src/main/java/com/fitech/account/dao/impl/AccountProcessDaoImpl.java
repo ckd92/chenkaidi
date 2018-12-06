@@ -120,11 +120,7 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
         	tempMap.put("accountState", accountState);
         }
 		tempMap.put("sysuser_id", vo.getUserId()==null?"":String.valueOf(vo.getUserId()));
-        if(null != user && StringUtil.isNotEmpty(user.getOrgId())){
-            tempMap.put("institution_id",String.valueOf(user.getOrgId()));
-        }else{
-        	tempMap.put("institution_id", "");
-        }
+		tempMap.put("institution_id",vo.getInstitutionId());
         tempMap.put("reportSubSystem_id", vo.getSubSystemId()==null?"":String.valueOf(vo.getSubSystemId()));
         tempMap.put("category_", vo.getCategory());
 		
