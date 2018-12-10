@@ -113,7 +113,14 @@ public class AccountServiceImpl implements AccountService {
             Collection<FieldPermission> rrfps = fieldPermissionService.findByUserAndTemplate(accountProcessVo.getUserId(), account.getAccountTemplate());
             
             // 补录字段信息
-            Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
+            Collection<AccountField> accountFieldTemp = account.getAccountTemplate().getAccountFields();
+            Collection<AccountField> accountField = new ArrayList<>();
+            for(AccountField af:accountFieldTemp){
+                if(af.isSearchable()){
+                    accountField.add(af);
+                }
+            }
+            account.getAccountTemplate().setAccountFields(accountField);
             Iterator<AccountField> itaf = accountField.iterator();
             while (itaf.hasNext()) {
                 AccountField af = itaf.next();
@@ -691,7 +698,13 @@ public class AccountServiceImpl implements AccountService {
             // 该报文已经配置的字段权限
             Collection<FieldPermission> rrfps = fieldPermissionService.findByUserAndTemplate(accountProcessVo.getUserId(), account.getAccountTemplate());
             
-            Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
+            Collection<AccountField> accountFieldTemp = account.getAccountTemplate().getAccountFields();
+            Collection<AccountField> accountField = new ArrayList<>();
+            for(AccountField af:accountFieldTemp){
+                if(af.isSearchable()){
+                    accountField.add(af);
+                }
+            }
             //将collection中的数据放置到新建的list中
             List<AccountField> list = new ArrayList<>();
             for (AccountField field : accountField) {
