@@ -114,6 +114,7 @@ public class AccountServiceImpl implements AccountService {
             
             // 补录字段信息
             Collection<AccountField> accountFieldTemp = account.getAccountTemplate().getAccountFields();
+            //过滤模板中非展示字段
             Collection<AccountField> accountField = new ArrayList<>();
             for(AccountField af:accountFieldTemp){
                 if(af.isSearchable()){
@@ -524,7 +525,16 @@ public class AccountServiceImpl implements AccountService {
             }
 
             Account account = accountRepository.findOne(accountId);
-            Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
+
+            Collection<AccountField> accountFieldTemp = account.getAccountTemplate().getAccountFields();
+            //过滤模板中非展示字段
+            Collection<AccountField> accountField = new ArrayList<>();
+            for(AccountField af:accountFieldTemp){
+                if(af.isSearchable()){
+                    accountField.add(af);
+                }
+            }
+            account.getAccountTemplate().setAccountFields(accountField);
             Iterator<AccountField> itaf = accountField.iterator();
             while (itaf.hasNext()) {
                 AccountField af = itaf.next();
