@@ -9,7 +9,7 @@
           from role_fieldpermission t1
           left join fieldpermission t2
             on t1.fieldpermission_id = t2.id
-         where t2.reporttemplateid = #{id}
+         where t2.reporttemplate_id = #{id}
     </select>
 
     <select id="dicIsDeleteAble" parameterType="Long" resultType="Long">
