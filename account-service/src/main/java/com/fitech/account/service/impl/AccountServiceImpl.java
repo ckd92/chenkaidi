@@ -655,18 +655,18 @@ public class AccountServiceImpl implements AccountService {
                     //否则返回成功，size变量存储成功条数
                     Integer size = Integer.getInteger(resultList.get(1));
                     // 业务条线：表名
-//                    String[] operateFieldArr = operateFieldStr.split("\\|"); // 待校验字段
-//                    String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem()
-//                            .getSubKey() + ":" + account.getAccountTemplate().getTableName();
-//                    Collection<ValidateAnalyzeResult> rules = validateAnalyzeResultService
-//                            .findByObjectID(validateTableName, operateFieldArr);
-//                    if (rules != null && rules.size() > 0) {
-//                        ValidateBatch validateBatch = validateAnalyzeResultService.excuteFormu(rules, accountId + "");
-                        // 校验结果
-//                        Collection<ValidateResult> list = validateResultService
-//                                .findByValidatebatch(validateBatch.getBatchId());
+                    String[] operateFieldArr = operateFieldStr.split("\\|"); // 待校验字段
+                    String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem()
+                            .getSubKey() + ":" + account.getAccountTemplate().getTableName();
+                    Collection<ValidateAnalyzeResult> rules = validateAnalyzeResultService
+                            .findByObjectID(validateTableName, operateFieldArr);
+                    if (rules != null && rules.size() > 0) {
+                        ValidateBatch validateBatch = validateAnalyzeResultService.excuteFormu(rules, accountId + "");
+                         //校验结果
+                        Collection<ValidateResult> list = validateResultService
+                                .findByValidatebatch(validateBatch.getBatchId());
 
-//                    }
+                    }
                     AccountEditLog accountEditLog = new AccountEditLog();
                     accountEditLog.setAccountEditType(AccountEditEnum.INSERT);
                     accountEditLog.setLogSource(LogSourceEnum.OFFLINE);
