@@ -225,7 +225,7 @@
                             ${item.itemCode} = =to_date(#{item.value} ,'yyyy-mm-dd')
                         </when>
                         <otherwise>
-                            ${item.itemCode} = #{item.itemValue}
+                            ${item.itemCode} = #{item.value}
                         </otherwise>
                     </choose>
                 </otherwise>
