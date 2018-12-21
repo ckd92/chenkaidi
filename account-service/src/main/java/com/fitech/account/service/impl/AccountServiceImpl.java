@@ -111,17 +111,17 @@ public class AccountServiceImpl implements AccountService {
             Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
             // 该报文已经配置的字段权限
             Collection<FieldPermission> rrfps = fieldPermissionService.findByUserAndTemplate(accountProcessVo.getUserId(), account.getAccountTemplate());
-            
-            // 补录字段信息
-            Collection<AccountField> accountFieldTemp = account.getAccountTemplate().getAccountFields();
-            //过滤模板中非展示字段
-            Collection<AccountField> accountField = new ArrayList<>();
-            for(AccountField af:accountFieldTemp){
-                if(af.isSearchable()){
-                    accountField.add(af);
-                }
-            }
-            account.getAccountTemplate().setAccountFields(accountField);
+            // 补录台账字段信息
+            Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
+//            Collection<AccountField> accountFieldTemp = account.getAccountTemplate().getAccountFields();
+//            //过滤模板中非展示字段
+//            Collection<AccountField> accountField = new ArrayList<>();
+//            for(AccountField af:accountFieldTemp){
+//                if(af.isSearchable()){
+//                    accountField.add(af);
+//                }
+//            }
+//            account.getAccountTemplate().setAccountFields(accountField);
             Iterator<AccountField> itaf = accountField.iterator();
             while (itaf.hasNext()) {
                 AccountField af = itaf.next();
@@ -159,15 +159,12 @@ public class AccountServiceImpl implements AccountService {
                 }
                 af.setFieldPermission(allfp);
             }
-            Account ac = accountProcessVo.getAccount();
-            ac.setAccountTemplate(account.getAccountTemplate());
+            
+            accountProcessVo.setAccount(account);
 
             List<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo,page);
             account.setAccountLines(accountLines);
-
-            accountProcessVo.setAccount(account);
-
-            result.setData(accountProcessVo);
+            
 
             Collection<AccountLine> accountLineCol = accountProcessVo.getAccount().getAccountLines();
             Iterator accountIt = accountLineCol.iterator();
@@ -183,6 +180,7 @@ public class AccountServiceImpl implements AccountService {
                     }
                 }
             }
+            result.setData(accountProcessVo);
         } catch (Exception e) {
             e.printStackTrace();
             throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
