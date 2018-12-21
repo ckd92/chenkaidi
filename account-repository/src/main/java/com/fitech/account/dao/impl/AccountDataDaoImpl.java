@@ -66,6 +66,17 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 
         accountTemplate.setAccountFields(null);
         Collection<AccountField> serachFileds = account.getAccountSearchs();
+        List<AccountField> fileds = (List<AccountField>)sqlParameterMap.get("serachFileds");
+        if (serachFileds != null){
+            for (AccountField filed : fileds) {
+                for (AccountField serachFiled : serachFileds) {
+                    if (filed.getItemCode().equals(serachFiled.getItemCode())){
+                        filed.setValue(serachFiled.getValue());
+                    }
+                }
+            }
+        }
+
         //字段类型
         Map<String,List<String>> itemInstanceMap = new HashMap<>();
         List<String> integerFieldAndDoubleFieldList = new ArrayList<>();

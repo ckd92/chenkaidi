@@ -606,7 +606,7 @@ public class AccountServiceImpl implements AccountService {
             hList.add(itemDesc);
 
             ExcelUtils.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"/temp/AccountTemplate/", downRows, downData);
-            return sheetName;
+            return "temp|AccountTemplate|"+sheetName;
         }
         return null;
     }
@@ -811,7 +811,7 @@ public class AccountServiceImpl implements AccountService {
                 }
                 hList.add(lineone);
             }
-            String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"/temp/AccountList/", sheetName);
+            String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"temp/AccountList/", sheetName);
             return result;
         } catch (Exception e) {
             e.printStackTrace();
