@@ -292,9 +292,11 @@ public class AccountController {
             if (filename.indexOf("/") != -1) {
                 String[] name = filename.split("/");
                 filename = name[name.length - 1];
+                filename = "temp|AccountList|"+filename;
             } else if (filename.indexOf("\\") != -1) {
                 String[] name = filename.split("\\\\");
                 filename = name[name.length - 1];
+                filename = "temp|AccountList|"+filename;
             }
             result.setSuccess(true);
             result.setMessage(filename);
@@ -316,7 +318,10 @@ public class AccountController {
     @GetMapping("AccountTemplate/{fileName}")
     public void downloadDatas(@PathVariable String fileName, HttpServletResponse response, HttpServletRequest request) {
         try {
-            fileName = CommonConst.getProperties("template_path") + fileName + ".xlsx";
+            if (fileName.contains("|")){
+                fileName = fileName.replace("|","/");
+            }
+            fileName = CommonConst.getProperties("basePath") + fileName + ".xlsx";
             File file = new File(fileName);
             FileUtil.downLoadFile(file, response);
         } catch (Exception e) {
