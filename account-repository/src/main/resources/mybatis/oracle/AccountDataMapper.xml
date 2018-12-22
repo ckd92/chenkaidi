@@ -16,7 +16,7 @@
                 and ${item.itemCode}
                 <foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">
                     <if test="item == item.itemCode">
-                        = #{item.value}
+                        = ${item.value}
                     </if>
                 </foreach>
                 <foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">

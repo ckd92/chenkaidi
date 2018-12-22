@@ -1,6 +1,5 @@
 package com.fitech.account.dao.impl;
 
-import java.sql.SQLType;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,10 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
-import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
-import com.fitech.framework.lang.page.Page;
 import org.omg.CORBA.Object;
+import org.springframework.stereotype.Service;
+
 import com.fitech.account.dao.AccountDataDao;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountField;
@@ -24,21 +22,26 @@ import com.fitech.domain.account.DateField;
 import com.fitech.domain.account.DoubleField;
 import com.fitech.domain.account.IntegerField;
 import com.fitech.enums.SqlTypeEnum;
+import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
+import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.util.StringUtil;
 import com.fitech.vo.account.AccountProcessVo;
-import org.springframework.stereotype.Service;
 
 @Service
 public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 
     @Override
     public List<AccountLine> findDataByCondition(AccountProcessVo accountProcessVo, Page page) {
+    	// 补录台账信息
         Account account = accountProcessVo.getAccount();
-
+        // 补录台账模板
         AccountTemplate accountTemplate = account.getAccountTemplate();
-
+        
+        
+        // 补录台账字段
         Collection<AccountField> collection = accountTemplate.getAccountFields();
-
+        
+        
         //sql参数列表
         Map sqlParameterMap = new HashMap();
         sqlParameterMap.put("collection",collection);
@@ -46,41 +49,13 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         sqlParameterMap.put("accountId",account.getId());
         sqlParameterMap.put("serachFileds",account.getAccountSearchs());
 
-
-        List<String> list = new ArrayList<>();
-//        StringBuffer sql = new StringBuffer();
-//        sql.append("SELECT * FROM " +
-//                "     (SELECT A.*, rownum r " +
-//                "       FROM " +
-//                "          (");
-//        sql.append("select id,reportId,");
-        list.add("id");
-        list.add("reportId");
-//        for (AccountField item : collection) {
-//            sql.append(item.getItemCode() + ",");
-//            list.add(item.getItemCode());
-//        }
-//        sql.deleteCharAt(sql.length() - 1);
-//        sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
-        //没有查询条件 查询所有
-
-        accountTemplate.setAccountFields(null);
-        Collection<AccountField> serachFileds = account.getAccountSearchs();
-        List<AccountField> fileds = (List<AccountField>)sqlParameterMap.get("serachFileds");
-        if (serachFileds != null){
-            for (AccountField filed : fileds) {
-                for (AccountField serachFiled : serachFileds) {
-                    if (filed.getItemCode().equals(serachFiled.getItemCode())){
-                        filed.setValue(serachFiled.getValue());
-                    }
-                }
-            }
-        }
-
         //字段类型
         Map<String,List<String>> itemInstanceMap = new HashMap<>();
+        
         List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
         List<String> codeFieldList = new ArrayList<>();
+        
+        Collection<AccountField> serachFileds = account.getAccountSearchs();
         if (null != serachFileds && !serachFileds.isEmpty()) {
             //将itemtype赋值
             for (AccountField afl : serachFileds) {
@@ -95,44 +70,23 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
             for (AccountField item : serachFileds) {
                 String code = item.getItemCode();
                 if (item.getValue() != null) {
-                    //sql.append("and " + code);
                     //IntegerField和DoubleField类型itemCode集合
                     if (item instanceof IntegerField || item instanceof DoubleField) {
                         integerFieldAndDoubleFieldList.add(code);
-                        //sql.append(" = " + item.getValue() + " ");
                     } else if (item instanceof CodeField) {
                         codeFieldList.add(code);
-                        //sql.append(" = '" + item.getValue() + "' ");
-                    } else if ("DATE".equals(item.getItemType())) {
-                        //sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
-                    } else {
-                        //sql.append(" like '%" + item.getValue() + "%' ");
                     }
                 }
             }
             itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
             itemInstanceMap.put("codeFieldList",codeFieldList);
         }
-
+        accountTemplate.setAccountFields(collection);
 
         sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
-
-        accountTemplate.setAccountFields(collection);
-//        StringBuffer totalsum = new StringBuffer();
-//        totalsum.append("with a as ( \n");
-//        totalsum.append(sql);
-//        totalsum.append(" ) A) \n");
-//        totalsum.append(")select count(*) from a ");
-//
-//        sql.append(") A" +
-//                "       WHERE rownum <= " + (accountProcessVo.getPageNum() * accountProcessVo.getPageSize()) +
-//                "     ) B " +
-//                "         WHERE r >= " + ((accountProcessVo.getPageNum() - 1) * accountProcessVo.getPageSize() + 1));
-        Map<String, Object> map1 = new HashMap<>();
+        
         List<Map<String, Object>> resultList = super.selectByPage("accountDataMapper.findDataByConditionCount","accountDataMapper.findDataByCondition",sqlParameterMap,page);
-//        System.out.println(sql.toString());
-//        int totalList = this.getNamedParameterJdbcTemplate().queryForObject(
-//                totalsum.toString(), map1, Integer.class);
+        
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
             AccountLine ledgerLine = new AccountLine();
@@ -170,11 +124,6 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                 }
             }
         }
-//        long totalNum = findMaxNumDataByCondition(accountProcessVo);
-//        Pageable pageable = new PageRequest(accountProcessVo.getPageNum() - 1, accountProcessVo.getPageSize());
-//        List<AccountLine> ledgerLinePage = new PageImpl<>(lineList, pageable, totalList);
-//        account.setAccountLine(ledgerLinePage);
-
         return lineList;
     }
 
