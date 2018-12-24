@@ -380,30 +380,15 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
     public void batchUpdateData(AccountLine accountLine, Account account, List<Long> lineId) {
         Map sqlParameterMap = new HashMap();
         sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
-//        String sql = "update " + account.getAccountTemplate().getTableName() + " set ";
         Collection<AccountField> items = accountLine.getAccountFields();
         sqlParameterMap.put("items",items);
         if (items.size() > 0) {
-            for (AccountField item : items) {
-                if (StringUtil.isEmpty(String.valueOf(item.getValue()))) {
-//                    sql = sql + item.getItemCode() + "=null,";
-                } else {
-                    if (SqlTypeEnum.DATE.equals(item.getSqlType()) && !StringUtil.isEmpty(String.valueOf(item.getValue()))) {
-//                        sql = sql + item.getItemCode() + "=to_date('" + item.getValue() + "','yyyy-mm-dd'),";
-                    } else {
-//                        sql = sql + item.getItemCode() + "='" + item.getValue() + "',";
-                    }
-                }
-            }
-//            sql = sql.substring(0, sql.length() - 1);
             String idList = "";
             for (int i = 0; i < lineId.size(); i++) {
                 idList += lineId.get(i) + ",";
             }
             idList = idList.substring(0, idList.length() - 1);
             sqlParameterMap.put("idList",idList);
-//            sql = sql + " where id in(" + idList + ")";
-//            this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
             super.update("accountDataMapper.batchUpdateData",sqlParameterMap);
         }
     }
