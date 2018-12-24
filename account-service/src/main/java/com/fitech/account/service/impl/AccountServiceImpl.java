@@ -170,6 +170,19 @@ public class AccountServiceImpl implements AccountService {
                     }
                 }
             }
+            List<AccountField> accountFields = new ArrayList<AccountField>();
+            for (AccountField field : accountField) {
+                for (AccountLine accountLine : accountLines) {
+                    Collection<AccountField> fields = accountLine.getAccountFields();
+                    for (AccountField field1 : fields) {
+                        if (field.getItemCode().equals(field1.getItemCode())){
+                            field.setValue(field1.getValue());
+                        }
+                    }
+                }
+                accountFields.add(field);
+            }
+            account.setAccountSearchs(accountFields);
             result.setData(accountProcessVo);
         } catch (Exception e) {
             e.printStackTrace();
