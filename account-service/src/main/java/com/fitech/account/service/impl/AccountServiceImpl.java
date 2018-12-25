@@ -170,6 +170,7 @@ public class AccountServiceImpl implements AccountService {
                     }
                 }
             }
+            //为accountSearchs赋值
             List<AccountField> accountFields = new ArrayList<AccountField>();
             for (AccountField field : accountField) {
                 for (AccountLine accountLine : accountLines) {
@@ -250,12 +251,27 @@ public class AccountServiceImpl implements AccountService {
     public AccountProcessVo findAccountDatatwo(AccountProcessVo accountProcessVo, Page page) {
         try {
             Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
+            Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
 
             Account ac = accountProcessVo.getAccount();
             ac.setAccountTemplate(account.getAccountTemplate());
 
             List<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo,page);
             account.setAccountLines(accountLines);
+            //为accountSearchs赋值
+            List<AccountField> accountFields = new ArrayList<AccountField>();
+            for (AccountField field : accountField) {
+                for (AccountLine accountLine : accountLines) {
+                    Collection<AccountField> fields = accountLine.getAccountFields();
+                    for (AccountField field1 : fields) {
+                        if (field.getItemCode().equals(field1.getItemCode())){
+                            field.setValue(field1.getValue());
+                        }
+                    }
+                }
+                accountFields.add(field);
+            }
+            account.setAccountSearchs(accountFields);
 
             accountProcessVo.setAccount(account);
         } catch (Exception e) {
