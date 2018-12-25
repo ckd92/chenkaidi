@@ -49,41 +49,41 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         sqlParameterMap.put("accountId",account.getId());
         sqlParameterMap.put("serachFileds",account.getAccountSearchs());
 
-        //字段类型
-        Map<String,List<String>> itemInstanceMap = new HashMap<>();
-        
-        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
-        List<String> codeFieldList = new ArrayList<>();
-        
-        Collection<AccountField> serachFileds = account.getAccountSearchs();
-        if (null != serachFileds && !serachFileds.isEmpty()) {
-            //将itemtype赋值
-            for (AccountField afl : serachFileds) {
-                for (AccountField afd : collection) {
-                    if (afl.getItemCode().equals(afd.getItemCode()) && "DATE".equals(afd.getItemType()) && (!"".equals(afl.getValue()))) {
-                        afl.setItemType(afd.getItemType());
-                    }
-                }
-            }
-            //进行循环
-
-            for (AccountField item : serachFileds) {
-                String code = item.getItemCode();
-                if (item.getValue() != null) {
-                    //IntegerField和DoubleField类型itemCode集合
-                    if (item instanceof IntegerField || item instanceof DoubleField) {
-                        integerFieldAndDoubleFieldList.add(code);
-                    } else if (item instanceof CodeField) {
-                        codeFieldList.add(code);
-                    }
-                }
-            }
-            itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
-            itemInstanceMap.put("codeFieldList",codeFieldList);
-        }
-        accountTemplate.setAccountFields(collection);
-
-        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
+//        //字段类型
+//        Map<String,List<String>> itemInstanceMap = new HashMap<>();
+//
+//        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
+//        List<String> codeFieldList = new ArrayList<>();
+//
+//        Collection<AccountField> serachFileds = account.getAccountSearchs();
+//        if (null != serachFileds && !serachFileds.isEmpty()) {
+//            //将itemtype赋值
+//            for (AccountField afl : serachFileds) {
+//                for (AccountField afd : collection) {
+//                    if (afl.getItemCode().equals(afd.getItemCode()) && "DATE".equals(afd.getItemType()) && (!"".equals(afl.getValue()))) {
+//                        afl.setItemType(afd.getItemType());
+//                    }
+//                }
+//            }
+//            //进行循环
+//
+//            for (AccountField item : serachFileds) {
+//                String code = item.getItemCode();
+//                if (item.getValue() != null) {
+//                    //IntegerField和DoubleField类型itemCode集合
+//                    if (item instanceof IntegerField || item instanceof DoubleField) {
+//                        integerFieldAndDoubleFieldList.add(code);
+//                    } else if (item instanceof CodeField) {
+//                        codeFieldList.add(code);
+//                    }
+//                }
+//            }
+//            itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
+//            itemInstanceMap.put("codeFieldList",codeFieldList);
+//        }
+//        accountTemplate.setAccountFields(collection);
+//
+//        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
         
         List<Map<String, Object>> resultList = super.selectByPage("accountDataMapper.findDataByConditionCount","accountDataMapper.findDataByCondition",sqlParameterMap,page);
         

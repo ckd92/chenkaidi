@@ -11,31 +11,29 @@
         </foreach>
         from ${tableName}
         where reportId = ${accountId}
-        <if test="serachFields != null">
-            <foreach collection="serachFileds" index="index" item="item">
-                <if test="item.value != null">
-                    and ${item.itemCode}
-                    <foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">
-                        <if test="item == item.itemCode">
-                            = ${item.value}
-                        </if>
-                    </foreach>
-                    <foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">
-                        <if test="item == item.itemCode">
-                            = #{item.value}
-                        </if>
-                    </foreach>
+            <foreach collection="serachFileds" index="index" item="field">
+                <if test="field.value != null">
+                    and ${field.itemCode}
                     <choose>
-                        <when test="item.itemType == 'DATA'">
-                            = to_date(#{item.value},'yyyy-mm-dd')
+                        <when test="field.itemType == 'DATA'">
+                            = to_date(#{field.value},'yyyy-mm-dd')
                         </when>
                         <otherwise>
-                            like '%${item.value}%'
+                            like '%${field.value}%'
+                            <!--<foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">-->
+                                <!--<if test="item == field.itemCode">-->
+                                   <!--and ${field.itemCode} = #{field.value}-->
+                                <!--</if>-->
+                            <!--</foreach>-->
+                            <!--<foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">-->
+                                <!--<if test="item == field.itemCode">-->
+                                   <!--and ${field.itemCode} = #{field.value}-->
+                                <!--</if>-->
+                            <!--</foreach>-->
                         </otherwise>
                     </choose>
                 </if>
             </foreach>
-        </if>
     </select>
 
     <select id="findDataByConditionCount" parameterType="Map" resultType="Long">
@@ -46,31 +44,29 @@
             </foreach>
             from ${tableName}
             where reportId = ${accountId}
-            <if test="serachFields != null">
-                <foreach collection="serachFileds" index="index" item="item">
-                    <if test="item.value != null">
-                        and ${item.itemCode}
-                        <foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">
-                            <if test="item == item.itemCode">
-                                = #{item.value}
-                            </if>
-                        </foreach>
-                        <foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">
-                            <if test="item == item.itemCode">
-                                = #{item.value}
-                            </if>
-                        </foreach>
+                <foreach collection="serachFileds" index="index" item="field">
+                    <if test="field.value != null">
+                        and ${field.itemCode}
                         <choose>
-                            <when test="item.itemType == 'DATA'">
-                                = to_date(#{item.value},'yyyy-mm-dd')
+                            <when test="field.itemType == 'DATA'">
+                                = to_date(#{field.value},'yyyy-mm-dd')
                             </when>
                             <otherwise>
-                                like '%${item.value}%'
+                                like '%${field.value}%'
+                                <!--<foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">-->
+                                    <!--<if test="item == field.itemCode">-->
+                                        <!--and ${field.itemCode} = #{field.value}-->
+                                    <!--</if>-->
+                                <!--</foreach>-->
+                                <!--<foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">-->
+                                    <!--<if test="item == field.itemCode">-->
+                                        <!--and ${field.itemCode} = #{field.value}-->
+                                    <!--</if>-->
+                                <!--</foreach>-->
                             </otherwise>
                         </choose>
                     </if>
                 </foreach>
-            </if>
         )
     </select>
 
@@ -88,7 +84,6 @@
         </foreach>
         from ${tableName}
         where reportId = ${accountId}
-        <if test="serachFields != null">
             <foreach collection="serachFileds" index="index" item="item">
                 <if test="item.value != null">
                     and ${item.itemCode}
@@ -112,7 +107,6 @@
                     </choose>
                 </if>
             </foreach>
-        </if>
     </select>
 
     <select id="findMaxNumDataByCondition" parameterType="Map" resultType="Long">

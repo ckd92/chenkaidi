@@ -113,6 +113,20 @@ public class AccountServiceImpl implements AccountService {
             // 补录台账字段信息
             Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
             Iterator<AccountField> itaf = accountField.iterator();
+            //放置前端查询条件
+            List<AccountField> fieldList = new ArrayList<>();
+            for (AccountField field : accountField) {
+                List<AccountField> accountSearchs = accountProcessVo.getAccount().getAccountSearchs();
+                if (accountSearchs != null){
+                    for (AccountField accountSearch : accountSearchs) {
+                        if (field.getItemCode().equals(accountSearch.getItemCode())){
+                            field.setValue(accountSearch.getValue());
+                        }
+                    }
+                }
+                fieldList.add(field);
+            }
+            account.setAccountSearchs(fieldList);
             while (itaf.hasNext()) {
                 AccountField af = itaf.next();
                 if (af.getItemType().equals("CODELIB")) {
@@ -170,20 +184,20 @@ public class AccountServiceImpl implements AccountService {
                     }
                 }
             }
-            //为accountSearchs赋值
-            List<AccountField> accountFields = new ArrayList<AccountField>();
-            for (AccountField field : accountField) {
-                for (AccountLine accountLine : accountLines) {
-                    Collection<AccountField> fields = accountLine.getAccountFields();
-                    for (AccountField field1 : fields) {
-                        if (field.getItemCode().equals(field1.getItemCode())){
-                            field.setValue(field1.getValue());
-                        }
-                    }
-                }
-                accountFields.add(field);
-            }
-            account.setAccountSearchs(accountFields);
+//            //为accountSearchs赋值
+//            List<AccountField> accountFields = new ArrayList<AccountField>();
+//            for (AccountField field : accountField) {
+//                for (AccountLine accountLine : accountLines) {
+//                    Collection<AccountField> fields = accountLine.getAccountFields();
+//                    for (AccountField field1 : fields) {
+//                        if (field.getItemCode().equals(field1.getItemCode())){
+//                            field.setValue(field1.getValue());
+//                        }
+//                    }
+//                }
+//                accountFields.add(field);
+//            }
+//            account.setAccountSearchs(accountFields);
             result.setData(accountProcessVo);
         } catch (Exception e) {
             e.printStackTrace();
@@ -255,23 +269,37 @@ public class AccountServiceImpl implements AccountService {
 
             Account ac = accountProcessVo.getAccount();
             ac.setAccountTemplate(account.getAccountTemplate());
-
-            List<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo,page);
-            account.setAccountLines(accountLines);
-            //为accountSearchs赋值
-            List<AccountField> accountFields = new ArrayList<AccountField>();
+            //放置前端查询条件
+            List<AccountField> fieldList = new ArrayList<>();
             for (AccountField field : accountField) {
-                for (AccountLine accountLine : accountLines) {
-                    Collection<AccountField> fields = accountLine.getAccountFields();
-                    for (AccountField field1 : fields) {
-                        if (field.getItemCode().equals(field1.getItemCode())){
-                            field.setValue(field1.getValue());
+                List<AccountField> accountSearchs = accountProcessVo.getAccount().getAccountSearchs();
+                if (accountSearchs != null){
+                    for (AccountField accountSearch : accountSearchs) {
+                        if (field.getItemCode().equals(accountSearch.getItemCode())){
+                            field.setValue(accountSearch.getValue());
                         }
                     }
                 }
-                accountFields.add(field);
+                fieldList.add(field);
             }
-            account.setAccountSearchs(accountFields);
+            account.setAccountSearchs(fieldList);
+            accountProcessVo.setAccount(account);
+            List<AccountLine> accountLines = accountDataDao.findDataByCondition(accountProcessVo,page);
+            account.setAccountLines(accountLines);
+//            //为accountSearchs赋值
+//            List<AccountField> accountFields = new ArrayList<AccountField>();
+//            for (AccountField field : accountField) {
+//                for (AccountLine accountLine : accountLines) {
+//                    Collection<AccountField> fields = accountLine.getAccountFields();
+//                    for (AccountField field1 : fields) {
+//                        if (field.getItemCode().equals(field1.getItemCode())){
+//                            field.setValue(field1.getValue());
+//                        }
+//                    }
+//                }
+//                accountFields.add(field);
+//            }
+//            account.setAccountSearchs(accountFields);
 
             accountProcessVo.setAccount(account);
         } catch (Exception e) {
