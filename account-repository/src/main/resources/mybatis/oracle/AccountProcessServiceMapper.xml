@@ -373,5 +373,12 @@
 	
 	<select id="exculteCall" statementType="CALLABLE" parameterType="java.util.Map">  
        {call PROC_ACCOUNT(#{term,mode=IN,jdbcType=VARCHAR},#{result,mode=OUT,jdbcType=VARCHAR})}  
-    </select>  
+    </select>
+
+	<select id="findReportIdByTemplateId" parameterType="Long" resultType="Long">
+		select a.id
+		  from account a
+		  left join reporttemplate b on a.accounttemplate_id = b.id
+		 where b.id = #{templateId}
+	</select>
 </mapper>

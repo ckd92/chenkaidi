@@ -27,6 +27,11 @@ public class AccountProcessServiceDaoImpl extends DaoMyBatis implements AccountP
 		return res;
 	}
 
+	@Override
+	public List<Long> findReportIdByTemplateId(Long templateId) {
+		return super.selectList("accProServiceMapper.findReportIdByTemplateId",templateId);
+	}
+
 //	@Override
 //	public List<Long> getReceiverIdList(String term, String freq) {
 //		Map<String,String> map = new HashMap<String,String>();

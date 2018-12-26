@@ -10,6 +10,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import com.fitech.account.dao.AccountProcessServiceDao;
+import com.fitech.report.service.ReportProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -58,10 +60,13 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
     private AccountTemplateDAO accountTemplateDAO;
     @Autowired
     private AccountFieldDAO accountFieldDAO;
+    @Autowired
+    private AccountProcessServiceDao accountProcessServiceDao;
     
     @Autowired
     private AccountFieldService accountFieldService;
-    
+    @Autowired
+    private ReportProcessService reportProcessService;
 
     @Override
 	public List<AccountTemplate> findAll(){
@@ -217,8 +222,11 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
                 	}	
 
                 	if(flag.equals("true")){
+                        // 关联删除该模板对应的待办
+                        List<Long> reportIds = accountProcessServiceDao.findReportIdByTemplateId(accountTemplate.getId());
+                        reportProcessService.deletePendingWork(reportIds);
                 		this.delReportPermissions(accountTemplateRepository.findById(idList.get(i)));
-                		accountFieldService.delFieldPermessions(accountTemplateRepository.findById(idList.get(i)));
+                        accountFieldService.delFieldPermessions(accountTemplateRepository.findById(idList.get(i)));
                         accountTemplateRepository.delete(idList.get(i));
                         accountTemplateDAO.dropAllTemplate(acTemplate);
                     }else if(flag.equals("process")){
