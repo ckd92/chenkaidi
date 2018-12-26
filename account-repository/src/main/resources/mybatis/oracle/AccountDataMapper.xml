@@ -87,16 +87,16 @@
             <foreach collection="serachFileds" index="index" item="item">
                 <if test="item.value != null">
                     and ${item.itemCode}
-                    <foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">
-                        <if test="item == item.itemCode">
-                            = #{item.value}
-                        </if>
-                    </foreach>
-                    <foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">
-                        <if test="item == item.itemCode">
-                            = #{item.value}
-                        </if>
-                    </foreach>
+                    <!--<foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">-->
+                        <!--<if test="item == item.itemCode">-->
+                            <!--= #{item.value}-->
+                        <!--</if>-->
+                    <!--</foreach>-->
+                    <!--<foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">-->
+                        <!--<if test="item == item.itemCode">-->
+                            <!--= #{item.value}-->
+                        <!--</if>-->
+                    <!--</foreach>-->
                     <choose>
                         <when test="item.itemType == 'DATA'">
                             = to_date(#{item.value},'yyyy-mm-dd')

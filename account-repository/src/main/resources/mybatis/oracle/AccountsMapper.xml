@@ -67,9 +67,9 @@
 			and a.institution_id = e.institution_id)k
 		)j where 
 		<choose>  
-            <when test="institutionName !=null and institutionName != '' ">  
+            <when test="institutionName !=null and institutionName != '' ">
                to_char(to_date(j.term,'yyyy-MM-dd'),'yyyy-MM-dd')= #{term} 
-               and j.institutionname like  '%#{institutionName}%'
+               and j.institutionname like  '%${institutionName}%'
             </when >  
             <otherwise>  
             	to_char(to_date(j.term,'yyyy-MM-dd'),'yyyy-MM-dd')= #{term}

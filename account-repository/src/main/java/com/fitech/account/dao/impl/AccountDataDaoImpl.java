@@ -164,44 +164,44 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         accountTemplate.setAccountFields(null);
         Collection<AccountField> serachFileds = account.getAccountSearchs();
 
-        //字段类型
-        Map<String,List<String>> itemInstanceMap = new HashMap<>();
-        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
-        List<String> codeFieldList = new ArrayList<>();
-
-        if (null != serachFileds && !serachFileds.isEmpty()) {
-            //将itemtype赋值
-            for (AccountField afl : serachFileds) {
-                for (AccountField afd : collection) {
-                    if (afl.getItemCode().equals(afd.getItemCode()) && "DATE".equals(afd.getItemType()) && (!"".equals(afl.getValue()))) {
-                        afl.setItemType(afd.getItemType());
-                    }
-                }
-            }
-            //进行循环
-            for (AccountField item : serachFileds) {
-                String code = item.getItemCode();
-                if (item.getValue() != null) {
-                    //sql.append("and " + code);
-                    if (item instanceof IntegerField || item instanceof DoubleField) {
-                        integerFieldAndDoubleFieldList.add(code);
-                        //sql.append(" = " + item.getValue() + " ");
-                    } else if (item instanceof CodeField) {
-                        codeFieldList.add(code);
-                        //sql.append(" = '" + item.getValue() + "' ");
-                    } /*else if ("DATE".equals(item.getItemType())) {
-                        //sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
-                    } else {
-                        //sql.append(" like '%" + item.getValue() + "%' ");
-                    }*/
-                }
-            }
-            itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
-            itemInstanceMap.put("codeFieldList",codeFieldList);
-        }
-        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
-
-        accountTemplate.setAccountFields(collection);
+//        //字段类型
+//        Map<String,List<String>> itemInstanceMap = new HashMap<>();
+//        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
+//        List<String> codeFieldList = new ArrayList<>();
+//
+//        if (null != serachFileds && !serachFileds.isEmpty()) {
+//            //将itemtype赋值
+//            for (AccountField afl : serachFileds) {
+//                for (AccountField afd : collection) {
+//                    if (afl.getItemCode().equals(afd.getItemCode()) && "DATE".equals(afd.getItemType()) && (!"".equals(afl.getValue()))) {
+//                        afl.setItemType(afd.getItemType());
+//                    }
+//                }
+//            }
+//            //进行循环
+//            for (AccountField item : serachFileds) {
+//                String code = item.getItemCode();
+//                if (item.getValue() != null) {
+//                    //sql.append("and " + code);
+//                    if (item instanceof IntegerField || item instanceof DoubleField) {
+//                        integerFieldAndDoubleFieldList.add(code);
+//                        //sql.append(" = " + item.getValue() + " ");
+//                    } else if (item instanceof CodeField) {
+//                        codeFieldList.add(code);
+//                        //sql.append(" = '" + item.getValue() + "' ");
+//                    } /*else if ("DATE".equals(item.getItemType())) {
+//                        //sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
+//                    } else {
+//                        //sql.append(" like '%" + item.getValue() + "%' ");
+//                    }*/
+//                }
+//            }
+//            itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
+//            itemInstanceMap.put("codeFieldList",codeFieldList);
+//        }
+//        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
+//
+//        accountTemplate.setAccountFields(collection);
 
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map1 = new HashMap<>();

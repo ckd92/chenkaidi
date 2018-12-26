@@ -746,6 +746,23 @@ public class AccountServiceImpl implements AccountService {
             Collection<FieldPermission> rrfps = fieldPermissionService.findByUserAndTemplate(accountProcessVo.getUserId(), account.getAccountTemplate());
             
             Collection<AccountField> accountField = account.getAccountTemplate().getAccountFields();
+
+            //放置accountSearchs
+            List<AccountField> fieldList = new ArrayList<>();
+            for (AccountField field : accountField) {
+                List<AccountField> accountSearchs = accountProcessVo.getAccount().getAccountSearchs();
+                if (accountSearchs != null){
+                    for (AccountField accountSearch : accountSearchs) {
+                        if (field.getItemCode().equals(accountSearch.getItemCode())){
+                            field.setValue(accountSearch.getValue());
+                        }
+                    }
+                }
+                fieldList.add(field);
+            }
+            account.setAccountSearchs(fieldList);
+            accountProcessVo.setAccount(account);
+
 //            Collection<AccountField> accountField = new ArrayList<>();
 //            for(AccountField af:accountFieldTemp){
 //                if(af.isSearchable()){

@@ -140,6 +140,8 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         //数字类型，若为空值则设置为0
                         if ("".equals(tempValue)) {
                             valueList.add("0");
+                        }else{
+                            valueList.add(tempValue);
                         }
                     } else {
                         valueList.add(tempValue);
