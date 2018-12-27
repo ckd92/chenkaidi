@@ -341,10 +341,12 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                 if (af.getItemCode().equals(ag.getItemCode())) {
                     af.setSqlType(ag.getSqlType());
                     if(af.getSqlType().equals(SqlTypeEnum.DATE)){
-                         if(!af.getValue().toString().contains("-")){
+                         if(StringUtil.isEmpty(String.valueOf(af.getValue())) || String.valueOf(af.getValue()).equals("NaN-aN-aN")){
+                             af.setValue(null);
+                         }else if(StringUtil.isNotEmpty(af.getValue()) && !af.getValue().toString().contains("-")){
                              af.setValue((new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(String.valueOf(af.getValue()))));
-                         }else if(af.getValue().toString().equals("NaN-aN-aN")){
-                        	 af.setValue(null);
+                         }else{
+                             af.setValue(null);
                          }
                     }
                 }
