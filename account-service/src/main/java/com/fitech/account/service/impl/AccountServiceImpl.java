@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -329,7 +330,14 @@ public class AccountServiceImpl implements AccountService {
                         + ":" + account.getAccountTemplate().getTableName();
                 Map<String, Object> map = new HashedMap(); // 待校验字段
 //                map.put("ID", value)
+                
+                
                 for (AccountField accountField : accountFieldList) {
+                	if(accountField.isPkable()&&accountField.getValue()==null){
+                		  String result = accountField.getItemName()+"是主键，不能为空";
+                          data.add(result);
+                          return data;            		
+                	}              	
                     map.put(accountField.getItemCode(), accountField.getValue());
                 }
                 Collection<ObjectValidateRule> rules = objectValidateRuleService.findPageRule("SJBLSYS:".concat(validateTableName).toUpperCase());
