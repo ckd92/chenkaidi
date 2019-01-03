@@ -347,7 +347,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 call.execute();
                 testPrint = call.getString(3);
             }
-            if (Boolean.valueOf(testPrint)) {
+            if (!Boolean.valueOf(testPrint)) {
                 map.put("flag", false);
                 map.put("message", "执行存储过程出错！");
             } else {
