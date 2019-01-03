@@ -201,6 +201,8 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             List<List<String>> datas = ExcelUtil.getDatas(sheet, 2);
             //mapper传值集合
             Map<String, Object> sqlMap = new HashMap<String, Object>();
+            //构建主键MAP
+            HashMap<String, Object> pkMap = this.generatePKMap(columnHeaderlist, accountTemplate);
 
             //获取该报文所有字段集合
             List<String> fields = new ArrayList<String>();
@@ -225,6 +227,38 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 if (field.isPkable()) {
                     havePkable = true;
                     break;
+                }
+            }
+
+            //集合存放复合主键的值，用于对比是否有重复数据
+            List<String> pkValueStr = new ArrayList<>();
+            //通过主键判断数据是否有重复（联合主键）
+            for (int i = 0; i < datas.size(); i++) {
+                //存放主键的在columnHeaderlist中的index
+                List<Integer> listFlag = new ArrayList<>();
+                //适用于联合主键
+                for (String s : pkMap.keySet()) {
+                    //存在主键，记录位置
+                    int index = columnHeaderlist.indexOf(s);
+                    if (index != -1) {
+                        listFlag.add(index);
+                    }
+                }
+                //取出一行值
+                List<String> values = datas.get(i);
+                //拼接每条数据的复合主键
+                String str = "";
+                for (int j = 0; j < listFlag.size(); j++) {
+                    str = str + "-" + values.get(listFlag.get(j));
+                }
+                //判断该复合主键是否存在，不存在加入pkValueStr，存在就返回提示
+                if (StringUtil.isNotEmpty(str) && pkValueStr.contains(str)) {
+                    //失败返回重复数据的行号
+                    map.put("flag",false);
+                    map.put("message","载入的第"+String.valueOf(i + 1 + 2)+"行主键冲突");
+                    return map;
+                } else {
+                    pkValueStr.add(str);
                 }
             }
 

@@ -683,7 +683,7 @@ public class AccountServiceImpl implements AccountService {
 
                     Map<String, Object> map = accountDatasDao.loadDataByExcel(accountId, accountTemplate, sheet, account);
                     //返回false,载入失败，返回重复行号
-                    if (map.get("flag").equals("false")) {
+                    if (!(Boolean) map.get("flag")) {
                         result.setSuccess(false);
                         result.setMessage((String) map.get("message"));
                         result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
