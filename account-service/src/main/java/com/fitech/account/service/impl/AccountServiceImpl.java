@@ -689,16 +689,16 @@ public class AccountServiceImpl implements AccountService {
 
                     Sheet sheet = ExcelUtil.getExcelSheet(inputStream, fileName);
 
-                    List<String> resultList = accountDatasDao.loadDataByTemplate(accountId, accountTemplate, sheet, account);
+                    Map<String, Object> map = accountDatasDao.loadDataByExcel(accountId, accountTemplate, sheet, account);
                     //返回false,载入失败，返回重复行号
-                    if (resultList.get(0).equals("false")) {
+                    if (!(Boolean) map.get("flag")) {
                         result.setSuccess(false);
-                        result.setMessage("第" + resultList.get(1) + "行数据主键重复");
+                        result.setMessage((String) map.get("message"));
                         result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
                         return result;
                     }
                     //否则返回成功，size变量存储成功条数
-                    Integer size = Integer.getInteger(resultList.get(1));
+                    Integer size = (Integer) map.get("size");
                     // 业务条线：表名
                     String[] operateFieldArr = operateFieldStr.split("\\|"); // 待校验字段
                     String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem()

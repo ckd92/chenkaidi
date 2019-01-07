@@ -14,11 +14,19 @@
 		 <foreach collection="fields" item="field" separator=",">
 		 	${field}
 		 </foreach>
-		 ) values (SEQ_FITECH.NEXTVAL,#{id},
+		 ) values (SEQ_FITECH.NEXTVAL,${id},
 		 <foreach collection="values" item="value" separator=",">
 		 	${value}
 		 </foreach>
 		 )
 	</insert>
+	<!--查询所有台账-->
+	<select id="findAll" parameterType="Map" resultType="Map">
+		select id,reportId,
+			<foreach collection="fields" item="field" separator=",">
+				${field}
+			</foreach>
+		from ${tablename} where reportId = ${id}
+	</select>
 	
 </mapper>
