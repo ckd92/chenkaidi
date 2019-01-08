@@ -230,10 +230,39 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 }
             }
 
+
+            for (int i = 0; i < datas.size(); i++) {
+
+            }
+
+//            //清空临时表
+//            ps = con.prepareStatement("truncate table " + tableName + "_" + TableNameEnum.STANDARD);
+//            ps.executeUpdate();
+
+            //判断是否存在业务主键，存在则往临时表中添加数据，不存在则直接往数据表中添加数据
+            if (havePkable) {
+                sqlMap.put("tablename", tableName + "_" + TableNameEnum.STANDARD);
+            } else {
+                sqlMap.put("tablename", tableName);
+            }
+
+            List<Map<String, Object>> dataMap = new ArrayList<Map<String, Object>>();
             //集合存放复合主键的值，用于对比是否有重复数据
             List<String> pkValueStr = new ArrayList<>();
-            //通过主键判断数据是否有重复（联合主键）
+
+            //循环赋值sql
             for (int i = 0; i < datas.size(); i++) {
+                int x = 0;
+                for (AccountField field : items) {
+                    //判断主键字段载入数据是否为空值
+                    if (field.isPkable() && StringUtils.isEmpty(datas.get(i).get(x))) {
+                        map.put("flag", false);
+                        map.put("message", "报表数据主键字段为空值，请检查载入数据");
+                        return map;
+                    }
+                    x++;
+                }
+                //通过主键判断数据是否有重复（联合主键）
                 //存放主键的在columnHeaderlist中的index
                 List<Integer> listFlag = new ArrayList<>();
                 //适用于联合主键
@@ -260,35 +289,12 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 } else {
                     pkValueStr.add(str);
                 }
-            }
 
-//            //清空临时表
-//            ps = con.prepareStatement("truncate table " + tableName + "_" + TableNameEnum.STANDARD);
-//            ps.executeUpdate();
-
-            //判断是否存在业务主键，存在则往临时表中添加数据，不存在则直接往数据表中添加数据
-            if (havePkable) {
-                sqlMap.put("tablename", tableName + "_" + TableNameEnum.STANDARD);
-            } else {
-                sqlMap.put("tablename", tableName);
-            }
-
-            List<Map<String, Object>> dataMap = new ArrayList<Map<String, Object>>();
-            //循环赋值sql
-            for (int i = 0; i < datas.size(); i++) {
-                for (AccountField field : items) {
-                    //判断主键字段载入数据是否为空值
-                    if (field.isPkable() && StringUtils.isEmpty(datas.get(i).get(field.getOrderNumber() - 1))) {
-                        map.put("flag", false);
-                        map.put("message", "报表数据主键字段为空值，请检查载入数据");
-                        return map;
-                    }
-                }
                 Map<String, Object> fieldMap = new HashMap<String, Object>();
                 fieldMap.putAll(sqlMap);
                 List<String> valueList = new ArrayList<String>();
                 //待录入值
-                List<String> values = datas.get(i);
+                //List<String> values = datas.get(i);
                 for (int k = 0; k < values.size(); k++) {
                     AccountField field = null;
                     try {
@@ -337,7 +343,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             }
             // 批量新增
             super.batchInsert("accountDatasMapper.insert", dataMap);
-            String testPrint = null;
+            Boolean testPrint = true;
             if (havePkable) {
                 //调用同步修改数据的存储过程
                 call = con.prepareCall("call PROC_LOADACCOUNTDATA(?,?,?)");
@@ -345,9 +351,12 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 call.setString(2, tableName);
                 call.registerOutParameter(3, Types.VARCHAR);
                 call.execute();
-                testPrint = call.getString(3);
+                String s = call.getString(3);
+                if(s.equals("false")){
+                    testPrint = false;
+                }
             }
-            if (!Boolean.valueOf(testPrint)) {
+            if (!testPrint) {
                 map.put("flag", false);
                 map.put("message", "执行存储过程出错！");
             } else {
