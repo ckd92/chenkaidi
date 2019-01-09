@@ -3,29 +3,29 @@
     <parent>
         <groupId>com.fitech.framework</groupId>
         <artifactId>fitech-base</artifactId>
-        <version>1.0.2-SNAPSHOT</version>
+        <version>1.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.fitech.account</groupId>
     <artifactId>fitech-account</artifactId>
     <packaging>pom</packaging>
     <name>fitech-account</name>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.1.2</version>
     <description>数据补录模块</description>
     <modules>
         <module>account-repository</module>
         <module>account-service</module>
     </modules>
     <properties>
-        <account-repository>1.1.2-SNAPSHOT</account-repository>
-        <account-service>1.1.2-SNAPSHOT</account-service>
+        <account-repository>1.1.2</account-repository>
+        <account-service>1.1.2</account-service>
     </properties>
     
     <scm>
 		<connection>scm:git:git@gitlab.fitech.tech:platform/fitech-account.git</connection>
         <url>git@gitlab.fitech.tech:platform/fitech-account</url>
         <developerConnection>scm:git:git@gitlab.fitech.tech:platform/fitech-account.git</developerConnection>
-	  	<tag>HEAD</tag>
+	  	<tag>1.1.2</tag>
   	</scm>
     <!-- 设置 私服仓库地址-->
     <repositories>
@@ -81,22 +81,22 @@
         <dependency>
             <groupId>com.fitech.domain</groupId>
             <artifactId>fitech-domain</artifactId>
-            <version>1.1.2-SNAPSHOT</version>
+            <version>1.1.2</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.report</groupId>
             <artifactId>report-service</artifactId>
-            <version>1.1.2-SNAPSHOT</version>
+            <version>1.1.2</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.system</groupId>
             <artifactId>system-service</artifactId>
-            <version>1.1.2-SNAPSHOT</version>
+            <version>1.1.2</version>
         </dependency>
         <dependency>
 			<groupId>com.fitech.validate</groupId>
 			<artifactId>validate-service</artifactId>
-			<version>1.1.2-SNAPSHOT</version>
+			<version>1.1.2</version>
 		</dependency>
     </dependencies>
     </dependencyManagement>
