@@ -189,17 +189,18 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
 
 	@Override
 	public List<AccountProcessVo> findDoneTaskBySql(AccountProcessVo vo,User user,Page page) {
-		Map<String,String> tempMap = new HashMap<String,String>();
+		Map<String,Object> tempMap = new HashMap<String,Object>();
 		tempMap.put("templateCode", vo.getReportTemplateId());
 		tempMap.put("templateName", vo.getReportTemplateName());
 		tempMap.put("freq", vo.getFreq());
 		tempMap.put("term", vo.getTerm());
 		tempMap.put("institutionName", vo.getInstitutionName());
 		tempMap.put("processId", vo.getProcessId());
-		tempMap.put("sysuser_id", String.valueOf(vo.getUserId()));
-		tempMap.put("reportSubSystem_id", vo.getSubSystemId()==null?"":String.valueOf(vo.getSubSystemId()));
+		tempMap.put("sysuser_id", vo.getUserId());
+		tempMap.put("reportSubSystem_id", vo.getSubSystemId()==null?"":vo.getSubSystemId());
+	    tempMap.put("operationType", 0);
 		if(null != user.getOrg()){
-			tempMap.put("institution_id", String.valueOf(user.getOrg().getId()));
+			tempMap.put("institution_id", user.getOrg().getId());
 		}else{
 			tempMap.put("institution_id", "");
 		}
@@ -225,6 +226,7 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
                 ledgerProcessVo.setReportTemplateName(object.get("TEMPLATENAME").toString());
                 ledgerProcessVo.setTerm(object.get("TERM").toString());
                 ledgerProcessVo.setProcessName(object.get("NAME").toString());
+                ledgerProcessVo.setSubmitter(object.get("SUBMITTER")==null?"":object.get("SUBMITTER").toString());
                 //校验状态
                 if (object.get("VALIDATESTATUS") != null) {
                     if ("0".equals(object.get("VALIDATESTATUS").toString())) {

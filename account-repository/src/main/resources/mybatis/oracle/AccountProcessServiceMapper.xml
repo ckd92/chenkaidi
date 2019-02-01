@@ -285,16 +285,72 @@
 		</if>
 		)
      </select>
+     
+     <sql id="queryAuthoritySql">
+     with authority as
+		 (SELECT a.userId,
+				 A.reporttemplateid,
+				 xmlagg(xmlparse(content A.orgs || '+' wellformed) order by 1)
+				 .getclobval() as orgs
+			FROM (select t1.id as userId,
+						 inst.id as orgId,
+						 case
+						   when t5.institutelevel = 0 then
+							'[' || to_clob(inst.id) || ']'
+						   when t5.institutelevel = 1 then
+							(select xmlagg(xmlparse(content '[' || ss1.ID || ']' wellformed) order by ss1.parentinstitution_id)
+									.getclobval()
+							   from institution ss1
+							  where ss1.parentinstitution_id = inst.id)
+						   when t5.institutelevel = 2 then
+							(select xmlagg(xmlparse(content '[' || ss2.ID || ']' wellformed) order by 1)
+									.getclobval()
+							   from institution ss2
+							  start with ss2.parentinstitution_id = inst.id
+							 connect by prior ss2.id = ss2.parentinstitution_id)
+						 end as orgs,
+						 t5.reporttemplateid
+					from sysuser t1
+				   inner join institution inst
+					  on t1.org_id = inst.id
+				   inner join sysuser_role t2
+					  on t1.id = t2.sysuser_id
+				   inner join (select r.id from role r where r.subsystem_id = #{reportSubSystem_id,jdbcType=INTEGER}) t3
+					  on t2.roles_id = t3.id
+				   inner join role_reportpermission t4
+					  on t3.id = t4.role_id
+				   inner join reportpermission t5
+					  on t4.reportpermission_id = t5.id
+				   where t1.id = #{sysuser_id,jdbcType=INTEGER}
+				       and t5.operationtype = #{operationType}
+				   ) A
+		   GROUP BY a.userId,A.reporttemplateid)
+     </sql>
+     
+     
      <select id="findDoneTaskBySql" parameterType="map" resultType="map">
+         <include refid="queryAuthoritySql"/>
 		select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
 		to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ USING CHAR_CS) AS NAME,
-		lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,task.end_time_,lr.freq  
+		lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,task.end_time_,lr.freq ,su.userName as submitter
         from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
         inner join Institution it on it.id=lr.institution_id
         inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
-        inner join BusSystem bs on bs.id = lrt.busSystem_id
-        inner join ACT_HI_TASKINST task on task.proc_inst_id_=o.procInsetId
-        inner join sysuser_role ur on to_char(ur.roles_id)=task.ASSIGNEE_
+        inner join authority  ON authority.reporttemplateid = lrt.id AND instr(authority.orgs, '['||it.id||']') > 0     
+        inner join BusSystem bs on bs.id = lrt.busSystem_id  and bs.reportsubsystem_id=#{reportSubSystem_id}
+        inner join (
+        select 
+        t.id_,
+        t.proc_inst_id_,
+        t.name_,
+        t.assignee_,
+        t.start_time_,
+        t.end_time_ ,
+        row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
+        from ACT_HI_TASKINST t
+        where t.delete_reason_ = 'completed'
+        ) task on task.proc_inst_id_=o.procInsetId
+         left join sysuser su on task.assignee_=to_char(su.id)
         where 1=1
         <if test=" templateCode != null and templateCode != '' ">
 			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
@@ -314,35 +370,37 @@
 		<if test=" processId != null and processId != '' ">
 			and task.proc_inst_id_ = #{processId}
 		</if>
-		<if test=" sysuser_id != null and sysuser_id != '' ">
-			and ur.sysuser_id = #{sysuser_id}
-		</if>
-		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
-			and bs.reportSubSystem_id = #{reportSubSystem_id}
-		</if>
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id}
 		</if>
-		and task.end_time_ is not null
 		order by o.id
      </select>
      <select id="findDoneTaskBySqlCount" parameterType="map" resultType="long">
-		 select count(*) from (
-		 select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
-		 to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ USING CHAR_CS),
-		 lr.validateStatus,Translate(task.id_ USING CHAR_CS),task.end_time_,lr.freq
-		 from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
-		 inner join Institution it on it.id=lr.institution_id
-		 inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
-		 inner join BusSystem bs on bs.id = lrt.busSystem_id
-		 inner join ACT_HI_TASKINST task on task.proc_inst_id_=o.procInsetId
-		 inner join sysuser_role ur on to_char(ur.roles_id)=task.ASSIGNEE_
-		 where 1=1
-		 <if test=" templateCode != null and templateCode != '' ">and lrt.templateCode like
-			 concat(concat('%',#{templateCode}),'%')
-		 </if>
-        <if test=
-					" templateName != null and templateName != '' ">
+		  <include refid="queryAuthoritySql"/>
+		select count(o.ACCOUNT_ID)
+        from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
+        inner join Institution it on it.id=lr.institution_id
+        inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
+        inner join authority  ON authority.reporttemplateid = lrt.id AND instr(authority.orgs, '['||it.id||']') > 0     
+        inner join BusSystem bs on bs.id = lrt.busSystem_id and bs.reportsubsystem_id=#{reportSubSystem_id}
+        inner join (
+        select 
+        t.id_,
+        t.proc_inst_id_,
+        t.name_ as name,
+        t.assignee_,
+        t.start_time_,
+        t.end_time_ ,
+        row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
+        from ACT_HI_TASKINST t
+        where t.delete_reason_ = 'completed'
+        ) task on task.proc_inst_id_=o.procInsetId
+          left join sysuser su on task.assignee_=to_char(su.id)
+        where 1=1
+        <if test=" templateCode != null and templateCode != '' ">
+			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
+		</if> 
+        <if test=" templateName != null and templateName != '' ">
 			and lrt.templateName like concat(concat('%',#{templateName}),'%') 
 		</if>
         <if test=" freq != null and freq != '' ">
@@ -357,18 +415,9 @@
 		<if test=" processId != null and processId != '' ">
 			and task.proc_inst_id_ = #{processId}
 		</if>
-		<if test=" sysuser_id != null and sysuser_id != '' ">
-			and ur.sysuser_id = #{sysuser_id}
-		</if>
-		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
-			and bs.reportSubSystem_id = #{reportSubSystem_id}
-		</if>
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id}
 		</if>
-		and task.end_time_ is not null
-		order by o.id
-		)
 	 </select>
 	
 	<select id="exculteCall" statementType="CALLABLE" parameterType="java.util.Map">  

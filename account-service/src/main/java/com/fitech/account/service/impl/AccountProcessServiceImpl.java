@@ -31,7 +31,9 @@ import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.system.FieldPermission;
 import com.fitech.domain.system.ProcessConfig;
 import com.fitech.domain.system.Role;
+import com.fitech.domain.system.SubSystem;
 import com.fitech.domain.system.User;
+import com.fitech.dto.SubSystemDto;
 import com.fitech.enums.ValidateStatusEnum;
 import com.fitech.enums.account.AccountStateEnum;
 import com.fitech.framework.activiti.lang.ProcessStartConst;
@@ -44,6 +46,7 @@ import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.StringUtil;
 import com.fitech.report.dao.AccountProcDao;
+import com.fitech.system.dao.SubSystemDao;
 import com.fitech.system.dao.UserDataDao;
 import com.fitech.system.repository.RoleRepository;
 import com.fitech.system.repository.UserRepository;
@@ -98,7 +101,8 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     private AccountProcDao accountProcDao;
     @Autowired
     private AccountProcessServiceDao accountProcessServiceDao;
-
+    @Autowired
+    private SubSystemDao subSystemDao;
     public List<AccountProcessVo> findTodoTask(AccountProcessVo vo, Page page){
         try {
         	//查询用户
@@ -120,6 +124,12 @@ public class AccountProcessServiceImpl implements AccountProcessService {
             if (vo.getUserId() != null) {
                 user = userDataDao.findUserById(vo.getUserId());
             }
+            SubSystem subSystem=vo.getSubSystem();
+    		if(subSystem!=null){
+    			String subKey=subSystem.getSubKey();
+    			SubSystemDto subSystemDto=subSystemDao.findSubSystemBySubKey(subKey);
+    			vo.setSubSystemId(subSystemDto.getId().intValue());
+    		}
             return accountProcessDao.findDoneTaskBySql(vo, user,page);
         }catch (Exception e){
             e.printStackTrace();
@@ -326,7 +336,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                 
                 //调用流程引擎提交任务
                 String[] taskIds = accountProcessVo.getTaskId().split(",");
-                todoTaskService.batchComplete(taskIds, action);
+                todoTaskService.batchComplete(taskIds, action,userId);
 
                 for (String taskId : taskIds) {
                     //记录业务流程轨迹数据
