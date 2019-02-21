@@ -332,7 +332,7 @@
          <include refid="queryAuthoritySql"/>
 		select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
 		to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ USING CHAR_CS) AS NAME,
-		lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,task.end_time_,lr.freq ,su.userName as submitter
+		lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,task.end_time_,lr.freq ,task.userName as submitter
         from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
         inner join Institution it on it.id=lr.institution_id
         inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
@@ -348,9 +348,9 @@
         t.end_time_ ,
         row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
         from ACT_HI_TASKINST t
+        left join sysuser su on t.assignee_=to_char(su.id)
         where t.delete_reason_ = 'completed'
         ) task on task.proc_inst_id_=o.procInsetId
-         left join sysuser su on task.assignee_=to_char(su.id)
         where 1=1
         <if test=" templateCode != null and templateCode != '' ">
 			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
@@ -373,7 +373,7 @@
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id}
 		</if>
-		order by o.id
+		order by o.id,task.end_time_
      </select>
      <select id="findDoneTaskBySqlCount" parameterType="map" resultType="long">
 		  <include refid="queryAuthoritySql"/>
@@ -395,7 +395,6 @@
         from ACT_HI_TASKINST t
         where t.delete_reason_ = 'completed'
         ) task on task.proc_inst_id_=o.procInsetId
-          left join sysuser su on task.assignee_=to_char(su.id)
         where 1=1
         <if test=" templateCode != null and templateCode != '' ">
 			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
