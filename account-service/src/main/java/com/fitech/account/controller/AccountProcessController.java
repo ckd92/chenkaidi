@@ -184,6 +184,13 @@ public class AccountProcessController {
         }
         return result;
     }
+    /**
+     * 开启本期
+     * @param term
+     * @param freq
+     * @param request
+     * @return
+     */
     @PostMapping(value = "statisticsProcess/{term}/{freq}")
     public GenericResult<Object> startProcess(@PathVariable String term,@PathVariable String freq,HttpServletRequest request) {
     	GenericResult<Object> result = new GenericResult<Object>();
@@ -191,6 +198,37 @@ public class AccountProcessController {
         	//计算当前期数和频度对应的实际日期
         	String freqName = freqService.findRepFreqByEtlFreqId(freq).getRepFreqName();
         	term = TermUtil.getDateByFreqAndTerm(freqName, term, true);
+    		Account account = new Account();
+            account.setTerm(term);
+            int count = accountReportService.startProcess(account);
+            if(count>0){
+            	result.setMessage("补录流程执行成功，并生成了【"+count+"】条代办事项");
+            }else{
+            	result.setMessage("没有可生成的补录代办任务！");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        }finally {
+            sysLogService.addOperateLog("开启并指派一个新的任务",request);
+        }
+        return result;
+    }
+    
+    /**
+     * 开启上期
+     * @param term
+     * @param freq
+     * @param request
+     * @return
+     */
+    @PostMapping(value = "statisticsLastProcess/{term}/{freq}")
+    public GenericResult<Object> statisticsLastProcess(@PathVariable String term,@PathVariable String freq,HttpServletRequest request) {
+    	GenericResult<Object> result = new GenericResult<Object>();
+        try {
+        	//计算当前期数和频度对应的实际日期
+        	String freqName = freqService.findRepFreqByEtlFreqId(freq).getRepFreqName();
+        	term = TermUtil.getDateByFreqAndTerm(freqName, term, false);
     		Account account = new Account();
             account.setTerm(term);
             int count = accountReportService.startProcess(account);
