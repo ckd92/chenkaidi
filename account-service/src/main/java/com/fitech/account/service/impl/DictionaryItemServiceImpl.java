@@ -175,7 +175,9 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 		dictionary.setId(id);
 		for(Map<String,Object> map : tempList){
 			DictionaryItem di = new DictionaryItem();
-			di.setDicItemDesc(String.valueOf(map.get("DICITEMDESC")));
+			di.setDicItemDesc(
+					String.valueOf(map.get("DICITEMDESC")).equals("null") ? "" : String.valueOf(map.get("DICITEMDESC"))
+			);
 			di.setDicItemId(String.valueOf(map.get("DICITEMID")));
 			di.setId(Long.parseLong(String.valueOf(map.get("ID"))));
 			di.setDicItemName(String.valueOf(map.get("DICITEMNAME")));
