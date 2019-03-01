@@ -344,6 +344,7 @@
         t.proc_inst_id_,
         t.name_,
         t.assignee_,
+        su.username,
         t.start_time_,
         t.end_time_ ,
         row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
