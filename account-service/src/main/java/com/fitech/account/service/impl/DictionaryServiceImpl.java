@@ -92,8 +92,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 			}
 		}else{
 			result.setMessage("字典名称存在重复");
-			result.setSuccess(false);
-			result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+			result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
 		}
 		return result;
 	}
@@ -148,8 +147,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 				result.setSuccess(true);
 			}
 		}else{
-			result.setSuccess(false);
-			result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+			result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
 		}
 
 		return result;
