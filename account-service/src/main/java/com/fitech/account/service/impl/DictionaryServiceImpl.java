@@ -107,7 +107,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		//判断该id是否存在字典实体
 		if(dictionaryRepository.exists(id)){
 			try{
-				if(accountFieldDAO.dicIsDeleteAble(id)){
+				if(accountFieldDAO.dicIsChangeable(id)){
 					dictionaryItemService.deleteByDictionaryId(id);
 					dictionaryRepository.delete(id);
 					result.setSuccess(true);
@@ -136,7 +136,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		Dictionary findeddictionary = findOne(id);
 		//若此id存在对应字典并且字典名称不重复
 		if(findeddictionary!=null&&valiDictionaryNameIsExist(id, dictionary).getRestCode().equals("")){
-			if(dictionary.getIsEnable().equals("0") && !accountFieldDAO.dicIsDeleteAble(id)){
+			if(dictionary.getIsEnable().equals("0") && !accountFieldDAO.dicIsChangeable(id)){
 				result.setSuccess(false);
 				result.setMessage("该字典被使用，不可禁用！");
 			}else{

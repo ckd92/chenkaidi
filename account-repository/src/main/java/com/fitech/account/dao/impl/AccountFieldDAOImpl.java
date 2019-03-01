@@ -28,9 +28,9 @@ public class AccountFieldDAOImpl extends DaoMyBatis implements AccountFieldDAO {
     }
 
 	@Override
-	public Boolean dicIsDeleteAble(Long id) {
+	public Boolean dicIsChangeable(Long id) {
 		Boolean flag=true;
-        Long count = super.selectOne("accountFieldMapper.dicIsDeleteAble",id);
+        Long count = super.selectOne("accountFieldMapper.dicIsChangeable",id);
         if(!count.equals(0L)){
             flag = false;
         }

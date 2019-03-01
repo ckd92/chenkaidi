@@ -12,10 +12,23 @@
          where t2.reporttemplate_id = #{id}
     </select>
 
-    <select id="dicIsDeleteAble" parameterType="Long" resultType="Long">
-        SELECT count(*)
-        FROM ACCOUNTFIELD f
-        WHERE f.DICTIONARY_ID = #{id}
+    <select id="dicIsChangeable" parameterType="Long" resultType="Long">
+        select count(*) from (
+            select * from account a
+                where a.accountTemplate_Id
+                in (
+                    select ra.reportTemplate_id
+                    from reportTemplate_accountField ra
+                    where ra.accountFields_id
+                    in (
+                        select af.Id
+                        from accountField af
+                        where af.dicId = #{id}
+                    )
+                )
+        )a
+
     </select>
+
 
 </mapper>

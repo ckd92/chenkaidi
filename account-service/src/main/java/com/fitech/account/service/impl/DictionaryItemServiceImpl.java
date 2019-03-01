@@ -221,17 +221,26 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	@Override
 	public GenericResult<Boolean> save(DictionaryItem dictionaryItem) {
 		GenericResult<Boolean> result = new GenericResult<Boolean>();
-		//判断字典项名称是否存在
-		if(valiDictionaryItemNameIsExist(null,dictionaryItem)){		
-			try{
-				dictionaryItemRepository.save(dictionaryItem);
-			}catch(Exception e){
-				e.printStackTrace();
-				throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+		//判断字典是否已经被使用
+		if(accountFieldDAO.dicIsChangeable(dictionaryItem.getDictionary().getId())){
+			//判断字典项名称是否存在
+			if(valiDictionaryItemNameIsExist(null,dictionaryItem)){
+				try{
+					dictionaryItemRepository.save(dictionaryItem);
+				}catch(Exception e){
+					e.printStackTrace();
+					throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+				}
+			}else{
+				result.setSuccess(false);
+				result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+
 			}
 		}else{
 			result.setSuccess(false);
-			result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+			result.setErrorCode(ExceptionCode.HAS_BEEN_USED_CANNT_BE_DELETD);
+			result.setMessage("该字典被使用，字典项不可新增！");
+
 		}
 		return result;
 	}
@@ -242,14 +251,24 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	public GenericResult<Boolean> update(Long id, DictionaryItem dictionaryItem) {
 		GenericResult<Boolean> result= new GenericResult<Boolean>();
 		DictionaryItem findeddictionaryItem = findOne(id);
-		if(findeddictionaryItem!=null&&valiDictionaryItemNameIsExist(id,dictionaryItem)){						
-			findeddictionaryItem.setDicItemDesc(dictionaryItem.getDicItemDesc());
-			findeddictionaryItem.setDicItemName(dictionaryItem.getDicItemName());
-			findeddictionaryItem.setDicItemId(dictionaryItem.getDicItemId());
-			dictionaryItemRepository.saveAndFlush(findeddictionaryItem);
+		//判断字典是否已经被使用
+		if(accountFieldDAO.dicIsChangeable(findeddictionaryItem.getDictionary().getId())){
+			//判断是否存在或者重复
+			if(findeddictionaryItem!=null&&valiDictionaryItemNameIsExist(id,dictionaryItem)){
+				findeddictionaryItem.setDicItemDesc(dictionaryItem.getDicItemDesc());
+				findeddictionaryItem.setDicItemName(dictionaryItem.getDicItemName());
+				findeddictionaryItem.setDicItemId(dictionaryItem.getDicItemId());
+				dictionaryItemRepository.saveAndFlush(findeddictionaryItem);
+			}else{
+				result.setSuccess(false);
+				result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+			}
+
 		}else{
 			result.setSuccess(false);
-			result.setRestCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+			result.setErrorCode(ExceptionCode.HAS_BEEN_USED_CANNT_BE_DELETD);
+			result.setMessage("该字典被使用，字典项不可修改！");
+
 		}
 		return result;
 	}
@@ -262,7 +281,8 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 		if(dictionaryItemRepository.exists(id)){
 			try{
 				DictionaryItem dicItem= dictionaryItemRepository.findOne(id);
-				if(accountFieldDAO.dicIsDeleteAble(dicItem.getDictionary().getId())){					
+				//判断字典是否已经被使用了
+				if(accountFieldDAO.dicIsChangeable(dicItem.getDictionary().getId())){
 					dictionaryItemRepository.delete(id);
 					result.setSuccess(true);
 				}else{
