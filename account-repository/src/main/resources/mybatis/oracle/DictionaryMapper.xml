@@ -10,9 +10,9 @@
     
 	<select id="getDictionaryItemByDicItemName" parameterType="map" resultType="map">
 	
-       select id,DICITEMDESC,DICITEMID,DICITEMNAME from DictionaryItem where DICTIONARY_ID = #{_parameter}
+       select id,DICITEMDESC,DICITEMID,DICITEMNAME from DictionaryItem where DICTIONARY_ID = #{id}
        <if test="dicItemName != null and dicItemName != ''">
-       		and dicItemName like '%#{dicItemName}%' 
+       		and dicItemName like '%${dicItemName}%'
        </if>
        order by id desc
     </select>

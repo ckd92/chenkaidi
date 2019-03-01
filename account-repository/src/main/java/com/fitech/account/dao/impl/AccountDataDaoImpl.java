@@ -432,14 +432,11 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
         sqlParameterMap.put("accountId",account.getId());
 
-//        StringBuffer sql = new StringBuffer();
-//        sql.append("select count(1) from " + account.getAccountTemplate().getTableName() + " where reportId=" + account.getId() + "  ");
         //字段类型
         Map<String,List<String>> itemInstanceMap = new HashMap<>();
         List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
         List<String> codeFieldList = new ArrayList<>();
         Collection<AccountField> accountFields = account.getAccountTemplate().getAccountFields();
-//        sqlParameterMap.put("accountFields",accountFields);
         Collection<AccountField> isPkableListAndItemCodeEqual = new ArrayList();
         //没有查询条件 查询所有
         for (AccountField item : items) {
@@ -449,15 +446,10 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                     if (accountField.isPkable() && accountField.getItemCode().equals(item.getItemCode())) {
                         point = true;
                         isPkableListAndItemCodeEqual.add(accountField);
-                        //sql.append("and " + code);
                         if (item instanceof IntegerField || item instanceof DoubleField) {
                             integerFieldAndDoubleFieldList.add(code);
-                            //sql.append(" = " + item.getValue() + " ");
                         } else if (item instanceof CodeField || item instanceof DateField) {
                             codeFieldList.add(code);
-                            //sql.append(" = '" + item.getValue() + "' ");
-                        } else {
-                            //sql.append(" = '" + item.getValue() + "' ");
                         }
                         break;
                     }

@@ -190,16 +190,16 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	 * 根据字典id条件查询字典项,高级搜索
 	 */
 	public List<DictionaryItem> getDictionaryItemByDicItemName(Long id,String dicItemName){
-		List<Map<String,String>> tempList = dictionaryDao.getDictionaryItemByDicItemName(id, dicItemName);
+		List<Map<String,Object>> tempList = dictionaryDao.getDictionaryItemByDicItemName(id, dicItemName);
 		List<DictionaryItem> list = new ArrayList<DictionaryItem>();
 		Dictionary dictionary = new Dictionary();
 		dictionary.setId(id);
-		for(Map<String,String> map : tempList){
+		for(Map<String,Object> map : tempList){
 			DictionaryItem di = new DictionaryItem();
-			di.setDicItemDesc(map.get("DICITEMDESC"));
-			di.setDicItemId(map.get("DICITEMID"));
-			di.setId(Long.parseLong(map.get("ID").toString()));
-			di.setDicItemName(map.get("DICITEMNAME"));
+			di.setDicItemDesc(map.get("DICITEMDESC").toString());
+			di.setDicItemId(map.get("DICITEMID").toString());
+			di.setId(Long.parseLong( map.get("ID").toString() ));
+			di.setDicItemName(map.get("DICITEMNAME").toString());
 			list.add(di);
 		}
 		return list;

@@ -17,11 +17,11 @@ public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 	}
 
 	@Override
-	public List<Map<String, String>> getDictionaryItemByDicItemName(Long id,
+	public List<Map<String, Object>> getDictionaryItemByDicItemName(Long id,
 			String dicItemName) {
-		Map<String,String> map = new HashMap<String,String>();
+		Map<String,Object> map = new HashMap<String,Object>();
 		map.put("dicItemName", dicItemName);
-		map.put("id", String.valueOf(id));
+		map.put("id", id);
 		return super.selectList("dictionary.getDictionaryItemByDicItemName", map);
 	}
 	
