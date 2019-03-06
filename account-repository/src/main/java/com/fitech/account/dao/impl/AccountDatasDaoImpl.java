@@ -234,10 +234,10 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                     break;
                 }
             }
-
-
-            for (int i = 0; i < datas.size(); i++) {
-
+            if (datas.size() == 0){
+                map.put("flag", false);
+                map.put("message", "载入空数据excel，请检查！");
+                return map;
             }
 
 //            //清空临时表
