@@ -234,7 +234,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                     break;
                 }
             }
-            if (datas.size() == 0){
+            if (datas.size() == 0) {
                 map.put("flag", false);
                 map.put("message", "载入空数据excel，请检查！");
                 return map;
@@ -308,7 +308,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         throw new AppException(ExceptionCode.SYSTEM_ERROR, "请确认导入模板是否正确！或字典项字段功能暂未完善，请确认是否导入字典项内容");
                     }
 
-                    if (values.get(k) != null) {
+                    if (StringUtil.isNotEmpty(values.get(k))) {
                         String tempValue = values.get(k);
                         if (StringUtil.isNotEmpty(field.getDicId()) && tempValue.indexOf("-") > -1) {
                             if (tempValue.indexOf("-") + 1 < tempValue.length()) {
@@ -339,27 +339,31 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         }
                         field.setValue(tempValue);
                     } else {
-                        valueList.add(null);
+                        valueList.add("");
                     }
                 }
                 for (AccountField item : items) {
                     if (item instanceof DateField) {
                         try {
-                            Date date = new SimpleDateFormat("yyyyMMdd").parse(values.get(((List<AccountField>) items).indexOf(item)));
-                        }catch (ParseException e){
+                            if (values.get(((List<AccountField>) items).indexOf(item)) != "") {
+                                Date date = new SimpleDateFormat("yyyyMMdd").parse(values.get(((List<AccountField>) items).indexOf(item)));
+                            }
+                            values.set(((List<AccountField>) items).indexOf(item),null);
+                        } catch (ParseException e) {
                             map.put("flag", false);
-                            map.put("message", "日期格式字段"+item.getItemCode()+"载入非日期格式数据！");
+                            map.put("message", "日期格式字段" + item.getItemName() + "载入非日期格式数据！");
                             return map;
                         }
-                    }else if (item instanceof CodeField){
+                    } else if (item instanceof CodeField) {
                         List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(item.getDicId()));
                         List<String> strings = new ArrayList<>();
                         for (Map<String, Object> objectMap : list) {
                             strings.add((String) objectMap.get("DICITEMNAME"));
                         }
-                        if (!strings.contains(values.get(((List<AccountField>) items).indexOf(item)))){
+                        String[] split = values.get(((List<AccountField>) items).indexOf(item)).split("-");
+                        if (!strings.contains(split[1])) {
                             map.put("flag", false);
-                            map.put("message", "字典类型字段"+item.getItemCode()+"载入非字典数据！");
+                            map.put("message", "字典类型字段" + item.getItemName() + "载入非字典数据！");
                             return map;
                         }
                     }
