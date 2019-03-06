@@ -1,14 +1,19 @@
 package com.fitech.account.dao.impl;
 
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fitech.account.dao.DictionaryDao;
+import com.fitech.domain.account.*;
 import com.fitech.domain.ledger.LedgerItem;
 import com.fitech.enums.TableNameEnum;
 import com.fitech.framework.lang.result.GenericResult;
@@ -18,19 +23,19 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 import com.fitech.account.dao.AccountDatasDao;
 import com.fitech.constant.ExceptionCode;
-import com.fitech.domain.account.Account;
-import com.fitech.domain.account.AccountField;
-import com.fitech.domain.account.AccountTemplate;
 import com.fitech.enums.SqlTypeEnum;
 import com.fitech.framework.core.dao.Dao;
 import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 
 @Dao
 public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
+    @Autowired
+    private DictionaryDao dictionaryDao;
 
     @Override
     public List<String> loadDataByTemplate(Long accountId,
@@ -283,8 +288,8 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 //判断该复合主键是否存在，不存在加入pkValueStr，存在就返回提示
                 if (StringUtil.isNotEmpty(str) && pkValueStr.contains(str)) {
                     //失败返回重复数据的行号
-                    map.put("flag",false);
-                    map.put("message","载入的第"+String.valueOf(i + 1 + 2)+"行主键冲突");
+                    map.put("flag", false);
+                    map.put("message", "载入的第" + String.valueOf(i + 1 + 2) + "行主键冲突");
                     return map;
                 } else {
                     pkValueStr.add(str);
@@ -337,10 +342,34 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         valueList.add(null);
                     }
                 }
+                for (AccountField item : items) {
+                    if (item instanceof DateField) {
+                        try {
+                            Date date = new SimpleDateFormat("yyyyMMdd").parse(values.get(((List<AccountField>) items).indexOf(item)));
+                        }catch (ParseException e){
+                            map.put("flag", false);
+                            map.put("message", "日期格式字段"+item.getItemCode()+"载入非日期格式数据！");
+                            return map;
+                        }
+                    }else if (item instanceof CodeField){
+                        List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(item.getDicId()));
+                        List<String> strings = new ArrayList<>();
+                        for (Map<String, Object> objectMap : list) {
+                            strings.add((String) objectMap.get("DICITEMNAME"));
+                        }
+                        if (!strings.contains(values.get(((List<AccountField>) items).indexOf(item)))){
+                            map.put("flag", false);
+                            map.put("message", "字典类型字段"+item.getItemCode()+"载入非字典数据！");
+                            return map;
+                        }
+                    }
+
+                }
                 // 赋值
                 fieldMap.put("values", valueList);
                 dataMap.add(fieldMap);
             }
+
             // 批量新增
             super.batchInsert("accountDatasMapper.insert", dataMap);
             Boolean testPrint = true;
@@ -352,7 +381,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 call.registerOutParameter(3, Types.VARCHAR);
                 call.execute();
                 String s = call.getString(3);
-                if(s.equals("false")){
+                if (s.equals("false")) {
                     testPrint = false;
                 }
             }
