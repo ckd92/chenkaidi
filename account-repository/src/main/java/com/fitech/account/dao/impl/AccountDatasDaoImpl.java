@@ -361,9 +361,10 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                             strings.add((String) objectMap.get("DICITEMNAME"));
                         }
                         String[] split = values.get(((List<AccountField>) items).indexOf(item)).split("-");
-                        if (!strings.contains(split[1])) {
+
+                        if (!strings.contains(split[split.length-1])) {
                             map.put("flag", false);
-                            map.put("message", "字典类型字段" + item.getItemName() + "载入非字典数据！");
+                            map.put("message", "字典类型字段【" + item.getItemName() + "】载入非字典数据！");
                             return map;
                         }
                     }
