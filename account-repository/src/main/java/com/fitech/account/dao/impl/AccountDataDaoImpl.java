@@ -1,13 +1,8 @@
 package com.fitech.account.dao.impl;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.omg.CORBA.Object;
 import org.springframework.stereotype.Service;
@@ -32,22 +27,48 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 
     @Override
     public List<AccountLine> findDataByCondition(AccountProcessVo accountProcessVo, Page page) {
-    	// 补录台账信息
+        // 补录台账信息
         Account account = accountProcessVo.getAccount();
         // 补录台账模板
         AccountTemplate accountTemplate = account.getAccountTemplate();
-        
-        
+
+
         // 补录台账字段
         Collection<AccountField> collection = accountTemplate.getAccountFields();
-        
-        
+
+
         //sql参数列表
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("collection",collection);
-        sqlParameterMap.put("tableName",accountTemplate.getTableName());
-        sqlParameterMap.put("accountId",account.getId());
-        sqlParameterMap.put("serachFileds",account.getAccountSearchs());
+        sqlParameterMap.put("collection", collection);
+        sqlParameterMap.put("tableName", accountTemplate.getTableName());
+        sqlParameterMap.put("accountId", account.getId());
+        List<AccountField> accountSearchs = account.getAccountSearchs();
+        for (AccountField accountSearch : accountSearchs) {
+            if (accountSearch instanceof CodeField) {
+                Map value = (HashMap<String, String>) accountSearch.getValue();
+                if (value != null) {
+                    accountSearch.setValue(value.get("value"));
+                }
+            }
+            if (accountSearch instanceof  DateField){
+                java.lang.Object value = accountSearch.getValue();
+                if (value != null){
+                    String s = value.toString().replace("Z", " UTC");
+                    SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");
+                    Date d = null;//Mon Mar 06 00:00:00 CST 2017
+                    try {
+                        d = sdf1.parse(s);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+                    String format = sdf.format(d);
+                    accountSearch.setValue(format);
+                }
+            }
+
+        }
+        sqlParameterMap.put("serachFileds", accountSearchs);
 
 //        //字段类型
 //        Map<String,List<String>> itemInstanceMap = new HashMap<>();
@@ -84,9 +105,9 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 //        accountTemplate.setAccountFields(collection);
 //
 //        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
-        
-        List<Map<String, Object>> resultList = super.selectByPage("accountDataMapper.findDataByConditionCount","accountDataMapper.findDataByCondition",sqlParameterMap,page);
-        
+
+        List<Map<String, Object>> resultList = super.selectByPage("accountDataMapper.findDataByConditionCount", "accountDataMapper.findDataByCondition", sqlParameterMap, page);
+
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
             AccountLine ledgerLine = new AccountLine();
@@ -138,10 +159,10 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 
         //sql参数列表
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("collection",collection);
-        sqlParameterMap.put("tableName",accountTemplate.getTableName());
-        sqlParameterMap.put("accountId",account.getId());
-        sqlParameterMap.put("serachFileds",account.getAccountSearchs());
+        sqlParameterMap.put("collection", collection);
+        sqlParameterMap.put("tableName", accountTemplate.getTableName());
+        sqlParameterMap.put("accountId", account.getId());
+        sqlParameterMap.put("serachFileds", account.getAccountSearchs());
 
         List<String> list = new ArrayList<>();
         //StringBuffer sql = new StringBuffer();
@@ -205,7 +226,7 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 
         Map<String, Object> map = new HashMap<>();
         Map<String, Object> map1 = new HashMap<>();
-        List<Map<String, Object>> resultList = super.selectList("accountDataMapper.downLoadDataByCondition",sqlParameterMap);
+        List<Map<String, Object>> resultList = super.selectList("accountDataMapper.downLoadDataByCondition", sqlParameterMap);
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
             AccountLine ledgerLine = new AccountLine();
@@ -259,7 +280,6 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         Collection<AccountField> serachFileds = account.getAccountSearchs();
 
 
-
         //将搜索值赋给模板
         if (!serachFileds.isEmpty()) {
             for (AccountField aff : collection) {
@@ -272,7 +292,7 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         }
 
         //字段类型
-        Map<String,List<String>> itemInstanceMap = new HashMap<>();
+        Map<String, List<String>> itemInstanceMap = new HashMap<>();
         List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
         List<String> codeFieldList = new ArrayList<>();
 
@@ -296,12 +316,12 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         }
         //sql参数列表
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("collection",collection);
-        sqlParameterMap.put("tableName",accountTemplate.getTableName());
-        sqlParameterMap.put("accountId",account.getId());
+        sqlParameterMap.put("collection", collection);
+        sqlParameterMap.put("tableName", accountTemplate.getTableName());
+        sqlParameterMap.put("accountId", account.getId());
 
 
-        Long totalNum = super.selectOne("accountDataMapper.findMaxNumDataByCondition",sqlParameterMap);
+        Long totalNum = super.selectOne("accountDataMapper.findMaxNumDataByCondition", sqlParameterMap);
 
         return totalNum;
     }
@@ -309,12 +329,12 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
     @Override
     public void insertData(AccountLine accountLine, Account account) {
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName() );
-        sqlParameterMap.put("accountId",account.getId());
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("accountId", account.getId());
 
 //        String sql = "insert into " + account.getAccountTemplate().getTableName() + "(";
         Collection<AccountField> items = accountLine.getAccountFields();
-        sqlParameterMap.put("items",items);
+        sqlParameterMap.put("items", items);
         Collection<AccountField> itemegs = account.getAccountTemplate().getAccountFields();
         for (AccountField af : items) {
             for (AccountField ag : itemegs) {
@@ -323,15 +343,15 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                 }
             }
         }
-        super.insert("accountDataMapper.insertData",sqlParameterMap);
+        super.insert("accountDataMapper.insertData", sqlParameterMap);
 
     }
 
     @Override
     public void updateData(AccountLine accountLine, Account account) {
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName() );
-        sqlParameterMap.put("accountLineId",accountLine.getId());
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("accountLineId", accountLine.getId());
 
 //        String sql = "update " + account.getAccountTemplate().getTableName() + " set ";
         Collection<AccountField> items = accountLine.getAccountFields();
@@ -340,21 +360,21 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
             for (AccountField ag : itemegs) {
                 if (af.getItemCode().equals(ag.getItemCode())) {
                     af.setSqlType(ag.getSqlType());
-                    if(af.getSqlType().equals(SqlTypeEnum.DATE)){
-                    	if(StringUtil.isEmpty(String.valueOf(af.getValue())) || String.valueOf(af.getValue()).equals("NaN-aN-aN")){
+                    if (af.getSqlType().equals(SqlTypeEnum.DATE)) {
+                        if (StringUtil.isEmpty(String.valueOf(af.getValue())) || String.valueOf(af.getValue()).equals("NaN-aN-aN")) {
                             af.setValue(null);
-                        }else if(StringUtil.isNotEmpty(af.getValue()) && !af.getValue().toString().contains("-")){
+                        } else if (StringUtil.isNotEmpty(af.getValue()) && !af.getValue().toString().contains("-")) {
                             af.setValue((new SimpleDateFormat("yyyy-MM-dd")).format(Long.parseLong(String.valueOf(af.getValue()))));
-                        }else if(StringUtil.isNotEmpty(af.getValue()) && af.getValue().toString().contains("-")){
+                        } else if (StringUtil.isNotEmpty(af.getValue()) && af.getValue().toString().contains("-")) {
                             af.setValue(af.getValue());
-                        }else{
+                        } else {
                             af.setValue(null);
                         }
                     }
                 }
             }
         }
-        sqlParameterMap.put("items",items);
+        sqlParameterMap.put("items", items);
 //        if (items.size() > 0) {
 //            for (AccountField item : items) {
 //                if (StringUtil.isEmpty(String.valueOf(item.getValue()))) {
@@ -376,34 +396,34 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 //            sql = sql + " where id=" + accountLine.getId();
 //            this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
 //        }
-        super.update("accountDataMapper.updateData",sqlParameterMap);
+        super.update("accountDataMapper.updateData", sqlParameterMap);
 
     }
 
     @Override
     public void batchUpdateData(AccountLine accountLine, Account account, List<Long> lineId) {
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
         Collection<AccountField> items = accountLine.getAccountFields();
-        sqlParameterMap.put("items",items);
+        sqlParameterMap.put("items", items);
         if (items.size() > 0) {
             String idList = "";
             for (int i = 0; i < lineId.size(); i++) {
                 idList += lineId.get(i) + ",";
             }
             idList = idList.substring(0, idList.length() - 1);
-            sqlParameterMap.put("idList",idList);
-            super.update("accountDataMapper.batchUpdateData",sqlParameterMap);
+            sqlParameterMap.put("idList", idList);
+            super.update("accountDataMapper.batchUpdateData", sqlParameterMap);
         }
     }
 
     @Override
     public AccountLine findDataById(Account account, Long id) {
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
-        sqlParameterMap.put("id",id);
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("id", id);
         //String sql = "select * from  " + account.getAccountTemplate().getTableName() + " where id=" + id;
-        List<Map<String, Object>> resultList = super.selectList("accountDataMapper.findDataById",sqlParameterMap);
+        List<Map<String, Object>> resultList = super.selectList("accountDataMapper.findDataById", sqlParameterMap);
         Map<String, Object> map = resultList.get(0);
         AccountLine ledgerLine = new AccountLine();
         Set<AccountField> set = new LinkedHashSet<>();
@@ -428,12 +448,12 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         Boolean point = false;
         Collection<AccountField> items = accountLine.getAccountFields();
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("items",items);
-        sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
-        sqlParameterMap.put("accountId",account.getId());
+        sqlParameterMap.put("items", items);
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("accountId", account.getId());
 
         //字段类型
-        Map<String,List<String>> itemInstanceMap = new HashMap<>();
+        Map<String, List<String>> itemInstanceMap = new HashMap<>();
         List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
         List<String> codeFieldList = new ArrayList<>();
         Collection<AccountField> accountFields = account.getAccountTemplate().getAccountFields();
@@ -457,14 +477,14 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 
             }
         }
-        itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
-        itemInstanceMap.put("codeFieldList",codeFieldList);
-        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
-        sqlParameterMap.put("isPkableListAndItemCodeEqual",isPkableListAndItemCodeEqual);
+        itemInstanceMap.put("integerFieldAndDoubleFieldList", integerFieldAndDoubleFieldList);
+        itemInstanceMap.put("codeFieldList", codeFieldList);
+        sqlParameterMap.put("itemInstanceMap", itemInstanceMap);
+        sqlParameterMap.put("isPkableListAndItemCodeEqual", isPkableListAndItemCodeEqual);
         Map<String, Object> map = new HashMap<>();
-        long totalNum = super.selectOne("accountDataMapper.queryDataisExist",sqlParameterMap);
+        long totalNum = super.selectOne("accountDataMapper.queryDataisExist", sqlParameterMap);
 
-        if ( totalNum > 0 && point) {
+        if (totalNum > 0 && point) {
             result = true;
         }
         return result;
@@ -473,9 +493,9 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
     @Override
     public void deleteData(AccountLine accountLine, Account account) {
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("tableName",account.getAccountTemplate().getTableName());
-        sqlParameterMap.put("id",accountLine.getId());
-        super.delete("accountDataMapper.deleteData",sqlParameterMap);
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("id", accountLine.getId());
+        super.delete("accountDataMapper.deleteData", sqlParameterMap);
 
 //        String sql = "delete from " + account.getAccountTemplate().getTableName() + " where id=" + accountLine.getId();
 //        this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
