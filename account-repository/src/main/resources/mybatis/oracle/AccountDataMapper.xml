@@ -15,7 +15,7 @@
                 <if test="field.value != null">
                     and ${field.itemCode}
                     <choose>
-                        <when test="field.itemType == 'DATA'">
+                        <when test="field.itemType == 'DATE'">
                             = to_date(#{field.value},'yyyy-mm-dd')
                         </when>
                         <otherwise>
@@ -48,10 +48,11 @@
                     <if test="field.value != null">
                         and ${field.itemCode}
                         <choose>
-                            <when test="field.itemType == 'DATA'">
+                            <when test="field.itemType == 'DATE'">
                                 = to_date(#{field.value},'yyyy-mm-dd')
                             </when>
                             <otherwise>
+
                                 like '%${field.value}%'
                                 <!--<foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">-->
                                     <!--<if test="item == field.itemCode">-->
