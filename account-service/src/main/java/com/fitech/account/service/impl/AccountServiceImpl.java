@@ -270,10 +270,21 @@ public class AccountServiceImpl implements AccountService {
 
             Account ac = accountProcessVo.getAccount();
             ac.setAccountTemplate(account.getAccountTemplate());
+            // 补录台账字段信息
+            Collection<AccountField> accountFields = account.getAccountTemplate().getAccountFields();
+            Iterator<AccountField> itaf = accountFields.iterator();
+            while (itaf.hasNext()) {
+                AccountField af = itaf.next();
+                if (af.getItemType().equals("CODELIB")) {
+                    af.setDictionaryItems(dictionaryItemRepository.findByDictionaryId(Long.valueOf(af.getDicId())));
+                }
+            }
+            
             //放置前端查询条件
             List<AccountField> fieldList = new ArrayList<>();
             for (AccountField field : accountField) {
                 List<AccountField> accountSearchs = accountProcessVo.getAccount().getAccountSearchs();
+                
                 if (accountSearchs != null){
                     for (AccountField accountSearch : accountSearchs) {
                         if (field.getItemCode().equals(accountSearch.getItemCode())){
