@@ -1,6 +1,7 @@
 package com.fitech.account.service.impl;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +15,10 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.hibernate.exception.GenericJDBCException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -234,7 +237,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 			}else{
 				result.setSuccess(false);
 				result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
-
+				result.setMessage("该字典项名称已存在，不可新增！");
 			}
 		}else{
 			result.setSuccess(false);
@@ -262,6 +265,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 			}else{
 				result.setSuccess(false);
 				result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+				result.setMessage("该字典项名称已存在，不可修改！");
 			}
 
 		}else{

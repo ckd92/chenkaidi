@@ -1,32 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="accountDatasMapper">
-	<!-- 删除该台账所有补录数据 -->
-	<delete id="delete" parameterType="Map">
+    <!-- 删除该台账所有补录数据 -->
+    <delete id="delete" parameterType="Map">
         delete from ${tableName} where reportid=#{reportId}
     </delete>
 
-	<!-- 批量新增 -->
-	<insert id="insert" parameterType="map">
-		 insert into ${tablename} (ID,REPORTID,
-		 <foreach collection="fields" item="field" separator=",">
-		 	${field}
-		 </foreach>
-		 ) values (SEQ_FITECH.NEXTVAL,${id},
-		 <foreach collection="values" item="value" separator=",">
-		 	${value}
-		 </foreach>
-		 )
-	</insert>
-	<!--查询所有台账-->
-	<select id="findAll" parameterType="Map" resultType="Map">
-		select id,reportId,
-			<foreach collection="fields" item="field" separator=",">
-				${field}
-			</foreach>
-		from ${tablename} where reportId = ${id}
-	</select>
-	
+    <!-- 批量新增 -->
+    <insert id="insert" parameterType="map">
+        insert into ${tablename} (ID,REPORTID,
+        <foreach collection="fields" item="field" separator=",">
+            ${field}
+        </foreach>
+        ) values (SEQ_FITECH.NEXTVAL,${id},
+        <foreach collection="values" item="value" separator=",">
+            <choose>
+                <when test="value != null and value != ''">
+                    ${value}
+                </when>
+                <otherwise>
+                    null
+                </otherwise>
+            </choose>
+        </foreach>
+        )
+    </insert>
+    <!--查询所有台账-->
+    <select id="findAll" parameterType="Map" resultType="Map">
+        select id,reportId,
+        <foreach collection="fields" item="field" separator=",">
+            ${field}
+        </foreach>
+        from ${tablename} where reportId = ${id}
+    </select>
+
 </mapper>
