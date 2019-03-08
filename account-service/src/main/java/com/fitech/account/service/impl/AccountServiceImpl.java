@@ -363,7 +363,8 @@ public class AccountServiceImpl implements AccountService {
                 if (data.size() == 0) {
                     // 校验通过，保存明细
                     accountDataDao.insertData(accountLines.get(0), account);
-
+                    account.setValidateStatus(ValidateStatusEnum.NOTVALIDATE);
+                    accountRepository.save(account);
                     AccountEditLog accountEditLog = new AccountEditLog();
                     accountEditLog.setAccountEditType(AccountEditEnum.INSERT);
                     accountEditLog.setLogSource(LogSourceEnum.ONLINE);
@@ -426,7 +427,8 @@ public class AccountServiceImpl implements AccountService {
                 accountLines.get(0).getAccountFields().remove(pk);
                 // 校验通过，更新明细
                 accountDataDao.updateData(accountLines.get(0), account);
-
+                account.setValidateStatus(ValidateStatusEnum.NOTVALIDATE);
+                accountRepository.save(account);
                 // 记录台账修改痕迹
                 AccountEditLog accountEditLog = new AccountEditLog();
                 accountEditLog.setAccountEditType(AccountEditEnum.UPDATE);
@@ -509,6 +511,8 @@ public class AccountServiceImpl implements AccountService {
                     AccountLine accountLine = new AccountLine();
                     accountLine.setAccountFields(accountFieldList);
                     accountDataDao.batchUpdateData(accountLine, account, lineIds);
+                    account.setValidateStatus(ValidateStatusEnum.NOTVALIDATE);
+                    accountRepository.save(account);
                     for (Long id : lineIds) {
                         AccountEditLog accountEditLog = new AccountEditLog();
                         accountEditLog.setAccountEditType(AccountEditEnum.UPDATE);
@@ -558,6 +562,8 @@ public class AccountServiceImpl implements AccountService {
                 return result;
             }
             accountDataDao.deleteData(accountLine, account);
+            account.setValidateStatus(ValidateStatusEnum.NOTVALIDATE);
+            accountRepository.save(account);
         } catch (Exception e) {
             e.printStackTrace();
             throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
