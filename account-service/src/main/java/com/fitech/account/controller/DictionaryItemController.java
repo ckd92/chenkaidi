@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.fitech.account.service.DictionaryItemService;
 import com.fitech.domain.account.DictionaryItem;
+import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.result.GenericResult;
 
 /**
@@ -111,8 +112,12 @@ public class DictionaryItemController {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
             result = dictionaryItemService.save(dictionaryItem);
-        } catch (Exception e) {
+        }catch (AppException e) {
             result.setSuccess(false);
+            result.setMessage(e.getMessage());
+        }  catch (Exception e) {
+            result.setSuccess(false);
+            result.setMessage("系统异常");
             e.printStackTrace();
         } finally {
         }

@@ -39,7 +39,6 @@ import com.fitech.framework.lang.util.StringUtil;
  */
 @Service
 @ServiceTrace
-@Transactional
 public class DictionaryItemServiceImpl implements DictionaryItemService {
 	EntityManagerFactory entityManagerFactory;
 	/**
@@ -230,15 +229,20 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 			if(valiDictionaryItemNameIsExist(null,dictionaryItem)){
 				try{
 					dictionaryItemRepository.save(dictionaryItem);
-				}catch(Exception e){
+				}catch (JpaSystemException e){
+			          result.setSuccess(false);
+			          result.setErrorCode(ExceptionCode.HAS_BEEN_USED_CANNT_BE_DELETD);
+			          result.setMessage("字典项描述过长，请重新输入！");
+			      }catch(Exception e){
 					e.printStackTrace();
-					throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+			         result.setSuccess(false);
+			         result.setErrorCode(ExceptionCode.SYSTEM_ERROR);
+			         result.setMessage("添加失败！");
 				}
 			}else{
 				result.setSuccess(false);
 				result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
-				result.setMessage("该字典项名称已存在，不可新增！");
-			}
+				result.setMessage("该字典项名称已存在，无法新增！");			}
 		}else{
 			result.setSuccess(false);
 			result.setErrorCode(ExceptionCode.HAS_BEEN_USED_CANNT_BE_DELETD);
@@ -261,12 +265,22 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 				findeddictionaryItem.setDicItemDesc(dictionaryItem.getDicItemDesc());
 				findeddictionaryItem.setDicItemName(dictionaryItem.getDicItemName());
 				findeddictionaryItem.setDicItemId(dictionaryItem.getDicItemId());
+               try{
 				dictionaryItemRepository.saveAndFlush(findeddictionaryItem);
+               }catch (JpaSystemException e){
+			          result.setSuccess(false);
+			          result.setErrorCode(ExceptionCode.HAS_BEEN_USED_CANNT_BE_DELETD);
+			          result.setMessage("字典项描述过长，请重新输入！");
+			     }catch(Exception e){
+					 e.printStackTrace();
+			         result.setSuccess(false);
+			         result.setErrorCode(ExceptionCode.SYSTEM_ERROR);
+			         result.setMessage("添加失败！");
+				}
 			}else{
 				result.setSuccess(false);
 				result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
-				result.setMessage("该字典项名称已存在，不可修改！");
-			}
+				result.setMessage("该字典项名称已存在，不可修改！");			}
 
 		}else{
 			result.setSuccess(false);
@@ -306,6 +320,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	/**
 	 * 根据字典id删除字典项
 	 */
+	@Transactional
 	public void deleteByDictionaryId(Long id){
 		List<DictionaryItem> list = getDictionaryItemByDictionaryId(id);
 		dictionaryItemRepository.delete(list);
