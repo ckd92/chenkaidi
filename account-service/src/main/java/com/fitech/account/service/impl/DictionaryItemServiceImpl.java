@@ -198,10 +198,14 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 		dictionary.setId(id);
 		for(Map<String,Object> map : tempList){
 			DictionaryItem di = new DictionaryItem();
-			di.setDicItemDesc(map.get("DICITEMDESC").toString());
-			di.setDicItemId(map.get("DICITEMID").toString());
-			di.setId(Long.parseLong( map.get("ID").toString() ));
-			di.setDicItemName(map.get("DICITEMNAME").toString());
+			if (map.get("DICITEMDESC")!= null){
+				di.setDicItemDesc(String.valueOf(map.get("DICITEMDESC")));
+			}else{
+				di.setDicItemDesc("");
+			}
+			di.setDicItemId(String.valueOf(map.get("DICITEMID")));
+			di.setId(Long.parseLong(String.valueOf(map.get("ID"))));
+			di.setDicItemName(String.valueOf(map.get("DICITEMNAME")));
 			list.add(di);
 		}
 		return list;
