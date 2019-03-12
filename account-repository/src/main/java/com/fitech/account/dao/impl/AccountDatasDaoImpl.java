@@ -347,8 +347,9 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         try {
                             if (values.get(((List<AccountField>) items).indexOf(item)) != "") {
                                 Date date = new SimpleDateFormat("yyyyMMdd").parse(values.get(((List<AccountField>) items).indexOf(item)));
+                            }else{
+                                values.set(((List<AccountField>) items).indexOf(item),null);
                             }
-                            values.set(((List<AccountField>) items).indexOf(item),null);
                         } catch (ParseException e) {
                             map.put("flag", false);
                             map.put("message", "日期格式字段" + item.getItemName() + "载入非日期格式数据！");
@@ -362,7 +363,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         }
                         String[] split = values.get(((List<AccountField>) items).indexOf(item)).split("-");
 
-                        if (!strings.contains(split[split.length-1])) {
+                        if (!strings.contains(split[split.length-1]) && split[0] != "") {
                             map.put("flag", false);
                             map.put("message", "字典类型字段【" + item.getItemName() + "】载入非字典数据！");
                             return map;
@@ -398,7 +399,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 map.put("message", "载入成功");
                 map.put("size", datas.size());
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             map.put("flag", false);
             String str = e.getMessage().toString();//异常信息
@@ -407,22 +408,16 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             } else if (str.contains("ORA-01722")) {
                 str = str.substring(str.indexOf(":") + 1);
             } else if (str.contains("ORA-00904")) {
-                str = "载入模板与导出模板不一致";
+                str = "载入数据存在空值，请核验后重新载入！";
             } else if (str.contains("ORA-06576")) {
                 str = "不是有效的函数或过程名,请检查数据同步脚本";
+            } else if (str.contains("ORA-01861")) {
+                str = "载入非法日期类型数据";
             } else {
-                str = "未定义错误类型，请查询后台日志";
+                str = "错误类型过多，无法全部列举，详情查看后台日志！";
             }
             map.put("message", str);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            e.printStackTrace();
-            map.put("flag", false);
-            map.put("message", "模板错误,载入模板与导出模板不一致");
-        } catch (Exception e) {
-            e.printStackTrace();
-            map.put("flag", false);
-            map.put("message", "模板错误,载入模板与导出模板不一致");
-        } finally {
+        }  finally {
             ju.releaseConn();
             if (ps != null) {
                 try {
