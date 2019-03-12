@@ -227,6 +227,7 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
                 ledgerProcessVo.setTerm(object.get("TERM").toString());
                 ledgerProcessVo.setProcessName(object.get("NAME").toString());
                 ledgerProcessVo.setSubmitter(object.get("SUBMITTER")==null?"":object.get("SUBMITTER").toString());
+                ledgerProcessVo.setProcessId(object.get("PROCESSID").toString());
                 //校验状态
                 if (object.get("VALIDATESTATUS") != null) {
                     if ("0".equals(object.get("VALIDATESTATUS").toString())) {

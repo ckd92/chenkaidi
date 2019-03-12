@@ -333,27 +333,28 @@
          <include refid="queryAuthoritySql"/>
 		select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
 		to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,Translate(task.name_ USING CHAR_CS) AS NAME,
-		lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,task.end_time_,lr.freq ,task.userName as submitter
-        from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
-        inner join Institution it on it.id=lr.institution_id
-        inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
-        inner join authority  ON authority.reporttemplateid = lrt.id AND instr(authority.orgs, '['||it.id||']') > 0     
-        inner join BusSystem bs on bs.id = lrt.busSystem_id  and bs.reportsubsystem_id=#{reportSubSystem_id}
-        inner join (
+		lr.validateStatus,Translate(task.id_ USING CHAR_CS) as taskId,task.proc_inst_id_  as processId,task.end_time_,lr.freq ,task.userName as submitter
+		from (
         select 
         t.id_,
-        t.proc_inst_id_,
+        t.proc_inst_id_ ,
         t.name_,
         t.assignee_,
         su.username,
-        t.start_time_,
-        t.end_time_ ,
+        to_char(t.start_time_,'yyyy-MM-dd HH24:mi:ss') as start_time_,
+        to_char(t.end_time_,'yyyy-MM-dd HH24:mi:ss') as end_time_,
         row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
         from ACT_HI_TASKINST t
         left join sysuser su on t.assignee_=to_char(su.id)
         where t.delete_reason_ = 'completed'
-        ) task on task.proc_inst_id_=o.procInsetId
-        where 1=1
+        ) task 
+		inner join AccountProcess o on  task.proc_inst_id_=o.procInsetId
+        inner join Account lr on lr.id=o.ACCOUNT_ID
+        inner join Institution it on it.id=lr.institution_id
+        inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
+        inner join authority  ON authority.reporttemplateid = lrt.id AND instr(authority.orgs, '['||it.id||']') > 0     
+        inner join BusSystem bs on bs.id = lrt.busSystem_id  and bs.reportsubsystem_id=#{reportSubSystem_id}
+        where 1=1 and  task.rn=1
         <if test=" templateCode != null and templateCode != '' ">
 			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
 		</if> 
@@ -375,29 +376,26 @@
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id}
 		</if>
-		order by o.id,task.end_time_
+		order by lrt.templateCode,lr.term
      </select>
      <select id="findDoneTaskBySqlCount" parameterType="map" resultType="long">
 		  <include refid="queryAuthoritySql"/>
-		select count(o.ACCOUNT_ID)
-        from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
+		select count(task.proc_inst_id_)
+		from (
+        select 
+        t.proc_inst_id_,
+        row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
+        from ACT_HI_TASKINST t
+        left join sysuser su on t.assignee_=to_char(su.id)
+        where t.delete_reason_ = 'completed'
+        ) task 
+		inner join AccountProcess o on  task.proc_inst_id_=o.procInsetId
+        inner join Account lr on lr.id=o.ACCOUNT_ID
         inner join Institution it on it.id=lr.institution_id
         inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
         inner join authority  ON authority.reporttemplateid = lrt.id AND instr(authority.orgs, '['||it.id||']') > 0     
-        inner join BusSystem bs on bs.id = lrt.busSystem_id and bs.reportsubsystem_id=#{reportSubSystem_id}
-        inner join (
-        select 
-        t.id_,
-        t.proc_inst_id_,
-        t.name_ as name,
-        t.assignee_,
-        t.start_time_,
-        t.end_time_ ,
-        row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
-        from ACT_HI_TASKINST t
-        where t.delete_reason_ = 'completed'
-        ) task on task.proc_inst_id_=o.procInsetId
-        where 1=1
+        inner join BusSystem bs on bs.id = lrt.busSystem_id  and bs.reportsubsystem_id=#{reportSubSystem_id}
+        where 1=1 and  task.rn=1
         <if test=" templateCode != null and templateCode != '' ">
 			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
 		</if> 
