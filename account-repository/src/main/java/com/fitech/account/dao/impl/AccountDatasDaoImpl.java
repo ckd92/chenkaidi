@@ -194,11 +194,12 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
         PreparedStatement ps = null;
         JdbcUtil ju = null;
         CallableStatement call;
+        String tableName = accountTemplate.getTableName();
+        List<Long> selectList = null;
         try {
             ju = new JdbcUtil();
             con = ju.getConnection();
             con.setAutoCommit(true);
-            String tableName = accountTemplate.getTableName();
 
             //获取EXCEL表头
             List<String> columnHeaderlist = ExcelUtil.getColumnHeader(sheet);
@@ -239,10 +240,10 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 map.put("message", "载入空数据excel，请检查！");
                 return map;
             }
-
-//            //清空临时表
+            //清空临时表
 //            ps = con.prepareStatement("truncate table " + tableName + "_" + TableNameEnum.STANDARD);
 //            ps.executeUpdate();
+//            con.commit();
 
             //判断是否存在业务主键，存在则往临时表中添加数据，不存在则直接往数据表中添加数据
             if (havePkable) {
@@ -254,6 +255,12 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             List<Map<String, Object>> dataMap = new ArrayList<Map<String, Object>>();
             //集合存放复合主键的值，用于对比是否有重复数据
             List<String> pkValueStr = new ArrayList<>();
+
+            //查询原始改期代办中的所有数据的id
+            Map<String, Object> hashMap = new HashMap<>();
+            hashMap.put("reportId", accountId);
+            hashMap.put("tableName", tableName);
+            selectList = super.selectList("accountDatasMapper.findDataIdByReportId", hashMap);
 
             //循环赋值sql
             for (int i = 0; i < datas.size(); i++) {
@@ -347,8 +354,8 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         try {
                             if (values.get(((List<AccountField>) items).indexOf(item)) != "") {
                                 Date date = new SimpleDateFormat("yyyyMMdd").parse(values.get(((List<AccountField>) items).indexOf(item)));
-                            }else{
-                                values.set(((List<AccountField>) items).indexOf(item),null);
+                            } else {
+                                values.set(((List<AccountField>) items).indexOf(item), null);
                             }
                         } catch (ParseException e) {
                             map.put("flag", false);
@@ -363,7 +370,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         }
                         String[] split = values.get(((List<AccountField>) items).indexOf(item)).split("-");
 
-                        if (!strings.contains(split[split.length-1]) && split[0] != "") {
+                        if (!strings.contains(split[split.length - 1]) && split[0] != "") {
                             map.put("flag", false);
                             map.put("message", "字典类型字段【" + item.getItemName() + "】载入非字典数据！");
                             return map;
@@ -401,6 +408,11 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            Map<String, Object> hashMap = new HashMap<>();
+            hashMap.put("reportId", accountId);
+            hashMap.put("tableName", tableName);
+            hashMap.put("list", selectList);
+            super.delete("accountDatasMapper.deleteErrorData", hashMap);
             map.put("flag", false);
             String str = e.getMessage().toString();//异常信息
             if (str.contains("ORA-12899")) {
@@ -414,10 +426,10 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             } else if (str.contains("ORA-01861")) {
                 str = "载入非法日期类型数据";
             } else {
-                str = "错误类型过多，无法全部列举，详情查看后台日志！";
+                str = "载入数据异常，请核验后重新载入";
             }
             map.put("message", str);
-        }  finally {
+        } finally {
             ju.releaseConn();
             if (ps != null) {
                 try {
