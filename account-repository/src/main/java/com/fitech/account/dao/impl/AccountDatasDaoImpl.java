@@ -419,6 +419,8 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             hashMap.put("tableName", tableName);
             hashMap.put("list", selectList);
             super.delete("accountDatasMapper.deleteErrorData", hashMap);
+            hashMap.put("tableName", tableName+"_STANDARD");
+            super.delete("accountDatasMapper.deleteErrorData", hashMap);
             map.put("flag", false);
             String str = e.getMessage().toString();//异常信息
             if (str.contains("ORA-12899")) {
