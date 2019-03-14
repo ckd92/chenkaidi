@@ -36,4 +36,19 @@
         from ${tablename} where reportId = ${id}
     </select>
 
+    <select id="findDataIdByReportId" parameterType="map" resultType="Long">
+        select id from ${tableName} where reportId = ${reportId}
+    </select>
+
+    <delete id="deleteErrorData" parameterType="map">
+        delete from ${tableName} where reportId = ${reportId}
+        <if test="list != null and list.size() > 0">
+            and id not in (
+            <foreach collection="list" item="id" separator=",">
+                ${id}
+            </foreach>
+            )
+        </if>
+    </delete>
+
 </mapper>
