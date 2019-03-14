@@ -353,12 +353,17 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 for (AccountField item : items) {
                     if (item instanceof DateField) {
                         try {
-                            if (values.get(((List<AccountField>) items).indexOf(item)) != "") {
-                                Date date = new SimpleDateFormat("yyyyMMdd").parse(values.get(((List<AccountField>) items).indexOf(item)));
+                        	  String value=values.get(((List<AccountField>) items).indexOf(item)); 
+                             if (StringUtils.isNotEmpty(value)) {                          	
+                            	if(!formulaStringToDate(value)){                   		
+                                    map.put("flag", false);
+                                    map.put("message", "日期格式字段" + item.getItemName() + "载入非日期格式数据！");
+                                    return map;	
+                            	}
                             } else {
                                 values.set(((List<AccountField>) items).indexOf(item), null);
                             }
-                        } catch (ParseException e) {
+                        } catch (Exception e) {
                             map.put("flag", false);
                             map.put("message", "日期格式字段" + item.getItemName() + "载入非日期格式数据！");
                             return map;
@@ -443,7 +448,31 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
         return map;
     }
 
-
+    /**
+     * 判断字符串是否可以转为标准日期格式
+     * @param value
+     * @return
+     */
+    public static Boolean formulaStringToDate(String value){
+          String [] formulas=new String[]{"yyyyMMdd","yyyy-MM-dd","yyyy/MM/dd","yyyy.MM.dd"};
+          Boolean flag=false;
+          Date date=null;
+          if(StringUtils.isEmpty(value)){
+        	  return false;
+          }
+          for(String formula:formulas){
+        	  try {
+				date=new SimpleDateFormat(formula).parse(value);
+				if(date!=null){
+					flag=true;
+					break;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+          }
+         return flag;
+       }
     /**
      * 构建主键MAP
      *

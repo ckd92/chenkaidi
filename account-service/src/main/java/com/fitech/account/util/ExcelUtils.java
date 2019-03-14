@@ -5,9 +5,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -22,6 +26,7 @@ import org.apache.poi.ss.usermodel.DataValidationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -94,6 +99,106 @@ public class ExcelUtils<T> {
 		return path;
 	}
 
+	
+	/**
+	 * 系统生成EXCEL
+	 *
+	 * @param columheader
+	 *            列集合
+	 * @param sheetName
+	 *            sheet名称
+	 * @param templatePath
+	 *            生成地址
+	 * @param fileName
+	 *            文件名称
+	 * @return
+	 */
+	public static String createExcel2007(List<List<String>> columheader,
+										 String sheetName, String templatePath, String fileName,List<Integer> downRows,List<List<String>> downData) {
+		String path = templatePath;
+		//声明输出流
+		FileOutputStream fout = null;
+		//声明文件对象
+		File file = null;
+		//声明Excel文档对象
+		XSSFWorkbook xwb = null;
+		SXSSFWorkbook swb = null;
+		try {
+			createDir(path);
+			path += fileName + ".xlsx";
+			file = new File(path);
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			//初始化输出流
+			fout = new FileOutputStream(path);
+			//初始化Excel文档对象
+			xwb = new XSSFWorkbook();
+			//内存中只留1000行数据，多余的暂存在硬盘中，解决XSSFWorkbook一次只能写入64000行问题
+			swb = new SXSSFWorkbook(xwb,1000);
+			// 第二步，在webbook中添加一个sheet,对应Excel文件中的sheet
+
+			CellStyle textStyle = swb.createCellStyle();
+			DataFormat format = swb.createDataFormat();
+			textStyle.setDataFormat(format.getFormat("@"));
+			//数据超过100万行，分sheet,每个sheet放100万行数据
+			int sheetNum = (int) Math.ceil(columheader.size() /1000000.0);
+			for(int sheetIndex = 0; sheetIndex < sheetNum; sheetIndex++){
+				List<List<String>> partOfColumheader = columheader.subList(0,2);
+
+				int subToNum = (sheetIndex+1)*1000000 +2;
+				if(  subToNum >= columheader.size() ){
+					subToNum = columheader.size();
+				}
+				//第i个sheet所需要的数据
+				partOfColumheader.addAll( columheader.subList( sheetIndex*1000000+2, subToNum ) );
+
+				// 创建sheet页
+				XSSFSheet sheet = xwb.createSheet("part"+sheetIndex);
+				
+				for(int r=0;r<downRows.size();r++){
+		            String[] dlData = new String[downData.get(r).size()];//获取下拉对象
+		            for(int i=0;i<downData.get(r).size();i++){
+		            	dlData[i] = downData.get(r).get(i);
+		            }
+		            int rownum = downRows.get(r);
+		            sheet.addValidationData(setDataValidation(sheet, dlData, 2, 500, rownum ,rownum)); //超过255个报错 
+				}
+				//设置默认列宽
+				for(int j=0;j<columheader.get(0).size();j++){
+					sheet.setColumnWidth( j,4000);
+				}
+				int rowNum = 0;
+				for ( ; rowNum<partOfColumheader.size();rowNum++) {
+					// 第三步，在sheet中添加表头第N行,注意老版本poi对Excel的行数列数有限制short
+					Row row = sheet.createRow(rowNum);
+					Cell cell = null;
+					for (int i = 0; i < columheader.get(rowNum).size(); i++) {
+						cell = row.createCell(i);
+						if(downRows.contains(i)){//下拉列表设置成文本格式
+						 cell.setCellStyle(textStyle);	
+						 cell.setCellType(HSSFCell.CELL_TYPE_STRING); 
+						}
+						cell.setCellValue(columheader.get(rowNum).get(i));
+					}
+				}
+			}
+			swb.write(fout);
+			fout.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (null != fout) {
+					fout.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return path;
+	}
+	
 	public static String createExcel2007(List<List<String>> columheader,
 									 String sheetName, String templatePath,
 									 List<Integer> downRows,List<List<String>> downData) {
