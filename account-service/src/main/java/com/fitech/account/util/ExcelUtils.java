@@ -15,6 +15,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.DataValidationHelper;
@@ -106,6 +107,11 @@ public class ExcelUtils<T> {
 			path = path + sheetName + ".xlsx";
 			xwb = new XSSFWorkbook();
 			XSSFSheet e = xwb.createSheet(sheetName);
+			CellStyle textStyle = xwb.createCellStyle();
+			DataFormat format = xwb.createDataFormat();
+			textStyle.setDataFormat(format.getFormat("@"));
+
+	
 			int rowNum = 0;
 
 			for(int r=0;r<downRows.size();r++){
@@ -115,6 +121,7 @@ public class ExcelUtils<T> {
 				}
 				int rownum = downRows.get(r);
 				e.addValidationData(setDataValidation(e, dlData, 2, 500, rownum ,rownum)); //超过255个报错
+				e.setDefaultColumnStyle(rownum, textStyle);//设置下拉列表为文本格式
 			}
 
 			for (Iterator arg10 = columheader.iterator(); arg10.hasNext(); ++rowNum) {
