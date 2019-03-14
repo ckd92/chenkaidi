@@ -163,6 +163,7 @@ public class ExcelUtils<T> {
 		            }
 		            int rownum = downRows.get(r);
 		            sheet.addValidationData(setDataValidation(sheet, dlData, 2, 500, rownum ,rownum)); //超过255个报错 
+		            sheet.setDefaultColumnStyle(rownum, textStyle);//设置下拉列表为文本格式
 				}
 				//设置默认列宽
 				for(int j=0;j<columheader.get(0).size();j++){
@@ -175,10 +176,6 @@ public class ExcelUtils<T> {
 					Cell cell = null;
 					for (int i = 0; i < columheader.get(rowNum).size(); i++) {
 						cell = row.createCell(i);
-						if(downRows.contains(i)){//下拉列表设置成文本格式
-						 cell.setCellStyle(textStyle);	
-						 cell.setCellType(HSSFCell.CELL_TYPE_STRING); 
-						}
 						cell.setCellValue(columheader.get(rowNum).get(i));
 					}
 				}
