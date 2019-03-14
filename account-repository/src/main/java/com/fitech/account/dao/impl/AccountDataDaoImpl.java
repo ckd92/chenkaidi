@@ -14,6 +14,7 @@ import com.fitech.domain.account.AccountLine;
 import com.fitech.domain.account.AccountTemplate;
 import com.fitech.domain.account.CodeField;
 import com.fitech.domain.account.DateField;
+import com.fitech.domain.account.DictionaryItem;
 import com.fitech.domain.account.DoubleField;
 import com.fitech.domain.account.IntegerField;
 import com.fitech.enums.SqlTypeEnum;
@@ -107,7 +108,28 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 //        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
 
         List<Map<String, Object>> resultList = super.selectByPage("accountDataMapper.findDataByConditionCount", "accountDataMapper.findDataByCondition", sqlParameterMap, page);
+        Map<String,Map<String,String>> ItemCodeMap=new HashMap<>();
+        for(AccountField field:collection){
+        	if(field.getItemType().equals("CODELIB")){//字典类型
+        		Map<String,String> dictionaryItemMap=new HashMap<>();
+        		for(DictionaryItem dictionaryItem: field.getDictionaryItems()){
+        			dictionaryItemMap.put(dictionaryItem.getDicItemId(), dictionaryItem.getDicItemName());
+        		}
+        		ItemCodeMap.put(field.getItemCode(),dictionaryItemMap);
+        	}
+        }
 
+        if(resultList!=null&&resultList.size()>0&&ItemCodeMap.size()>0){
+            Set<String> keys=ItemCodeMap.keySet();
+        	for(Map map:resultList){//字典项转义中文名称
+        		for(String key:keys){
+        			String value=ItemCodeMap.get(key).get(map.get(key));
+        			map.put(key,StringUtil.isEmpty(value)?map.get(key):value);        			
+        		}       		
+        	}
+        	
+        }
+        
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
             AccountLine ledgerLine = new AccountLine();

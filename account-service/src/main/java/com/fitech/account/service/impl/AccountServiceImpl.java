@@ -658,8 +658,7 @@ public class AccountServiceImpl implements AccountService {
                 if (dicList != null && dicList.size() > 0) {
                     downRows.add(i);
                     for (DictionaryItem dic : dicList) {
-                        String str = dic.getDicItemId() + "-" + dic.getDicItemName();
-                        tempList.add(str);
+                        tempList.add(dic.getDicItemId());
                     }
                     downData.add(tempList);
                 }
@@ -868,9 +867,22 @@ public class AccountServiceImpl implements AccountService {
             List<List<String>> hList = new ArrayList<>();
             List<String> lineFirst = new ArrayList<>();
             List<String> lineSecond = new ArrayList<>();
+            List<Integer> downRows=new ArrayList<>();
+            List<List<String>> downData=new ArrayList<>();
+            int i=0;
             for (AccountField accountFieldnew : accountFields) {
                 lineFirst.add(accountFieldnew.getItemCode());
                 lineSecond.add(accountFieldnew.getItemName());
+                List<DictionaryItem> dicList = accountFieldnew.getDictionaryItems();
+                List<String> tempList = new ArrayList<String>();
+                if (dicList != null && dicList.size() > 0) {
+                       downRows.add(i);
+                    for (DictionaryItem dic : dicList) {
+                        tempList.add(dic.getDicItemId());
+                    }
+                    downData.add(tempList);
+                }
+                i++;
             }
             hList.add(lineFirst);
             hList.add(lineSecond);
@@ -892,7 +904,8 @@ public class AccountServiceImpl implements AccountService {
                 }
                 hList.add(lineone);
             }
-            String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"temp/AccountList/", sheetName);
+            //String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"temp/AccountList/", sheetName);
+            String result = ExcelUtils.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"temp/AccountList/", downRows,downData);
             return result;
         } catch (Exception e) {
             e.printStackTrace();

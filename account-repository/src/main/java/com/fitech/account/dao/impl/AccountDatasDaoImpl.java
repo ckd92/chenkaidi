@@ -29,6 +29,7 @@ import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.StringUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 
@@ -358,12 +359,12 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                     } else if (item instanceof CodeField) {
                         List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(item.getDicId()));
                         List<String> strings = new ArrayList<>();
+                        
                         for (Map<String, Object> objectMap : list) {
-                            strings.add((String) objectMap.get("DICITEMNAME"));
+                            strings.add((String) objectMap.get("DICITEMID"));
                         }
-                        String[] split = values.get(((List<AccountField>) items).indexOf(item)).split("-");
-
-                        if (!strings.contains(split[split.length-1]) && split[0] != "") {
+                        String dicitemId=values.get(((List<AccountField>) items).indexOf(item));
+                        if (StringUtil.isEmpty(dicitemId)||!strings.contains(dicitemId)) {
                             map.put("flag", false);
                             map.put("message", "字典类型字段【" + item.getItemName() + "】载入非字典数据！");
                             return map;
