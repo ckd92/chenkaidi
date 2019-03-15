@@ -66,10 +66,12 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
     	String term = vo.getTerm();
     	String templateName = vo.getReportTemplateName();
     	String institutionname = vo.getInstitutionName();
-    	Map<String,String> tempMap = new HashMap<String,String>();
+        Long userId = vo.getUserId();
+        Map<String,String> tempMap = new HashMap<String,String>();
     	tempMap.put("term", term);
     	tempMap.put("templateName", templateName);
     	tempMap.put("institutionname", institutionname);
+    	tempMap.put("userId",String.valueOf(userId));
         List<Map<String,Object>> result = super.selectByPage("accProServiceMapper.findDoneQuerySqlCount", "accProServiceMapper.findDoneQuerySql", tempMap, page);
     	
         List<AccountProcessVo> vos = new ArrayList<>();

@@ -101,12 +101,14 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccounts")
-    public GenericResult<List<AccountProcessVo>> findCurrentAccounts(@RequestBody AccountProcessVo accountProcessVo){
+    public GenericResult<List<AccountProcessVo>> findCurrentAccounts(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
         GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
             Page page = new Page();
             page.setPageSize(accountProcessVo.getPageSize());
             page.setCurrentPage(accountProcessVo.getPageNum());
+            TokenUtils.getLoginId(request);
+            accountProcessVo.setUserId(TokenUtils.getLoginId(request));
             List<AccountProcessVo> pageVo = this.accountProcessService.findPageAccounts(accountProcessVo,page);
             result.setData(pageVo);
             result.setPage(page);
