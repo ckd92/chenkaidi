@@ -343,7 +343,7 @@
         su.username,
         to_char(t.start_time_,'yyyy-MM-dd HH24:mi:ss') as start_time_,
         to_char(t.end_time_,'yyyy-MM-dd HH24:mi:ss') as end_time_,
-        row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
+        row_number() over(partition by t.proc_inst_id_  order by t.start_time_ desc) rn
         from ACT_HI_TASKINST t
         left join sysuser su on t.assignee_=to_char(su.id)
         where t.delete_reason_ = 'completed'
@@ -380,13 +380,12 @@
      </select>
      <select id="findDoneTaskBySqlCount" parameterType="map" resultType="long">
 		  <include refid="queryAuthoritySql"/>
-		select count(task.proc_inst_id_)
+		select count(1) from (
+        select   task.proc_inst_id_ 
 		from (
         select 
-        t.proc_inst_id_,
-        row_number() over(partition by t.proc_inst_id_, t.assignee_ order by t.start_time_ desc) rn
+        t.proc_inst_id_
         from ACT_HI_TASKINST t
-        left join sysuser su on t.assignee_=to_char(su.id)
         where t.delete_reason_ = 'completed'
         ) task 
 		inner join AccountProcess o on  task.proc_inst_id_=o.procInsetId
@@ -395,7 +394,7 @@
         inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
         inner join authority  ON authority.reporttemplateid = lrt.id AND instr(authority.orgs, '['||it.id||']') > 0     
         inner join BusSystem bs on bs.id = lrt.busSystem_id  and bs.reportsubsystem_id=#{reportSubSystem_id}
-        where 1=1 and  task.rn=1
+        where 1=1 
         <if test=" templateCode != null and templateCode != '' ">
 			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
 		</if> 
@@ -417,6 +416,7 @@
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id}
 		</if>
+		  group by task.proc_inst_id_)
 	 </select>
 	
 	<select id="exculteCall" statementType="CALLABLE" parameterType="java.util.Map">  
