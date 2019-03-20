@@ -130,12 +130,58 @@
 		</if>
 		order by ac.id
     </select>
-    
-    
+
+
 	<select id="findDoneQuerySql" parameterType="map" resultType="map">
-		select ac.id,it.institutionname,to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,ap.templatename from account ac 
-		INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN reporttemplate ap ON ac.ACCOUNTTEMPLATE_ID=ap.id 
-		where ac.accountstate=2
+		select ac.id,
+		it.institutionname,
+		to_char(to_date(ac.term, 'yyyy-MM-dd'), 'yyyy-MM-dd') as term,
+		ap.templatename
+		from account ac
+		INNER JOIN INSTITUTION it
+		on AC.INSTITUTION_ID = it.id
+		INNER JOIN reporttemplate ap
+		ON ac.ACCOUNTTEMPLATE_ID = ap.id
+		WHERE exists (select *
+		from (SELECT t1.term as s
+		FROM ACCOUNT T1
+		LEFT JOIN reporttemplate LETE
+		ON LETE.ID = T1.ACCOUNTTEMPLATE_ID) a1
+		where a1.s = ac.term)
+		AND (ac.SUBMITSTATETYPE = 1 OR ac.SUBMITSTATETYPE = 0)
+		and exists (select id, keys
+		from (select i.id, 0 as keys
+		from institution i
+		left join sysuser u
+		on i.id = u.org_id
+		where u.id = #{userId}
+		union all
+		select i.id, 1 as keys
+		from institution i
+		left join sysuser u
+		on i.id = u.org_id
+		or i.parentinstitution_id = u.org_id
+		where u.id = #{userId}
+		union all
+		select i.id, 2 as keys
+		from Institution i
+		start with i.id = (select u.org_id
+		from sysuser u
+		where u.id = #{userId})
+		connect by prior id = i.parentinstitution_id) a
+		where a.keys =
+		(select max(t1.institutelevel) as lev
+		from reportpermission t1
+		right join role_reportpermission t2
+		on t1.id = t2.reportpermission_id
+		where exists (select 1
+		from sysuser_role s
+		where s.roles_id = t2.role_id
+		and s.sysuser_id = #{userId})
+		and t1.operationtype = 0
+		and t1.reporttemplateid =
+		ac.accounttemplate_id)
+		and id = ac.institution_id)
 		<if test=" term != null and term != '' ">
 			and to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') = #{term}
 		</if>
@@ -146,25 +192,73 @@
 			and it.institutionname like concat(concat('%',#{institutionname}),'%')
 		</if>
 		order by ac.id
-    </select>
+	</select>
+
 	<select id="findDoneQuerySqlCount" parameterType="map" resultType="long">
 		select count(*) from (
-			select ac.id,it.institutionname,to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') as term,ap.templatename from account ac 
-			INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN reporttemplate ap ON ac.ACCOUNTTEMPLATE_ID=ap.id 
-			where ac.accountstate=2
-			<if test=" term != null and term != '' ">
-				and to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') = #{term}
-			</if>
-			<if test=" templateName != null and templateName != '' ">
-				and ap.templatename like  concat(concat('%',#{templateName}),'%')  
-			</if>
-			<if test=" institutionname != null and institutionname != '' ">
-				and it.institutionname like concat(concat('%',#{institutionname}),'%') 
-			</if>
-			order by ac.id
-		)a 
-    </select>
-	
+		select ac.id,
+		it.institutionname,
+		to_char(to_date(ac.term, 'yyyy-MM-dd'), 'yyyy-MM-dd') as term,
+		ap.templatename
+		from account ac
+		INNER JOIN INSTITUTION it
+		on AC.INSTITUTION_ID = it.id
+		INNER JOIN reporttemplate ap
+		ON ac.ACCOUNTTEMPLATE_ID = ap.id
+		WHERE exists (select *
+		from (SELECT t1.term as s
+		FROM ACCOUNT T1
+		LEFT JOIN reporttemplate LETE
+		ON LETE.ID = T1.ACCOUNTTEMPLATE_ID) a1
+		where a1.s = ac.term)
+		AND (ac.SUBMITSTATETYPE = 1 OR ac.SUBMITSTATETYPE = 0)
+		and exists (select id, keys
+		from (select i.id, 0 as keys
+		from institution i
+		left join sysuser u
+		on i.id = u.org_id
+		where u.id = #{userId}
+		union all
+		select i.id, 1 as keys
+		from institution i
+		left join sysuser u
+		on i.id = u.org_id
+		or i.parentinstitution_id = u.org_id
+		where u.id = #{userId}
+		union all
+		select i.id, 2 as keys
+		from Institution i
+		start with i.id = (select u.org_id
+		from sysuser u
+		where u.id = #{userId})
+		connect by prior id = i.parentinstitution_id) a
+		where a.keys =
+		(select max(t1.institutelevel) as lev
+		from reportpermission t1
+		right join role_reportpermission t2
+		on t1.id = t2.reportpermission_id
+		where exists (select 1
+		from sysuser_role s
+		where s.roles_id = t2.role_id
+		and s.sysuser_id = #{userId})
+		and t1.operationtype = 0
+		and t1.reporttemplateid =
+		ac.accounttemplate_id)
+		and id = ac.institution_id)
+		<if test=" term != null and term != '' ">
+			and to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') = #{term}
+		</if>
+		<if test=" templateName != null and templateName != '' ">
+			and ap.templatename like concat(concat('%',#{templateName}),'%')
+		</if>
+		<if test=" institutionname != null and institutionname != '' ">
+			and it.institutionname like concat(concat('%',#{institutionname}),'%')
+		</if>
+		order by ac.id
+		)a
+	</select>
+
+
 	<select id="selectReasonsByReportId" resultType="reasonDto">
 		select *
 		from (select rs.*,
