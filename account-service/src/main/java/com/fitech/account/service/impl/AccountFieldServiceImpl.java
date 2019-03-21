@@ -77,8 +77,10 @@ public class AccountFieldServiceImpl implements AccountFieldService {
                 //新增字段集合
                 Collection<AccountField> acField = accountTemplate.getAccountFields();
                 Iterator<AccountField> itaf = acField.iterator();
+                int size = oldAcField.size();
                 //循环将字段编码转为大写
                 while (itaf.hasNext()){
+                    size = size + 1;
      				AccountField af = itaf.next();
      				Iterator<AccountField> it = oldAcField.iterator();
      				while (it.hasNext()){
@@ -89,6 +91,9 @@ public class AccountFieldServiceImpl implements AccountFieldService {
      		                return result;
      					}
      				}
+     				if (af.getOrderNumber()==0){
+                        af.setOrderNumber(size);
+                    }
      				af.setItemCode(af.getItemCode().toUpperCase());
      				oldAcField.add(af);
                 }
