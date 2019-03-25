@@ -645,22 +645,27 @@ public class AccountServiceImpl implements AccountService {
             List<List<String>> downData = new ArrayList<List<String>>();
             int i = 0;
             for (AccountField accoutnfield : a) {
-                if (accoutnfield.isPkable()) {
-                    itemDesc.add(accoutnfield.getItemName());
-                    itemCode.add(accoutnfield.getItemCode());
-                    //fieldPermission中没有OPERATE，表示有操作权限
-                } else if (accoutnfield.getFieldPermission().indexOf("OPERATE") == -1) {
-                    itemDesc.add(accoutnfield.getItemName());
-                    itemCode.add(accoutnfield.getItemCode());
-                }
+                Boolean haveDictionary=false;
+                String dicItemName="(";
                 List<DictionaryItem> dicList = accoutnfield.getDictionaryItems();
                 List<String> tempList = new ArrayList<String>();
                 if (dicList != null && dicList.size() > 0) {
-                    downRows.add(i);
+                	haveDictionary=true;
+                    downRows.add(i);           
                     for (DictionaryItem dic : dicList) {
                         tempList.add(dic.getDicItemId());
+                        dicItemName=  dicItemName+dic.getDicItemId()+"-"+dic.getDicItemName()+",";
                     }
+                    dicItemName=dicItemName.substring(0, dicItemName.length()-1)+")";
                     downData.add(tempList);
+                }
+                if (accoutnfield.isPkable()) {
+                    itemDesc.add(haveDictionary?(accoutnfield.getItemName()+dicItemName):accoutnfield.getItemName());
+                    itemCode.add(accoutnfield.getItemCode());
+                    //fieldPermission中没有OPERATE，表示有操作权限
+                } else if (accoutnfield.getFieldPermission().indexOf("OPERATE") == -1) {
+                    itemDesc.add(haveDictionary?(accoutnfield.getItemName()+dicItemName):accoutnfield.getItemName());
+                    itemCode.add(accoutnfield.getItemCode());
                 }
                 i++;
             }
@@ -869,19 +874,24 @@ public class AccountServiceImpl implements AccountService {
             List<String> lineSecond = new ArrayList<>();
             List<Integer> downRows=new ArrayList<>();
             List<List<String>> downData=new ArrayList<>();
-            int i=0;
-            for (AccountField accountFieldnew : accountFields) {
-                lineFirst.add(accountFieldnew.getItemCode());
-                lineSecond.add(accountFieldnew.getItemName());
+            int i=0;                                                    
+            for (AccountField accountFieldnew : accountFields) {            
+                Boolean haveDictionary=false;
+                String dicItemName="(";
                 List<DictionaryItem> dicList = accountFieldnew.getDictionaryItems();
                 List<String> tempList = new ArrayList<String>();
                 if (dicList != null && dicList.size() > 0) {
+                	   haveDictionary=true;
                        downRows.add(i);
                     for (DictionaryItem dic : dicList) {
                         tempList.add(dic.getDicItemId());
+                        dicItemName=  dicItemName+dic.getDicItemId()+"-"+dic.getDicItemName()+",";
                     }
+                    dicItemName=dicItemName.substring(0, dicItemName.length()-1)+")";
                     downData.add(tempList);
                 }
+                lineFirst.add(accountFieldnew.getItemCode());
+                lineSecond.add(haveDictionary?(accountFieldnew.getItemName()+dicItemName):accountFieldnew.getItemName());
                 i++;
             }
             hList.add(lineFirst);
