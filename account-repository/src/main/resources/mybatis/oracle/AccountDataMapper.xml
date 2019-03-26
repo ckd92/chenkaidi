@@ -18,6 +18,9 @@
                         <when test="field.itemType == 'DATE'">
                             = to_date(#{field.value},'yyyy-mm-dd')
                         </when>
+                        <when test="field.itemType == 'CODELIB'">
+                                = #{field.value}
+                        </when>
                         <otherwise>
                             like '%${field.value}%'
                             <!--<foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">-->
@@ -50,6 +53,9 @@
                         <choose>
                             <when test="field.itemType == 'DATE'">
                                 = to_date(#{field.value},'yyyy-mm-dd')
+                            </when>
+                            <when test="field.itemType == 'CODELIB'">
+                                = #{field.value}
                             </when>
                             <otherwise>
 

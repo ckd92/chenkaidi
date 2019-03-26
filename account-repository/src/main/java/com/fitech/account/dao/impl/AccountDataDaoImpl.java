@@ -48,7 +48,7 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
             if (accountSearch instanceof CodeField) {
                 Map value = (HashMap<String, String>) accountSearch.getValue();
                 if (value != null) {
-                    accountSearch.setValue(value.get("value"));
+                    accountSearch.setValue(value.get("key"));
                 }
             }
             if (accountSearch instanceof  DateField){
