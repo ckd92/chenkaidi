@@ -327,7 +327,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         }
 
                         if (field.getSqlType().equals(SqlTypeEnum.VARCHAR)) {
-                            valueList.add("'" + tempValue + "'");
+                             valueList.add("'" + tempValue + "'");        
                         } else if (field.getSqlType().equals(SqlTypeEnum.DATE)) {
                             valueList.add("".equals(tempValue) ? null : "to_date('" + tempValue + "','yyyy-mm-dd')");
                         } else if (field.getSqlType().equals(SqlTypeEnum.INTEGER) ||
@@ -370,19 +370,21 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         }
                     } else if (item instanceof CodeField) {
                         List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(item.getDicId()));
-                        List<String> strings = new ArrayList<>();
-                        
+                        Map<String,String> strings = new HashMap<>();                  
                         for (Map<String, Object> objectMap : list) {
-                            strings.add((String) objectMap.get("DICITEMID"));
+                        	strings.put((String) objectMap.get("DICITEMNAME"), (String) objectMap.get("DICITEMID"));
                         }
-                        String dicitemId=values.get(((List<AccountField>) items).indexOf(item));
-                        if (StringUtil.isNotEmpty(dicitemId)&&!strings.contains(dicitemId)) {
+                        String dicitemName=values.get(((List<AccountField>) items).indexOf(item));
+                        if (StringUtil.isNotEmpty(dicitemName)&&strings.size()>0) {
+                        	if(strings.get(dicitemName)==null){
                             map.put("flag", false);
                             map.put("message", "字典类型字段【" + item.getItemName() + "】载入非字典数据！");
                             return map;
+                          }else{
+                        	  replaceAll(valueList, "'"+dicitemName+"'", "'"+strings.get(dicitemName)+"'");
+                          }
                         }
-                    }
-
+                        }                       
                 }
                 // 赋值
                 fieldMap.put("values", valueList);
@@ -450,6 +452,16 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
         return map;
     }
 
+
+
+   public  static <E> void replaceAll(List<E> list,E oldObject,E newObject) {
+	for (int i = 0; i < list.size(); i++) {		//遍历
+		if(oldObject.equals(list.get(i))) {		//如果list中存在与oldObject相同的值，则用newObject替换
+			list.set(i, newObject);				//设置索引为i的值为newObject
+		}
+	}
+   }
+
     /**
      * 判断字符串是否可以转为标准日期格式
      * @param value
@@ -470,7 +482,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
 					break;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
           }
          return flag;

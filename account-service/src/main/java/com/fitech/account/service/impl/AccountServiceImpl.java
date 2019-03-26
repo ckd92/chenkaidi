@@ -645,26 +645,21 @@ public class AccountServiceImpl implements AccountService {
             List<List<String>> downData = new ArrayList<List<String>>();
             int i = 0;
             for (AccountField accoutnfield : a) {
-                Boolean haveDictionary=false;
-                String dicItemName="(";
                 List<DictionaryItem> dicList = accoutnfield.getDictionaryItems();
                 List<String> tempList = new ArrayList<String>();
                 if (dicList != null && dicList.size() > 0) {
-                	haveDictionary=true;
                     downRows.add(i);           
                     for (DictionaryItem dic : dicList) {
-                        tempList.add(dic.getDicItemId());
-                        dicItemName=  dicItemName+dic.getDicItemId()+"-"+dic.getDicItemName()+",";
+                        tempList.add(dic.getDicItemName());
                     }
-                    dicItemName=dicItemName.substring(0, dicItemName.length()-1)+")";
                     downData.add(tempList);
                 }
                 if (accoutnfield.isPkable()) {
-                    itemDesc.add(haveDictionary?(accoutnfield.getItemName()+dicItemName):accoutnfield.getItemName());
+                    itemDesc.add(accoutnfield.getItemName());
                     itemCode.add(accoutnfield.getItemCode());
                     //fieldPermission中没有OPERATE，表示有操作权限
                 } else if (accoutnfield.getFieldPermission().indexOf("OPERATE") == -1) {
-                    itemDesc.add(haveDictionary?(accoutnfield.getItemName()+dicItemName):accoutnfield.getItemName());
+                    itemDesc.add(accoutnfield.getItemName());
                     itemCode.add(accoutnfield.getItemCode());
                 }
                 i++;
@@ -853,6 +848,10 @@ public class AccountServiceImpl implements AccountService {
                         if(StringUtil.isNotEmpty(field.getValue())){
                             field.setValue(new SimpleDateFormat("yyyy-MM-dd").format(field.getValue()));
                         }
+                    }else  if (field.getItemType()!=null&&field.getItemType().equals("CODELIB")){
+                        if(StringUtil.isNotEmpty(field.getValue())){
+                            field.setValue(getDictionaryNameByKey(field, accountField));
+                        }
                     }
                 }
             }
@@ -876,22 +875,17 @@ public class AccountServiceImpl implements AccountService {
             List<List<String>> downData=new ArrayList<>();
             int i=0;                                                    
             for (AccountField accountFieldnew : accountFields) {            
-                Boolean haveDictionary=false;
-                String dicItemName="(";
                 List<DictionaryItem> dicList = accountFieldnew.getDictionaryItems();
                 List<String> tempList = new ArrayList<String>();
                 if (dicList != null && dicList.size() > 0) {
-                	   haveDictionary=true;
                        downRows.add(i);
                     for (DictionaryItem dic : dicList) {
-                        tempList.add(dic.getDicItemId());
-                        dicItemName=  dicItemName+dic.getDicItemId()+"-"+dic.getDicItemName()+",";
+                        tempList.add(dic.getDicItemName());
                     }
-                    dicItemName=dicItemName.substring(0, dicItemName.length()-1)+")";
                     downData.add(tempList);
                 }
                 lineFirst.add(accountFieldnew.getItemCode());
-                lineSecond.add(haveDictionary?(accountFieldnew.getItemName()+dicItemName):accountFieldnew.getItemName());
+                lineSecond.add(accountFieldnew.getItemName());
                 i++;
             }
             hList.add(lineFirst);
@@ -906,9 +900,9 @@ public class AccountServiceImpl implements AccountService {
                         if (accountFieldnew.getItemCode().equals(accf.getItemCode())) {
                             if (accf.getValue() == null) {
                                 lineone.add("");
-                            } else {
-                                lineone.add(String.valueOf(accf.getValue()));
-                            }
+                            } else {                       
+                                lineone.add(String.valueOf(accf.getValue()));                   
+                            }                
                         }
                     }
                 }
@@ -924,7 +918,25 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    
+    public String getDictionaryNameByKey(AccountField accountField,Collection<AccountField> accountFields){
+    	String dictionaryName="";
+    	
+    	if(accountField==null||accountFields==null){
+    		 return dictionaryName;
+    	}
+    	    for(AccountField field:accountFields){
+    	    	if(field.getItemCode().equals(accountField.getItemCode())){
+    	    		List<DictionaryItem> dictionaryItems=field.getDictionaryItems();
+    	    		for(DictionaryItem dictionaryItem:dictionaryItems){
+    	    			  if(dictionaryItem.getDicItemId().equals(accountField.getValue())){
+    	    				  dictionaryName=dictionaryItem.getDicItemName();
+    	    				  break;
+    	    			  }
+    	    		}
+    	    	}
+    	    }
+    	    return dictionaryName;
+    }
 
 //    @Override
 //    public GenericResult<AccountProcessVo> initAccountTable(AccountProcessVo accountProcessVo) {
