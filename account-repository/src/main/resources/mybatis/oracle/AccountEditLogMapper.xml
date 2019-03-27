@@ -72,14 +72,20 @@
 	
 	
 	<select id="findAccountEditLogTJ" parameterType="com.fitech.domain.account.AccountEditLog" resultType="com.fitech.domain.account.AccountEditLog">
-		select t.editUser,
-	       to_char(to_date(t.editDate, 'yyyy-MM-dd'), 'yyyy-MM-dd') as editDate,
-	       t.accountName,
-	       to_char(to_date(t.term, 'yyyy-MM-dd'), 'yyyy-MM-dd') as term,
-	       t.institutionName,
-	       NVL(sum(t.editLineNum) ,0) as editLineNum
-	  from ACCOUNT_EDITlOG t
-	 where 1 = 1
+		select nvl(s.username, t.editUser) as editUser,
+       t.editDate,
+       t.accountname,
+       t.term,
+       t.institutionname,
+       t.editLineNum
+  from (select t.editUser,
+               to_char(to_date(t.editDate, 'yyyy-MM-dd'), 'yyyy-MM-dd') as editDate,
+               t.accountName,
+               to_char(to_date(t.term, 'yyyy-MM-dd'), 'yyyy-MM-dd') as term,
+               t.institutionName,
+               NVL(sum(t.editLineNum), 0) as editLineNum
+          from ACCOUNT_EDITlOG t
+         where 1 = 1
 		<if test="accountName != null and accountName != ''">
 			and t.accountName like'%${accountName}%'
 		</if>
@@ -99,6 +105,8 @@
 	 	<if test="editLineNum != null and editLineNum != ''">
 	 		having sum(t.editLineNum) = ${editLineNum}
 	 	</if>
+	 	) t 
+	 	left join sysuser s  on t.editUser = s.loginid 	
 	 order by t.editDate desc,
 	          t.term desc,
 	          t.editUser,
