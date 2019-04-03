@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="accountDataMapper">
+
+    <select id="findDataByCondition" parameterType="Map" resultType="Map">
+
+        select id,reportId,
+        <foreach collection="collection" index="index" item="item" open="" separator="," close="">
+            ${item.itemCode}
+        </foreach>
+        from ${tableName}
+        where reportId = ${accountId}
+            <foreach collection="serachFileds" index="index" item="field">
+                <if test="field.value != null and field.value != ''">
+                    and ${field.itemCode}
+                    <choose>
+                        <when test="field.itemType == 'DATE'">
+                            = date_format(#{field.value},'%Y-%m-%d')
+                        </when>
+                        <when test="field.itemType == 'CODELIB'">
+                            = #{field.value}
+                        </when>
+                        <when test="item.itemType == 'INTEGER' or item.itemType == 'DOUBLE' or item.itemType == 'NUMBER' or item.itemType == 'DECIMAL'">
+                            = #{field.value}
+                        </when>
+                        <otherwise>
+                            like '%${field.value}%'
+                            <!--<foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">-->
+                                <!--<if test="item == field.itemCode">-->
+                                   <!--and ${field.itemCode} = #{field.value}-->
+                                <!--</if>-->
+                            <!--</foreach>-->
+                            <!--<foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">-->
+                                <!--<if test="item == field.itemCode">-->
+                                   <!--and ${field.itemCode} = #{field.value}-->
+                                <!--</if>-->
+                            <!--</foreach>-->
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+    </select>
+
+    <select id="findDataByConditionCount" parameterType="Map" resultType="Long">
+        select count(1) from (
+            select id,reportId,
+            <foreach collection="collection" index="index" item="item" open="" separator="," close="">
+                ${item.itemCode}
+            </foreach>
+            from ${tableName}
+            where reportId = ${accountId}
+                <foreach collection="serachFileds" index="index" item="field">
+                    <if test="field.value != null">
+                        and ${field.itemCode}
+                        <choose>
+                            <when test="field.itemType == 'DATE'">
+                                = date_format(#{field.value},'%Y-%m-%d')
+                            </when>
+                            <when test="field.itemType == 'CODELIB'">
+                                = #{field.value}
+                            </when>
+                            <when test="item.itemType == 'DOUBLE' or item.itemType == 'NUMBER' or item.itemType == 'DECIMAL'
+                            or item.itemType == 'INTEGER'">
+                                = #{field.value}
+                            </when>
+                            <otherwise>
+
+                                like '%${field.value}%'
+                                <!--<foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">-->
+                                    <!--<if test="item == field.itemCode">-->
+                                        <!--and ${field.itemCode} = #{field.value}-->
+                                    <!--</if>-->
+                                <!--</foreach>-->
+                                <!--<foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">-->
+                                    <!--<if test="item == field.itemCode">-->
+                                        <!--and ${field.itemCode} = #{field.value}-->
+                                    <!--</if>-->
+                                <!--</foreach>-->
+                            </otherwise>
+                        </choose>
+                    </if>
+                </foreach>
+        ) a
+    </select>
+
+    <select id="downLoadDataByCondition" parameterType="Map" resultType="Map">
+        select id,reportId,
+        <foreach collection="collection" index="index" item="item" open="" separator="," close="">
+            <choose>
+                <when test="item.itemType == 'DATE'">
+                    str_to_date(${item.itemCode},'%Y-%m-%d') as ${item.itemCode}
+                </when>
+                <otherwise>
+                    ${item.itemCode}
+                </otherwise>
+            </choose>
+        </foreach>
+        from ${tableName}
+        where reportId = ${accountId}
+            <foreach collection="serachFileds" index="index" item="item">
+                <if test="item.value != null">
+                    and ${item.itemCode}
+                    <foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">
+                        <if test="item == item.itemCode">
+                            = #{item.value}
+                        </if>
+                    </foreach>
+                    <foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">
+                        <if test="item == item.itemCode">
+                            = #{item.value}
+                        </if>
+                    </foreach>
+                    <choose>
+                        <when test="item.itemType == 'DATA'">
+                            = date_format(#{item.value},'%Y-%m-%d')
+                        </when>
+                        <otherwise>
+                            like '%${item.value}%'
+                        </otherwise>
+                    </choose>
+                </if>
+            </foreach>
+    </select>
+
+    <select id="findMaxNumDataByCondition" parameterType="Map" resultType="Long">
+        select count(1) from ${tableName}
+        where accountId = ${accountId}
+        <foreach collection="collection" index="index" item="item">
+            <if test="item.value != null">
+                and ${item.itemCode}
+                <foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">
+                    <if test="item == item.itemCode">
+                        = #{item.value}
+                    </if>
+                </foreach>
+                <foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">
+                    <if test="item == item.itemCode">
+                        = #{item.value}
+                    </if>
+                </foreach>
+                <choose>
+                    <when test="item.itemType == 'DATA'">
+                        = date_format(#{item.value},'%Y-%m-%d')
+                    </when>
+                    <otherwise>
+                        like '%${item.value}%'
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+    </select>
+
+    <insert id="insertData" parameterType="Map">
+        insert into ${tableName} (
+            reportId,
+            <foreach collection="items" index="index" item="item" open="" separator="," close="">
+                ${item.itemCode}
+            </foreach>
+        )values(${accountId},
+        <foreach collection="items" index="index" item="item" close="" separator="," open="">
+            <choose>
+                <when test="item.value == null or item.value == ''">
+                    null
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DATE'">
+                        	<choose>
+			                    <when test="item.value.indexOf('-') !=-1 ">
+                                    date_format(#{item.value},'%Y-%m-%d')
+                                </when>
+			                    <otherwise>
+                                    from_unixtime(#{item.value})
+			                    </otherwise>
+			                </choose>
+                            
+                        </when>
+                        <!--<when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'INTEGER'">-->
+                            <!--#{item.value}-->
+                        <!--</when>-->
+                        <!--<when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DOUBLE'">-->
+                            <!--#{item.value}-->
+                        <!--</when>-->
+                        <when test="item.itemType == 'DECIMAL' or item.itemType == 'DOUBLE' or item.itemType == 'INTEGER'">
+                            #{item.value}
+                        </when>
+                        <otherwise>
+                            #{item.value}
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+
+        </foreach>
+        )
+    </insert>
+
+    <update id="updateData" parameterType="Map">
+        update ${tableName} set
+        <foreach collection="items" index="index" item="item" close="" separator="," open="">
+            <choose>
+                <when test="item.value == null or item.value == ''">
+                    ${item.itemCode} = null
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="item.itemType == 'DATE' and item.value != null and item.value != ''">
+                            ${item.itemCode} = date_format(#{item.value},'%Y-%m-%d')
+                        </when>
+                        <when test="item.itemType == 'DECIMAL' or item.itemType == 'DOUBLE' or item.itemType == 'INTEGER'">
+                            ${item.itemCode} = #{item.value}
+                        </when>
+                        <otherwise>
+                            ${item.itemCode} = #{item.value}
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+
+        </foreach>
+        where id = ${accountLineId}
+    </update>
+
+    <update id="batchUpdateData">
+        update ${tableName} set
+        <foreach collection="items" index="index" item="item" open="" separator="," close="">
+            <choose>
+                <when test="item.value == null or item.value == ''">
+                    ${item.itemCode} = null
+                </when>
+                <otherwise>
+                    <choose>
+                        <when test="item.itemType == 'DECIMAL' or item.itemType == 'DOUBLE' or item.itemType == 'INTEGER'">
+                            ${item.itemCode} =  #{item.value}
+                        </when>
+                        <when test="item.itemType == 'DATE'" >
+                            ${item.itemCode} = date_format(#{item.value},'%Y%m%d')
+                        </when>
+                        <otherwise>
+                            ${item.itemCode} = #{item.value}
+                        </otherwise>
+                    </choose>
+                </otherwise>
+            </choose>
+        </foreach>
+        where id in(${idList})
+    </update>
+
+    <select id="findDataById" parameterType="Map" resultType="Map">
+        select * from ${tableName} where id = ${id}
+    </select>
+
+    <select id="queryDataisExist" parameterType="Map" resultType="Long">
+        select count(1) from ${tableName} where reportId = ${accountId}
+        <foreach collection="items" index="index1" item="item1">
+            <if test="item1.value != null">
+                <foreach collection="isPkableListAndItemCodeEqual" index="index2" item="item2">
+                    <if test="item2.itemCode == item1.itemCode">
+                        and ${item1.itemCode}
+                        <choose>
+                            <when test="itemInstanceMap.integerFieldAndDoubleFieldList != null and itemInstanceMap.integerFieldAndDoubleFieldList.size() > 0">
+                                <foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">
+                                    <if test="item1.itemCode == item.itemCode">
+                                        = ${item.value}
+                                    </if>
+                                </foreach>
+                            </when>
+                            <when test="itemInstanceMap.codeFieldList != null and itemInstanceMap.codeFieldList.size() > 0">
+                                <foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">
+                                    <if test="item1.itemCode == item.itemCode">
+                                        = #{item.value}
+                                    </if>
+                                </foreach>
+                            </when>
+                            <otherwise>
+                                = #{item1.value}
+                            </otherwise>
+                        </choose>
+                    </if>
+                </foreach>
+            </if>
+        </foreach>
+    </select>
+
+    <delete id="deleteData" parameterType="Map">
+        delete from ${tableName}
+        where id = ${id}
+    </delete>
+</mapper>

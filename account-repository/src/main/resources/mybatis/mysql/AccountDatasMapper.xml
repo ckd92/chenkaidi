@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="accountDatasMapper">
+    <!-- 删除该台账所有补录数据 -->
+    <delete id="delete" parameterType="Map">
+        delete from ${tableName} where reportid=#{reportId}
+    </delete>
+
+    <!-- 批量新增 -->
+    <insert id="insert" parameterType="map">
+        insert into ${tablename} (REPORTID,
+        <foreach collection="fields" item="field" separator=",">
+            ${field}
+        </foreach>
+        ) values (${id},
+        <foreach collection="values" item="value" separator=",">
+            <choose>
+                <when test="value != null and value != ''">
+                    ${value}
+                </when>
+                <otherwise>
+                    null
+                </otherwise>
+            </choose>
+        </foreach>
+        )
+    </insert>
+    <!--查询所有台账-->
+    <select id="findAll" parameterType="Map" resultType="Map">
+        select id,reportId,
+        <foreach collection="fields" item="field" separator=",">
+            ${field}
+        </foreach>
+        from ${tablename} where reportId = ${id}
+    </select>
+    <!-- 调用存储过程 -->
+    <select id="proc_loadAccountData"  parameterType="map" statementType="CALLABLE" resultType="java.lang.Object">
+		{call PROC_LOADACCOUNTDATA(#{accountTemplateId,mode=IN,jdbcType=VARCHAR},#{tableName,mode=IN,jdbcType=VARCHAR},#{result,mode=OUT,jdbcType=VARCHAR})}
+	</select>
+
+    <select id="findDataIdByReportId" parameterType="map" resultType="Long">
+        select id from ${tableName} where reportId = ${reportId}
+    </select>
+
+    <delete id="deleteErrorData" parameterType="map">
+        delete from ${tableName} where reportId = ${reportId}
+        <if test="list != null and list.size() > 0">
+            and id not in (
+            <foreach collection="list" item="id" separator=",">
+                ${id}
+            </foreach>
+            )
+        </if>
+    </delete>
+
+</mapper>

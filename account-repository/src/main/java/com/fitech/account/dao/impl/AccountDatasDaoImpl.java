@@ -16,6 +16,7 @@ import com.fitech.account.dao.DictionaryDao;
 import com.fitech.domain.account.*;
 import com.fitech.domain.ledger.LedgerItem;
 import com.fitech.enums.TableNameEnum;
+import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.lang.util.JdbcUtil;
 import org.apache.commons.lang.StringUtils;
@@ -327,9 +328,13 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         }
 
                         if (field.getSqlType().equals(SqlTypeEnum.VARCHAR)) {
-                             valueList.add("'" + tempValue + "'");        
+                            valueList.add("'" + tempValue + "'");
                         } else if (field.getSqlType().equals(SqlTypeEnum.DATE)) {
-                            valueList.add("".equals(tempValue) ? null : "to_date('" + tempValue + "','yyyy-mm-dd')");
+                            if ("com.mysql.jdbc.Driver".equals(CommonConst.getProperties("jdbc.driverClassName"))){
+                                valueList.add("".equals(tempValue) ? null : "str_to_date('" + tempValue + "','%Y-%m-%d')");
+                            }else{
+                                valueList.add("".equals(tempValue) ? null : "to_date('" + tempValue + "','yyyy-mm-dd')");
+                            }
                         } else if (field.getSqlType().equals(SqlTypeEnum.INTEGER) ||
                                 field.getSqlType().equals(SqlTypeEnum.DECIMAL) ||
                                 field.getSqlType().equals(SqlTypeEnum.DOUBLE) ||
@@ -353,13 +358,13 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 for (AccountField item : items) {
                     if (item instanceof DateField) {
                         try {
-                        	  String value=values.get(((List<AccountField>) items).indexOf(item)); 
-                             if (StringUtils.isNotEmpty(value)) {                          	
-                            	if(!formulaStringToDate(value)){                   		
+                            String value = values.get(((List<AccountField>) items).indexOf(item));
+                            if (StringUtils.isNotEmpty(value)) {
+                                if (!formulaStringToDate(value)) {
                                     map.put("flag", false);
                                     map.put("message", "日期格式字段" + item.getItemName() + "载入非日期格式数据！");
-                                    return map;	
-                            	}
+                                    return map;
+                                }
                             } else {
                                 values.set(((List<AccountField>) items).indexOf(item), null);
                             }
@@ -370,21 +375,21 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         }
                     } else if (item instanceof CodeField) {
                         List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(item.getDicId()));
-                        Map<String,String> strings = new HashMap<>();                  
+                        Map<String, String> strings = new HashMap<>();
                         for (Map<String, Object> objectMap : list) {
-                        	strings.put((String) objectMap.get("DICITEMNAME"), (String) objectMap.get("DICITEMID"));
+                            strings.put((String) objectMap.get("DICITEMNAME"), (String) objectMap.get("DICITEMID"));
                         }
-                        String dicitemName=values.get(((List<AccountField>) items).indexOf(item));
-                        if (StringUtil.isNotEmpty(dicitemName)&&strings.size()>0) {
-                        	if(strings.get(dicitemName)==null){
-                            map.put("flag", false);
-                            map.put("message", "字典类型字段【" + item.getItemName() + "】载入非字典数据！");
-                            return map;
-                          }else{
-                        	  replaceAll(valueList, "'"+dicitemName+"'", "'"+strings.get(dicitemName)+"'");
-                          }
+                        String dicitemName = values.get(((List<AccountField>) items).indexOf(item));
+                        if (StringUtil.isNotEmpty(dicitemName) && strings.size() > 0) {
+                            if (strings.get(dicitemName) == null) {
+                                map.put("flag", false);
+                                map.put("message", "字典类型字段【" + item.getItemName() + "】载入非字典数据！");
+                                return map;
+                            } else {
+                                replaceAll(valueList, "'" + dicitemName + "'", "'" + strings.get(dicitemName) + "'");
+                            }
                         }
-                        }                       
+                    }
                 }
                 // 赋值
                 fieldMap.put("values", valueList);
@@ -396,14 +401,26 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             Boolean testPrint = true;
             if (havePkable) {
                 //调用同步修改数据的存储过程
-                call = con.prepareCall("call PROC_LOADACCOUNTDATA(?,?,?)");
-                call.setString(1, accountTemplate.getId().toString());
-                call.setString(2, tableName);
-                call.registerOutParameter(3, Types.VARCHAR);
-                call.execute();
-                String s = call.getString(3);
-                if (s.equals("false")) {
-                    testPrint = false;
+                if ("com.mysql.jdbc.Driver".equals(CommonConst.getProperties("jdbc.driverClassName"))) {
+                    Map sqlMapProc = new HashMap();
+                    sqlMapProc.put("accountTemplateId", accountTemplate.getId().toString());
+                    sqlMapProc.put("tableName", tableName);
+                    try {
+                        super.selectList("accountDatasMapper.proc_loadAccountData", sqlMapProc);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        testPrint = false;
+                    }
+                } else {
+                    call = con.prepareCall("call PROC_LOADACCOUNTDATA(?,?,?)");
+                    call.setString(1, accountTemplate.getId().toString());
+                    call.setString(2, tableName);
+                    call.registerOutParameter(3, Types.VARCHAR);
+                    call.execute();
+                    String s = call.getString(3);
+                    if (s.equals("false")) {
+                        testPrint = false;
+                    }
                 }
             }
             if (!testPrint) {
@@ -421,7 +438,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             hashMap.put("tableName", tableName);
             hashMap.put("list", selectList);
             super.delete("accountDatasMapper.deleteErrorData", hashMap);
-            hashMap.put("tableName", tableName+"_STANDARD");
+            hashMap.put("tableName", tableName + "_STANDARD");
             super.delete("accountDatasMapper.deleteErrorData", hashMap);
             map.put("flag", false);
             String str = e.getMessage().toString();//异常信息
@@ -453,40 +470,41 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
     }
 
 
-
-   public  static <E> void replaceAll(List<E> list,E oldObject,E newObject) {
-	for (int i = 0; i < list.size(); i++) {		//遍历
-		if(oldObject.equals(list.get(i))) {		//如果list中存在与oldObject相同的值，则用newObject替换
-			list.set(i, newObject);				//设置索引为i的值为newObject
-		}
-	}
-   }
+    public static <E> void replaceAll(List<E> list, E oldObject, E newObject) {
+        for (int i = 0; i < list.size(); i++) {        //遍历
+            if (oldObject.equals(list.get(i))) {        //如果list中存在与oldObject相同的值，则用newObject替换
+                list.set(i, newObject);                //设置索引为i的值为newObject
+            }
+        }
+    }
 
     /**
      * 判断字符串是否可以转为标准日期格式
+     *
      * @param value
      * @return
      */
-    public static Boolean formulaStringToDate(String value){
-          String [] formulas=new String[]{"yyyyMMdd","yyyy-MM-dd","yyyy/MM/dd","yyyy.MM.dd"};
-          Boolean flag=false;
-          Date date=null;
-          if(StringUtils.isEmpty(value)){
-        	  return false;
-          }
-          for(String formula:formulas){
-        	  try {
-				date=new SimpleDateFormat(formula).parse(value);
-				if(date!=null){
-					flag=true;
-					break;
-				}
-			} catch (Exception e) {
-				//e.printStackTrace();
-			}
-          }
-         return flag;
-       }
+    public static Boolean formulaStringToDate(String value) {
+        String[] formulas = new String[]{"yyyyMMdd", "yyyy-MM-dd", "yyyy/MM/dd", "yyyy.MM.dd"};
+        Boolean flag = false;
+        Date date = null;
+        if (StringUtils.isEmpty(value)) {
+            return false;
+        }
+        for (String formula : formulas) {
+            try {
+                date = new SimpleDateFormat(formula).parse(value);
+                if (date != null) {
+                    flag = true;
+                    break;
+                }
+            } catch (Exception e) {
+                //e.printStackTrace();
+            }
+        }
+        return flag;
+    }
+
     /**
      * 构建主键MAP
      *
