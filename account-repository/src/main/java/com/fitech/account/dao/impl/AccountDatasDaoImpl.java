@@ -433,13 +433,6 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Map<String, Object> hashMap = new HashMap<>();
-            hashMap.put("reportId", accountId);
-            hashMap.put("tableName", tableName);
-            hashMap.put("list", selectList);
-            super.delete("accountDatasMapper.deleteErrorData", hashMap);
-            hashMap.put("tableName", tableName + "_STANDARD");
-            super.delete("accountDatasMapper.deleteErrorData", hashMap);
             map.put("flag", false);
             String str = e.getMessage().toString();//异常信息
             if (str.contains("ORA-12899")) {
@@ -457,6 +450,13 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
             }
             map.put("message", str);
         } finally {
+            Map<String, Object> hashMap = new HashMap<>();
+            hashMap.put("reportId", accountId);
+            hashMap.put("tableName", tableName);
+            hashMap.put("list", selectList);
+            super.delete("accountDatasMapper.deleteErrorData", hashMap);
+            hashMap.put("tableName", tableName + "_STANDARD");
+            super.delete("accountDatasMapper.deleteErrorData", hashMap);
             ju.releaseConn();
             if (ps != null) {
                 try {

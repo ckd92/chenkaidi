@@ -6,19 +6,19 @@
         select k.term as term,
             k.institutionname as institutionname,
             k.totalcount as totalcount,
-            to_char(k.dbl / k.totalcount * 100, '9990') dbl,
-            to_char(k.dsh / k.totalcount * 100, '9990') dsh,
-            to_char(k.shtg / k.totalcount * 100, '9990') shtg,
-            to_char(k.th / k.totalcount * 100, '9990') th
+            CAST(k.dbl / k.totalcount * 100 AS DECIMAL) dbl,
+            CAST(k.dsh / k.totalcount * 100 AS DECIMAL) dsh,
+            CAST(k.shtg / k.totalcount * 100 AS DECIMAL) shtg,
+            CAST(k.th / k.totalcount * 100 AS DECIMAL) th
         from (select a.term,
                  (select institutionname
                   from INSTITUTION
                   where id = a.institution_id) institutionname,
                       a.totalcount,
-                      nvl(b.dbl, 0) dbl,
-                      nvl(c.dsh, 0) dsh,
-                      nvl(d.shtg, 0) shtg,
-                      nvl(e.th, 0) th
+                      IFNULL(b.dbl, 0) dbl,
+                      IFNULL(c.dsh, 0) dsh,
+                      IFNULL(d.shtg, 0) shtg,
+                      IFNULL(e.th, 0) th
                   from (select count(1) totalcount, t.term, t.institution_id
                         from ACCOUNT t
                         group by t.term, t.institution_id) a
@@ -50,13 +50,14 @@
 
     <select id="getrwtjByCondition" parameterType="map" resultType="map">
     	select * from(
-    		select date_format(str_to_date(k.term,'%Y-%m-%d'), '%Y-%m-%d') as term,k.institutionname,
-    		k.totalcount,to_char(k.dbl/k.totalcount*100,'0') dbl,
-			to_char(k.dsh/k.totalcount*100,'0') dsh,to_char(k.shtg/k.totalcount*100,'9990') shtg,
-			to_char(k.th/k.totalcount*100,'0') th from (select a.term,(
-				select institutionname from INSTITUTION where id=a.institution_id
-			) institutionname,a.totalcount,nvl(b.dbl, 0) dbl,
-			nvl(c.dsh, 0) dsh,nvl(d.shtg, 0) shtg,nvl(e.th, 0) th from (select count(1) totalcount,t.term,
+    		select k.term,k.institutionname,
+    		k.totalcount,CAST(k.dbl / k.totalcount * 100 AS DECIMAL) dbl,
+            CAST(k.dsh / k.totalcount * 100 AS DECIMAL) dsh,
+            CAST(k.shtg / k.totalcount * 100 AS DECIMAL) shtg,
+            CAST(k.th / k.totalcount * 100 AS DECIMAL) th from (select a.term,(
+			select institutionname from INSTITUTION where id=a.institution_id
+			) institutionname,a.totalcount,IFNULL(b.dbl, 0) dbl,
+			IFNULL(c.dsh, 0) dsh,IFNULL(d.shtg, 0) shtg,IFNULL(e.th, 0) th from (select count(1) totalcount,t.term,
 			t.institution_id from ACCOUNT t group by t.term, t.institution_id) a left join (select count(1) dbl,
 			term,institution_id from account where accountstate = 0 group by term, institution_id) b on a.term = b.term
 			and a.institution_id = b.institution_id left join (select count(1) dsh, term, institution_id from account
@@ -66,7 +67,7 @@
 			term, institution_id from account where accountstate = 3 group by term, institution_id) e on a.term = e.term
 			and a.institution_id = e.institution_id)k
 		)j where
-        date_format(str_to_date(j.term, '%Y-%m-%d'), '%Y-%m-%d') = #{term}
+        j.term = date_format(str_to_date(#{term}, '%Y-%m-%d'),'%Y%m%d')
         <choose>
             <when test="institutionName !=null and institutionName != '' ">
                and j.institutionname like  '%${institutionName}%'

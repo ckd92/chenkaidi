@@ -36,7 +36,7 @@
         from ${tablename} where reportId = ${id}
     </select>
     <!-- 调用存储过程 -->
-    <select id="proc_loadAccountData"  parameterType="map" statementType="CALLABLE" resultType="java.lang.Object">
+    <select id="proc_loadAccountData"  parameterType="map" statementType="CALLABLE">
 		{call PROC_LOADACCOUNTDATA(#{accountTemplateId,mode=IN,jdbcType=VARCHAR},#{tableName,mode=IN,jdbcType=VARCHAR},#{result,mode=OUT,jdbcType=VARCHAR})}
 	</select>
 

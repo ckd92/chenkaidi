@@ -72,7 +72,7 @@
 	
 	
 	<select id="findAccountEditLogTJ" parameterType="com.fitech.domain.account.AccountEditLog" resultType="com.fitech.domain.account.AccountEditLog">
-		select nvl(s.username, t.editUser) as editUser,
+		select IFNULL(s.username, t.editUser) as editUser,
 		date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d') as editDate,
        t.accountname,
 		date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d') as term,

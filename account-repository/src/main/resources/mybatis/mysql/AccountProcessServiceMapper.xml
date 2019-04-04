@@ -69,12 +69,11 @@
 		or i.parentinstitution_id = u.org_id
 		where u.id = #{userId}
 		union all
-		select i.id, 2 as ff
-		from Institution i
-		start with i.id = (select u.org_id
-		from sysuser u
-		where u.id = #{userId})
-		connect by prior id = i.parentinstitution_id) a
+		SELECT
+		id,
+		2 AS ff
+		FROM
+		Institution where FIND_IN_SET(id,queryChildrenInstitutionInfoByUserId(#{userId}))) a
 		where a.ff =
 		(select max(t1.institutelevel) as lev
 		from reportpermission t1
@@ -132,12 +131,11 @@
 		or i.parentinstitution_id = u.org_id
 		where u.id = #{userId}
 		union all
-		select i.id, 2 as ff
-		from Institution i
-		start with i.id = (select u.org_id
-		from sysuser u
-		where u.id = #{userId})
-		connect by prior id = i.parentinstitution_id) a
+		SELECT
+		id,
+		2 AS ff
+		FROM
+		Institution where FIND_IN_SET(id,queryChildrenInstitutionInfoByUserId(#{userId}))) a
 		where a.ff =
 		(select max(t1.institutelevel) as lev
 		from reportpermission t1
@@ -470,18 +468,26 @@
 		date_format(str_to_date(lr.term, '%Y%m%d'), '%Y-%m-%d') as term,CAST(task.name_ AS CHAR) AS NAME,
 		lr.validateStatus,CAST(task.id_ AS CHAR ) as taskId,task.proc_inst_id_  as processId,task.end_time_,lr.freq ,task.userName as submitter
 		from (
-		select
-		t.id_,
-		t.proc_inst_id_ ,
-		t.name_,
-		t.assignee_,
-		su.username,
-		date_format(str_to_date(t.start_time_, '%Y%m%d %H:%i:%s'), '%Y-%m-%d %H:%i:%s') as start_time_,
-		date_format(str_to_date(t.end_time_, '%Y%m%d %H:%i:%s'), '%Y-%m-%d %H:%i:%s') as end_time_,
-		row_number() over(partition by t.proc_inst_id_  order by t.start_time_ desc) rn
-		from ACT_HI_TASKINST t
-		left join sysuser su on t.assignee_=CAST(su.id as char )
-		where t.delete_reason_ = 'completed'
+		SELECT
+		actRuTask.*,
+		IF (
+		@procInstId = actRuTask.proc_inst_id_ ,@rank :=@rank + 1 ,@rank := 1
+		) AS rn,
+		@procInstId := actRuTask.proc_inst_id_ as procInstId
+		FROM
+		(
+		select t.id_ ,
+		t.name_ ,
+		t.end_time_,
+		t.proc_inst_id_,
+		s.userName
+		from 	ACT_HI_TASKINST t left join sysuser s on t.assignee_=cast(s.id as char)
+		where t.delete_reason_ = 'completed' order by t.proc_inst_id_,t.start_time_ desc
+		) actRuTask,
+		(
+		SELECT
+		@procInstId := NULL ,@rank := 0
+		) a
 		) task
 		inner join AccountProcess o on  task.proc_inst_id_=o.procInsetId
 		inner join Account lr on lr.id=o.ACCOUNT_ID
@@ -612,7 +618,7 @@
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id}
 		</if>
-		group by task.proc_inst_id_)
+		group by task.proc_inst_id_) a
 	</select>
 
 	<select id="exculteCall"  parameterType="map" resultType="String">
