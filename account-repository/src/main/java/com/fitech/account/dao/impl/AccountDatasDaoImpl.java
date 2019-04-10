@@ -303,58 +303,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                 } else {
                     pkValueStr.add(str);
                 }
-
-                Map<String, Object> fieldMap = new HashMap<String, Object>();
-                fieldMap.putAll(sqlMap);
-                List<String> valueList = new ArrayList<String>();
-                //待录入值
-                //List<String> values = datas.get(i);
-                for (int k = 0; k < values.size(); k++) {
-                    AccountField field = null;
-                    try {
-                        field = (AccountField) items.toArray()[k];
-                    } catch (IndexOutOfBoundsException e) {
-                        throw new AppException(ExceptionCode.SYSTEM_ERROR, "请确认导入模板是否正确！或字典项字段功能暂未完善，请确认是否导入字典项内容");
-                    }
-
-                    if (StringUtil.isNotEmpty(values.get(k))) {
-                        String tempValue = values.get(k);
-                        if (StringUtil.isNotEmpty(field.getDicId()) && tempValue.indexOf("-") > -1) {
-                            if (tempValue.indexOf("-") + 1 < tempValue.length()) {
-                                tempValue = tempValue.substring(tempValue.indexOf("-") + 1, tempValue.length());
-                            } else {
-                                tempValue = "";
-                            }
-                        }
-
-                        if (field.getSqlType().equals(SqlTypeEnum.VARCHAR)) {
-                            valueList.add("'" + tempValue + "'");
-                        } else if (field.getSqlType().equals(SqlTypeEnum.DATE)) {
-                            if ("com.mysql.jdbc.Driver".equals(CommonConst.getProperties("jdbc.driverClassName"))){
-                                valueList.add("".equals(tempValue) ? null : "str_to_date('" + tempValue + "','%Y-%m-%d')");
-                            }else{
-                                valueList.add("".equals(tempValue) ? null : "to_date('" + tempValue + "','yyyy-mm-dd')");
-                            }
-                        } else if (field.getSqlType().equals(SqlTypeEnum.INTEGER) ||
-                                field.getSqlType().equals(SqlTypeEnum.DECIMAL) ||
-                                field.getSqlType().equals(SqlTypeEnum.DOUBLE) ||
-                                field.getSqlType().equals(SqlTypeEnum.INT) ||
-                                field.getSqlType().equals(SqlTypeEnum.BIGINT)) {
-                            //valueList.add("".equals(tempValue)?null:tempValue);
-                            //数字类型，若为空值则设置为0
-                            if ("".equals(tempValue)) {
-                                valueList.add("0");
-                            } else {
-                                valueList.add(tempValue);
-                            }
-                        } else {
-                            valueList.add(tempValue);
-                        }
-                        field.setValue(tempValue);
-                    } else {
-                        valueList.add("");
-                    }
-                }
+                // 检查字段类型中的日期格式和字典值
                 for (AccountField item : items) {
                     if (item instanceof DateField) {
                         try {
@@ -385,12 +334,77 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                                 map.put("flag", false);
                                 map.put("message", "字典类型字段【" + item.getItemName() + "】载入非字典数据！");
                                 return map;
-                            } else {
+                            } 
+                            /*else {
                                 replaceAll(valueList, "'" + dicitemName + "'", "'" + strings.get(dicitemName) + "'");
-                            }
+                            }*/
                         }
                     }
                 }
+
+                Map<String, Object> fieldMap = new HashMap<String, Object>();
+                fieldMap.putAll(sqlMap);
+                List<String> valueList = new ArrayList<String>();
+                //待录入值
+                //List<String> values = datas.get(i);
+                for (int k = 0; k < values.size(); k++) {
+                    AccountField field = null;
+                    try {
+                        field = (AccountField) items.toArray()[k];
+                    } catch (IndexOutOfBoundsException e) {
+                        throw new AppException(ExceptionCode.SYSTEM_ERROR, "请确认导入模板是否正确！或字典项字段功能暂未完善，请确认是否导入字典项内容");
+                    }
+
+                    if (StringUtil.isNotEmpty(values.get(k))) {
+                        String tempValue = values.get(k);
+                        if (StringUtil.isNotEmpty(field.getDicId()) && tempValue.indexOf("-") > -1) {
+                            if (tempValue.indexOf("-") + 1 < tempValue.length()) {
+                                tempValue = tempValue.substring(tempValue.indexOf("-") + 1, tempValue.length());
+                            } else {
+                                tempValue = "";
+                            }
+                        }
+
+                        if (field.getSqlType().equals(SqlTypeEnum.VARCHAR)) {
+                        	if(field instanceof CodeField){
+                        		List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(field.getDicId()));
+                                Map<String, String> strings = new HashMap<>();
+                                for (Map<String, Object> objectMap : list) {
+                                    strings.put((String) objectMap.get("DICITEMNAME"), (String) objectMap.get("DICITEMID"));
+                                }
+                                valueList.add("'" + strings.get(tempValue) + "'");
+                                
+                            }else{
+                            	valueList.add("'" + tempValue + "'");
+                            }
+                            
+                        } else if (field.getSqlType().equals(SqlTypeEnum.DATE)) {
+                            if ("com.mysql.jdbc.Driver".equals(CommonConst.getProperties("jdbc.driverClassName"))){
+                                valueList.add("".equals(tempValue) ? null : "str_to_date('" + tempValue + "','%Y-%m-%d')");
+                            }else{
+                                valueList.add("".equals(tempValue) ? null : "to_date('" + tempValue + "','yyyy-mm-dd')");
+                            }
+                        } else if (field.getSqlType().equals(SqlTypeEnum.INTEGER) ||
+                                field.getSqlType().equals(SqlTypeEnum.DECIMAL) ||
+                                field.getSqlType().equals(SqlTypeEnum.DOUBLE) ||
+                                field.getSqlType().equals(SqlTypeEnum.INT) ||
+                                field.getSqlType().equals(SqlTypeEnum.BIGINT)) {
+                            //valueList.add("".equals(tempValue)?null:tempValue);
+                            //数字类型，若为空值则设置为0
+                            if ("".equals(tempValue)) {
+                                valueList.add("0");
+                            } else {
+                                valueList.add(tempValue);
+                            }
+                        }else {
+                            valueList.add(tempValue);
+                        }
+                        field.setValue(tempValue);
+                    } else {
+                        valueList.add("");
+                    }
+                }
+                
                 // 赋值
                 fieldMap.put("values", valueList);
                 dataMap.add(fieldMap);
