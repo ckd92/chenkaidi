@@ -657,12 +657,14 @@ public class AccountServiceImpl implements AccountService {
                 if (accoutnfield.isPkable()) {
                     itemDesc.add(accoutnfield.getItemName());
                     itemCode.add(accoutnfield.getItemCode());
+                    i++;
                     //fieldPermission中没有OPERATE，表示有操作权限
                 } else if (accoutnfield.getFieldPermission().indexOf("OPERATE") == -1) {
                     itemDesc.add(accoutnfield.getItemName());
                     itemCode.add(accoutnfield.getItemCode());
+                    i++;
                 }
-                i++;
+
             }
 
             hList.add(itemCode);
