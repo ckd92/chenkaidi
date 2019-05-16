@@ -89,7 +89,7 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
         try {
             if(null != accountTemplate){
                 if(StringUtil.isNotEmpty(accountTemplate.getTemplateCode())){
-                	
+                    accountTemplate.setTemplateCode(accountTemplate.getTemplateCode().toUpperCase());
                     if(valiAccountTemplateNameIsExist(accountTemplate.getTemplateName())){
                         if(valiAccountTemplateCodeIsExist(accountTemplate.getTemplateCode())){
                             accountTemplate.setTableName(accountTemplate.getTemplateCode());
