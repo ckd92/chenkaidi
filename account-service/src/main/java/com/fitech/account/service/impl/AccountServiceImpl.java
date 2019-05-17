@@ -570,7 +570,27 @@ public class AccountServiceImpl implements AccountService {
         }
         return result;
     }
-    
+
+    @Override
+    public GenericResult<Boolean> deleteAllAccountData(Long reportId) {
+        GenericResult<Boolean> result = new GenericResult<>();
+        try {
+            if (reportId == null) {
+                result.setSuccess(false);
+                result.setMessage("queryAccountData param is null!");
+                return result;
+            }
+            Account account = accountRepository.findById(reportId);
+            accountDataDao.deleteAllData(account);
+            account.setValidateStatus(ValidateStatusEnum.NOTVALIDATE);
+            accountRepository.save(account);
+        }catch (Exception e) {
+            e.printStackTrace();
+            throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+        }
+        return result;
+    }
+
     @Override
     public String generateAccountTemplate(Long accountId, Long userId) {
         if (null != accountId) {

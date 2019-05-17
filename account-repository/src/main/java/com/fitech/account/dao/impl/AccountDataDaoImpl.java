@@ -522,4 +522,11 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 //        String sql = "delete from " + account.getAccountTemplate().getTableName() + " where id=" + accountLine.getId();
 //        this.getNamedParameterJdbcTemplate().update(sql, new HashMap<String, String>());
     }
+
+    @Override
+    public void deleteAllData(Account account) {
+        Map sqlParameterMap = new HashMap();
+        sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
+        super.delete("accountDataMapper.deleteAllData", sqlParameterMap);
+    }
 }

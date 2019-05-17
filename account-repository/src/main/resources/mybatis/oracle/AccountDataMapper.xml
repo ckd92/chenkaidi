@@ -281,4 +281,8 @@
         delete from ${tableName}
         where id = ${id}
     </delete>
+
+    <delete id="deleteAllData" parameterType="Map">
+        delete from ${tableName}
+    </delete>
 </mapper>

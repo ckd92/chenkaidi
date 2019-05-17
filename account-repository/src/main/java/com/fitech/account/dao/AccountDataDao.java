@@ -70,6 +70,13 @@ public interface AccountDataDao {
 
 
 	/**
+	 * 删除全部数据
+	 * @param account
+	 * @param account
+	 */
+	public void deleteAllData(Account account);
+
+	/**
 	 * 查询单条台账数据
 	 * @param account
 	 * @param id

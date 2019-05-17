@@ -57,6 +57,13 @@ public interface AccountService {
     public GenericResult<Boolean> deleteAccountData(AccountProcessVo accountProcessVo);
 
     /**
+     * 删除全部台账数据
+     * @param reportId
+     * @return
+     */
+    public GenericResult<Boolean> deleteAllAccountData(Long reportId);
+
+    /**
      * 生成台账模板
      * @param accountId
      * @param userId

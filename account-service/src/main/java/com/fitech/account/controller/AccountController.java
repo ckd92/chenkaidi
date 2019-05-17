@@ -411,6 +411,20 @@ public class AccountController {
         }
         return genericResult;
     }
+
+    //删除所有数据
+    @RequestMapping("/deleteAllData/{reportId}")
+    public GenericResult deleteAllLedgerLine(@PathVariable Long reportId, HttpServletRequest request) {
+        GenericResult result = new GenericResult<>();
+        try {
+            result = accountService.deleteAllAccountData(reportId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        } finally {
+        }
+        return result;
+    }
 }
 
 
