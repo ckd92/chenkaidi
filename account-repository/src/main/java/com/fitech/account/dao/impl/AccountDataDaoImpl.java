@@ -470,10 +470,8 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         Boolean point = false;
         Collection<AccountField> items = accountLine.getAccountFields();
         Map sqlParameterMap = new HashMap();
-        sqlParameterMap.put("items", items);
         sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
         sqlParameterMap.put("accountId", account.getId());
-
         //字段类型
         Map<String, List<String>> itemInstanceMap = new HashMap<>();
         List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
@@ -496,9 +494,14 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                         break;
                     }
                 }
-
             }
+          /*  if(item.getSqlType().name().equals("DATE")){
+                item.setValue("to_date( '"+item.getValue()+"', 'yyyy-MM-dd')");
+            }*/
         }
+
+
+        sqlParameterMap.put("items", items);
         itemInstanceMap.put("integerFieldAndDoubleFieldList", integerFieldAndDoubleFieldList);
         itemInstanceMap.put("codeFieldList", codeFieldList);
         sqlParameterMap.put("itemInstanceMap", itemInstanceMap);

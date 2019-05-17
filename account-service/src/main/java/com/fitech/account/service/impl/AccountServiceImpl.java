@@ -15,6 +15,7 @@ import java.util.Map;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -329,9 +330,11 @@ public class AccountServiceImpl implements AccountService {
             Account account = accountRepository.findOne(accountProcessVo.getAccount().getId());
             List<AccountLine> accountLines = accountProcessVo.getAccount().getAccountLines();
             Collection<AccountField> accountFieldList = accountLines.get(0).getAccountFields();
-            
+          /*  Collection<AccountField> accountFieldList1= new ArrayList<>();
+            accountFieldList1=accountLines.get(0).getAccountFields();*/
+            AccountLine accountLine=accountLines.get(0);
             // 判断业务主键数据是否已经存在
-            if (accountDataDao.queryDataisExist(accountLines.get(0), account)) {
+            if (accountDataDao.queryDataisExist(accountLine, account)) {
                 String result = "addAccountData pk is exist!";
                 data.add(result);
                 return data;
@@ -340,9 +343,6 @@ public class AccountServiceImpl implements AccountService {
                 String validateTableName = account.getAccountTemplate().getBusSystem().getReportSubSystem().getSubKey()
                         + ":" + account.getAccountTemplate().getTableName();
                 Map<String, Object> map = new HashedMap(); // 待校验字段
-//                map.put("ID", value)
-                
-                
                 for (AccountField accountField : accountFieldList) {
                 	if(accountField.isPkable()&&accountField.getValue()==null){
                 		  String result = accountField.getItemName()+"是主键，不能为空";

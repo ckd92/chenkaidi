@@ -267,6 +267,9 @@
                                     </if>
                                 </foreach>
                             </when>
+                            <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item1.sqlType) == 'DATE'" >
+                                = to_date(#{item1.value} ,'yyyy-MM-dd')
+                            </when>
                             <otherwise>
                                 = #{item1.value}
                             </otherwise>
