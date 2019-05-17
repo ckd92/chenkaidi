@@ -61,7 +61,7 @@ public class AccountEditLogServiceImpl implements AccountEditLogService {
 
         User user = userDataDao.findUserById(userId);
 
-        accountEditLog.setEditUser(user.getLoginId());
+        accountEditLog.setEditUser(user.getUsername());
         accountEditLog.setInstitutionId(account.getInstitution().getInstitutionId());
         accountEditLog.setInstitutionName(account.getInstitution().getInstitutionName());
         accountEditLog.setLogSource(ae.getLogSource());
