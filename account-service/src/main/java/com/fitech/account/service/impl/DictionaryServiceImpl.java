@@ -110,7 +110,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		//判断该id是否存在字典实体
 		if(dictionaryRepository.exists(id)){
 			try{
-				if(accountFieldDAO.dicIsChangeable(id)||accountFieldDAO.dicIsTemplateUsed(id)){
+				if(accountFieldDAO.dicIsChangeable(id)&&accountFieldDAO.dicIsTemplateUsed(id)){
 					dictionaryItemService.deleteByDictionaryId(id);
 					dictionaryRepository.delete(id);
 					result.setSuccess(true);
