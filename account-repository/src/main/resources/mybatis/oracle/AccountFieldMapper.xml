@@ -27,7 +27,17 @@
                     )
                 )
         )a
-
+    </select>
+    
+       <select id="dicIsTemplateUsed" parameterType="Long" resultType="Long">
+             select count(1)
+                    from reportTemplate_accountField ra
+                    where ra.accountFields_id
+                    in (
+                        select af.Id
+                        from accountField af
+                        where af.dicId = #{id}
+                    )
     </select>
 
 

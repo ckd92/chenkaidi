@@ -37,4 +37,14 @@ public class AccountFieldDAOImpl extends DaoMyBatis implements AccountFieldDAO {
         return flag;
 	}
 
+	@Override
+	public Boolean dicIsTemplateUsed(Long id) {
+		Boolean flag=true;
+        Long count = super.selectOne("accountFieldMapper.dicIsTemplateUsed",id);
+        if(!count.equals(0L)){
+            flag = false;
+        }
+        return flag;
+	}
+
 }
