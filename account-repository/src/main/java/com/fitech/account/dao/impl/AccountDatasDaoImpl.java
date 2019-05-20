@@ -328,6 +328,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         for (Map<String, Object> objectMap : list) {
                             strings.put((String) objectMap.get("DICITEMNAME"),(String) objectMap.get("DICITEMID"));
                         }
+                        
                         String dicitemName = values.get(((List<AccountField>) items).indexOf(item));
                         if (StringUtil.isNotEmpty(dicitemName) && strings.size() > 0) {
                             if (strings.get(dicitemName) == null) {
