@@ -877,7 +877,23 @@ public class AccountServiceImpl implements AccountService {
                     }
                 }
             }
-            
+
+            //页面搜索条件
+            List<AccountField> accountSearchs = accountProcessVo.getAccount().getAccountSearchs();
+            //将数据库数据和条件进行匹配，匹配不对则去除
+            for (AccountLine accountLine : accountLines) {
+                Collection<AccountField> accountFields = accountLine.getAccountFields();
+                for (AccountField field : accountSearchs) {
+                    for (AccountField accf : accountFields) {
+                        if (field.getItemCode() != null && !field.getItemCode().equals(accf.getItemCode())) {
+                            if(field.getValue() != null && !field.getValue().equals(field.getValue())){
+                                accountLines.remove(accountLine);
+                            }
+                        }
+                    }
+                }
+            }
+
             //accountFields是用户可以查看的字段
             List<AccountField> accountFields = new ArrayList<>();
             for (AccountField accountFieldnew : accountField) {
