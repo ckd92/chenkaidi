@@ -13,10 +13,19 @@ public interface AccountFieldDAO {
     public Boolean isDeleteAble(Long id);
     
     /**
-     * 判断字典是否能被修改
+     * 判断字典是否能被报表修改
      * @param id
      * @return
      */
     public Boolean dicIsChangeable(Long id);
+    
+    
+    /**
+     * 判断字典是否被模板使用
+     * @param id
+     * @return
+     */
+    public Boolean dicIsTemplateUsed(Long id);
+
 
 }

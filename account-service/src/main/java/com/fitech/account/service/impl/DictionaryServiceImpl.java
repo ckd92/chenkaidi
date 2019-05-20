@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fitech.account.dao.AccountFieldDAO;
+import com.fitech.account.repository.DictionaryItemRepository;
 import com.fitech.account.repository.DictionaryRepository;
 import com.fitech.account.service.DictionaryItemService;
 import com.fitech.account.service.DictionaryService;
@@ -38,6 +39,8 @@ public class DictionaryServiceImpl implements DictionaryService {
 	private DictionaryItemService dictionaryItemService;
 	@Autowired
 	private AccountFieldDAO accountFieldDAO;
+	@Autowired
+	private DictionaryItemRepository dictionaryItemRepository;
 
 	/**
 	 * 查所有字典
@@ -107,7 +110,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		//判断该id是否存在字典实体
 		if(dictionaryRepository.exists(id)){
 			try{
-				if(accountFieldDAO.dicIsChangeable(id)){
+				if(accountFieldDAO.dicIsChangeable(id)&&accountFieldDAO.dicIsTemplateUsed(id)){
 					dictionaryItemService.deleteByDictionaryId(id);
 					dictionaryRepository.delete(id);
 					result.setSuccess(true);

@@ -326,8 +326,9 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(item.getDicId()));
                         Map<String, String> strings = new HashMap<>();
                         for (Map<String, Object> objectMap : list) {
-                            strings.put((String) objectMap.get("DICITEMID"),(String) objectMap.get("DICITEMNAME"));
+                            strings.put((String) objectMap.get("DICITEMNAME"),(String) objectMap.get("DICITEMID"));
                         }
+                        
                         String dicitemName = values.get(((List<AccountField>) items).indexOf(item));
                         if (StringUtil.isNotEmpty(dicitemName) && strings.size() > 0) {
                             if (strings.get(dicitemName) == null) {
@@ -370,7 +371,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                         		List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(field.getDicId()));
                                 Map<String, String> strings = new HashMap<>();
                                 for (Map<String, Object> objectMap : list) {
-                                    strings.put((String) objectMap.get("DICITEMID"),(String) objectMap.get("DICITEMNAME"));
+                                    strings.put((String) objectMap.get("DICITEMNAME"),(String) objectMap.get("DICITEMID"));
                                 }
                                 valueList.add("'" + strings.get(tempValue) + "'");
                                 
