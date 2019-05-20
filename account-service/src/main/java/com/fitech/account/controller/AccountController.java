@@ -7,6 +7,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -413,7 +414,7 @@ public class AccountController {
     }
 
     //删除所有数据
-    @RequestMapping("/deleteAllData/{reportId}")
+    @DeleteMapping("/deleteAllData/{reportId}")
     public GenericResult deleteAllLedgerLine(@PathVariable Long reportId, HttpServletRequest request) {
         GenericResult result = new GenericResult<>();
         try {
