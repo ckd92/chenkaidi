@@ -184,28 +184,54 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
         sqlParameterMap.put("collection", collection);
         sqlParameterMap.put("tableName", accountTemplate.getTableName());
         sqlParameterMap.put("accountId", account.getId());
-        sqlParameterMap.put("serachFileds", account.getAccountSearchs());
-
-        List<String> list = new ArrayList<>();
-        //StringBuffer sql = new StringBuffer();
-        //sql.append("select id,reportId,");
-        list.add("id");
-        list.add("reportId");
-        for (AccountField item : collection) {
-            if (item.getItemType().equals("DATE")) {
-                //sql.append("to_date(to_char("+item.getItemCode()+", 'yyyy-MM-dd')"+",'yyyy-mm-dd') as "+item.getItemCode()+""+ ",");
-                list.add(item.getItemCode());
-            } else {
-                //sql.append(item.getItemCode() + ",");
-                list.add(item.getItemCode());
+        List<AccountField> accountSearchs = account.getAccountSearchs();
+        for (AccountField accountSearch : accountSearchs) {
+            if (accountSearch instanceof CodeField) {
+                Map value = (HashMap<String, String>) accountSearch.getValue();
+                if (value != null) {
+                    accountSearch.setValue(value.get("key"));
+                }
+            }
+            if (accountSearch instanceof  DateField){
+                java.lang.Object value = accountSearch.getValue();
+                if (value != null){
+                    String s = value.toString().replace("Z", " UTC");
+                    SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");
+                    Date d = null;//Mon Mar 06 00:00:00 CST 2017
+                    try {
+                        d = sdf1.parse(s);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+                    String format = sdf.format(d);
+                    accountSearch.setValue(format);
+                }
             }
         }
+        sqlParameterMap.put("serachFileds", accountSearchs);
+
+//        List<String> list = new ArrayList<>();
+//        //StringBuffer sql = new StringBuffer();
+//        //sql.append("select id,reportId,");
+//        list.add("id");
+//        list.add("reportId");
+//        for (AccountField item : collection) {
+//            if (item.getItemType().equals("DATE")) {
+//                //sql.append("to_date(to_char("+item.getItemCode()+", 'yyyy-MM-dd')"+",'yyyy-mm-dd') as "+item.getItemCode()+""+ ",");
+//                list.add(item.getItemCode());
+//            } else {
+//                //sql.append(item.getItemCode() + ",");
+//                list.add(item.getItemCode());
+//            }
+//        }
         //sql.deleteCharAt(sql.length() - 1);
         //sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
         //没有查询条件 查询所有
 
-        accountTemplate.setAccountFields(null);
-        Collection<AccountField> serachFileds = account.getAccountSearchs();
+//        accountTemplate.setAccountFields(null);
+
+//        Collection<AccountField> serachFileds = account.getAccountSearchs();
 
 //        //字段类型
 //        Map<String,List<String>> itemInstanceMap = new HashMap<>();
@@ -246,8 +272,8 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
 //
 //        accountTemplate.setAccountFields(collection);
 
-        Map<String, Object> map = new HashMap<>();
-        Map<String, Object> map1 = new HashMap<>();
+//        Map<String, Object> map = new HashMap<>();
+//        Map<String, Object> map1 = new HashMap<>();
         List<Map<String, Object>> resultList = super.selectList("accountDataMapper.downLoadDataByCondition", sqlParameterMap);
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
