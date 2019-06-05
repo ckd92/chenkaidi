@@ -3,6 +3,9 @@ package com.fitech.account.controller;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fitech.account.service.AccountsService;
 import com.fitech.domain.account.Account;
 import com.fitech.framework.lang.result.GenericResult;
+import com.fitech.framework.security.util.TokenUtils;
 import com.fitech.vo.account.AccountVo;
 
 @RestController
@@ -80,10 +84,11 @@ public class AccountsController {
 	 * @return
 	 */
 	@PostMapping("/getrwtjbycondition")
-	public GenericResult<List> getrwtjByCondition(@RequestBody Account account){
+	public GenericResult<List> getrwtjByCondition(@RequestBody Account account,  HttpServletRequest request){
 		GenericResult<List> result = new GenericResult<List>();
+		Long userId = TokenUtils.getLoginId(request);
 		try{
-			List list = accountsService.getrwtjByCondition(account);
+			List list = accountsService.getrwtjByCondition(account,userId);
 			result.setData(list);
 		}catch (Exception e) {
             result.setSuccess(false);

@@ -49,30 +49,128 @@
     </select>
 
     <select id="getrwtjByCondition" parameterType="map" resultType="map">
-    	select * from(
-    		select k.term,k.institutionname,
-    		k.totalcount,CAST(k.dbl / k.totalcount * 100 AS DECIMAL) dbl,
-            CAST(k.dsh / k.totalcount * 100 AS DECIMAL) dsh,
-            CAST(k.shtg / k.totalcount * 100 AS DECIMAL) shtg,
-            CAST(k.th / k.totalcount * 100 AS DECIMAL) th from (select a.term,(
-			select institutionname from INSTITUTION where id=a.institution_id
-			) institutionname,a.totalcount,IFNULL(b.dbl, 0) dbl,
-			IFNULL(c.dsh, 0) dsh,IFNULL(d.shtg, 0) shtg,IFNULL(e.th, 0) th from (select count(1) totalcount,t.term,
-			t.institution_id from ACCOUNT t group by t.term, t.institution_id) a left join (select count(1) dbl,
-			term,institution_id from account where accountstate = 0 group by term, institution_id) b on a.term = b.term
-			and a.institution_id = b.institution_id left join (select count(1) dsh, term, institution_id from account
-			where accountstate = 1 group by term, institution_id) c on a.term = c.term and a.institution_id = c.institution_id 
-			left join (select count(1) shtg, term, institution_id from account where accountstate = 2 group by term,
-			institution_id) d on a.term = d.term and a.institution_id = d.institution_id left join (select count(1) th,
-			term, institution_id from account where accountstate = 3 group by term, institution_id) e on a.term = e.term
-			and a.institution_id = e.institution_id)k
-		)j where
-        j.term = date_format(str_to_date(#{term}, '%Y-%m-%d'),'%Y%m%d')
-        <choose>
+    	SELECT
+	j.*
+FROM
+	(
+		SELECT
+			k.term,
+			k.institutionname,
+      k.institution_id,
+			k.totalcount,
+			CAST(
+				k.dbl / k.totalcount * 100 AS DECIMAL
+			) dbl,
+			CAST(
+				k.dsh / k.totalcount * 100 AS DECIMAL
+			) dsh,
+			CAST(
+				k.shtg / k.totalcount * 100 AS DECIMAL
+			) shtg,
+			CAST(
+				k.th / k.totalcount * 100 AS DECIMAL
+			) th
+		FROM
+			(
+				SELECT
+					a.term,
+					(
+						SELECT
+							institutionname
+						FROM
+							INSTITUTION
+						WHERE
+							id = a.institution_id
+					) institutionname,
+          a.institution_id,
+					a.totalcount,
+					IFNULL(b.dbl, 0) dbl,
+					IFNULL(c.dsh, 0) dsh,
+					IFNULL(d.shtg, 0) shtg,
+					IFNULL(e.th, 0) th
+				FROM
+					(
+						SELECT
+							count(1) totalcount,
+							t.term,
+							t.institution_id
+						FROM
+							ACCOUNT t
+						GROUP BY
+							t.term,
+							t.institution_id
+					) a
+				LEFT JOIN (
+					SELECT
+						count(1) dbl,
+						term,
+						institution_id
+					FROM
+						account
+					WHERE
+						accountstate = 0
+					GROUP BY
+						term,
+						institution_id
+				) b ON a.term = b.term
+				AND a.institution_id = b.institution_id
+				LEFT JOIN (
+					SELECT
+						count(1) dsh,
+						term,
+						institution_id
+					FROM
+						account
+					WHERE
+						accountstate = 1
+					GROUP BY
+						term,
+						institution_id
+				) c ON a.term = c.term
+				AND a.institution_id = c.institution_id
+				LEFT JOIN (
+					SELECT
+						count(1) shtg,
+						term,
+						institution_id
+					FROM
+						account
+					WHERE
+						accountstate = 2
+					GROUP BY
+						term,
+						institution_id
+				) d ON a.term = d.term
+				AND a.institution_id = d.institution_id
+				LEFT JOIN (
+					SELECT
+						count(1) th,
+						term,
+						institution_id
+					FROM
+						account
+					WHERE
+						accountstate = 3
+					GROUP BY
+						term,
+						institution_id
+				) e ON a.term = e.term
+				AND a.institution_id = e.institution_id
+			) k
+	) j  
+		<if test="userId != null and userId != '' ">
+        inner join (select  queryChildrenInstitutionInfoByUserId(#{userId}) as orgs  from dual) s on find_in_set(j.institution_id, s.orgs) > 0             
+        </if>
+        	where 
+        <choose>  
             <when test="institutionName !=null and institutionName != '' ">
+               from_unixtime(unix_timestamp(j.term),'%Y-%m-%d') = #{term} 
                and j.institutionname like  '%${institutionName}%'
-            </when >
-        </choose>  
+            </when >  
+            <otherwise>  
+               from_unixtime(unix_timestamp(j.term),'%Y-%m-%d') = #{term} 
+            </otherwise>  
+        </choose> 
 
     </select>
 

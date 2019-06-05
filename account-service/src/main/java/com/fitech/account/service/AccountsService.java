@@ -37,11 +37,20 @@ public interface AccountsService {
 	 */
 	public List getrwtjByCondition(Account account);
 	
+	
+	/**
+	 * 条件查询任务统计
+	 * @param account
+	 * @return
+	 */
+	public List getrwtjByCondition(Account account, Long userId);
+	
 	/**
 	 * 任务统计点击百分比显示所含台账信息
 	 * @param account
 	 * @return
 	 */
 	public List<Account> findrwtjAccounts(Account account);
+
 	
 }

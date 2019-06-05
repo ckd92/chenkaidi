@@ -65,7 +65,16 @@
 			institution_id) d on a.term = d.term and a.institution_id = d.institution_id left join (select count(1) th,
 			term, institution_id from account where accountstate = 3 group by term, institution_id) e on a.term = e.term
 			and a.institution_id = e.institution_id)k
-		)j where 
+		)j 
+	  <if test="userId != null and userId != '' ">
+         inner join (select o.id,o.institutionname
+                from institution o
+            start with o.id =
+            (select s.org_id from sysuser s where s.id = #{userId})
+           connect by prior o.id = o.parentinstitution_id) s on j.institutionname=s.institutionname
+              
+      </if>
+		where 
 		<choose>  
             <when test="institutionName !=null and institutionName != '' ">
                to_char(to_date(j.term,'yyyy-MM-dd'),'yyyy-MM-dd')= #{term} 

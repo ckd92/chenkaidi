@@ -22,7 +22,7 @@ public class AccountsDaoImpl extends DaoMyBatis implements AccountsDao {
 
 	@Override
 	public List<Map<String, Object>> getrwtjByCondition(
-			Map<String, String> tempMap) {
+			Map<String, Object> tempMap) {
 		return super.selectList("accountsMapper.getrwtjByCondition", tempMap);
 	}
 

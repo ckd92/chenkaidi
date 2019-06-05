@@ -19,7 +19,7 @@ public interface AccountsDao {
      */
     public Long getAccountIdByTaskId(Long taskId);
     
-    public List<Map<String,Object>> getrwtjByCondition(Map<String,String> tempMap);
+    public List<Map<String,Object>> getrwtjByCondition(Map<String,Object> tempMap);
     
     
     public List<Map<String,Object>> findrwtjAccounts(Map<String,String> tempMap);

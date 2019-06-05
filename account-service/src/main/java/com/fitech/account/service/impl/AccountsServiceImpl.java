@@ -140,7 +140,13 @@ public class AccountsServiceImpl implements AccountsService {
 	 */
 	@Override
 	public List getrwtjByCondition(Account account){
-		Map<String,String> tempMap = new HashMap<String,String>();
+	    return  this.getrwtjByCondition(account,null);
+	}
+
+	
+	@Override
+	public List getrwtjByCondition(Account account, Long userId) {
+		Map<String,Object> tempMap = new HashMap<String,Object>();
 		List<AccountVo> accountVoList = new ArrayList<>();
 		String term = account.getTerm();
 		String institutionName=null;
@@ -149,6 +155,7 @@ public class AccountsServiceImpl implements AccountsService {
 		}
 		tempMap.put("term", term);
 		tempMap.put("institutionName", institutionName);
+		tempMap.put("userId", userId);
 		try {
 			List<Map<String,Object>> list = accountsDao.getrwtjByCondition(tempMap);
 			if(null != list && !list.isEmpty()){
@@ -171,7 +178,7 @@ public class AccountsServiceImpl implements AccountsService {
 		}
 		return accountVoList;
 	}
-
+	
 	/**
 	 * 任务统计点击百分比显示当前台账信息
 	 */
@@ -220,5 +227,7 @@ public class AccountsServiceImpl implements AccountsService {
 		}
 		return accounts;
 	}
+
+
 
 }
