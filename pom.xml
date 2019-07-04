@@ -10,15 +10,16 @@
     <artifactId>fitech-account</artifactId>
     <packaging>pom</packaging>
     <name>fitech-account</name>
-    <version>1.1.2</version>
+    <version>1.1.3</version>
     <description>数据补录模块</description>
     <modules>
         <module>account-repository</module>
         <module>account-service</module>
     </modules>
     <properties>
-        <account-repository>1.1.2</account-repository>
-        <account-service>1.1.2</account-service>
+        <common-version>1.1.3</common-version>
+      <!--  <account-repository>1.1.2</account-repository>
+        <account-service>1.1.2</account-service>-->
     </properties>
     
     <scm>
@@ -71,32 +72,32 @@
         <dependency>
             <groupId>com.fitech.account</groupId>
             <artifactId>account-repository</artifactId>
-            <version>${account-repository}</version>
+            <version>${common-version}</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.account</groupId>
             <artifactId>account-service</artifactId>
-            <version>${account-service}</version>
+            <version>${common-version}</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.domain</groupId>
             <artifactId>fitech-domain</artifactId>
-            <version>1.1.2</version>
+            <version>${common-version}</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.report</groupId>
             <artifactId>report-service</artifactId>
-            <version>1.1.2</version>
+            <version>${common-version}</version>
         </dependency>
         <dependency>
             <groupId>com.fitech.system</groupId>
             <artifactId>system-service</artifactId>
-            <version>1.1.2</version>
+            <version>${common-version}</version>
         </dependency>
         <dependency>
 			<groupId>com.fitech.validate</groupId>
 			<artifactId>validate-service</artifactId>
-			<version>1.1.2</version>
+            <version>${common-version}</version>
 		</dependency>
     </dependencies>
     </dependencyManagement>
