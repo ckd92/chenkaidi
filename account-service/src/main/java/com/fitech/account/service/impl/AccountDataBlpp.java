@@ -34,10 +34,10 @@ public class AccountDataBlpp implements JavaDelegate {
         CallableStatement call;
         Connection con = ju.getConnection();
         con.setAutoCommit(false);
-        
-        //获取accountId
+         
         accountId= Long.parseLong(String.valueOf(execution.getVariable(ProcessStartConst.report_key)));
       	AccountConstants.add(accountId);
+      	
 		call = con.prepareCall("call blpp(?,?)");
         call.setString(1, String.valueOf(accountId));
         call.registerOutParameter(2, Types.VARCHAR);
@@ -45,8 +45,7 @@ public class AccountDataBlpp implements JavaDelegate {
         String testPrint = call.getString(2);
         System.out.println("数据补录---存储过程执行" + testPrint);
 
-		Account account = new Account();	
-		account = accountRepository.findById(accountId);
+        Account account = accountRepository.findById(accountId);
 		//修改状态为已上报成功
 		account.setSubmitStateType(SubmitStateEnum.SUCCESS);
 		accountRepository.save(account);
@@ -55,5 +54,6 @@ public class AccountDataBlpp implements JavaDelegate {
         }finally {
     		AccountConstants.remove(accountId);
 		}
+
 	}
 }
