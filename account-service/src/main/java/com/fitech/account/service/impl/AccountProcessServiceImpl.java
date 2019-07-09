@@ -3,6 +3,7 @@ package com.fitech.account.service.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import com.fitech.account.repository.AccountRepository;
 import com.fitech.account.repository.AccountTaskRepository;
 import com.fitech.account.repository.DictionaryItemRepository;
 import com.fitech.account.service.AccountProcessService;
+import com.fitech.account.util.AccountConstants;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
 import com.fitech.domain.account.AccountField;
@@ -104,13 +106,20 @@ public class AccountProcessServiceImpl implements AccountProcessService {
     @Autowired
     private SubSystemDao subSystemDao;
     public List<AccountProcessVo> findTodoTask(AccountProcessVo vo, Page page){
+    	  List<AccountProcessVo> datas=new ArrayList<>();
         try {
         	//查询用户
             User user = null;
             if (vo.getUserId() != null) {
                 user = userDataDao.findUserById(vo.getUserId());
             }
-            return accountProcessDao.findTodoTaskBySql(vo, user,page);
+            datas=accountProcessDao.findTodoTaskBySql(vo, user,page);
+            for(AccountProcessVo accountProcessVo:datas){
+            	if(AccountConstants.isRunning(accountProcessVo.getAccount().getId())){
+            		accountProcessVo.setReortStatus("数据处理中。。。");
+            	}
+            }
+            return datas;
         }catch (Exception e){
             e.printStackTrace();
             throw  new AppException(ExceptionCode.SYSTEM_ERROR,e.toString());
@@ -214,8 +223,13 @@ public class AccountProcessServiceImpl implements AccountProcessService {
               
                 Account account = accountProcessVo.getAccount();
 
-                Account ac = accountRepository.findOne(account.getId());
+                Account ac = accountRepository.findOne(account.getId());        
                 //提交的时候进行校验判断
+            	if(AccountConstants.isRunning(account.getId())){
+            		  result.setSuccess(false);
+                      result.setMessage("数据处理中，禁止流程操作");
+                      throw new AppException(ExceptionCode.SYSTEM_ERROR,"数据处理中，禁止流程操作");
+            	}
                 if("commit".equals(action)){
                 	//1查询用户有权限的字段(hx)
                     // 根据userid获取该用户的角色集合
@@ -314,7 +328,6 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                     result.setMessage("commit accountState no change!");
                     throw new AppException(ExceptionCode.SYSTEM_ERROR,"commit accountState error,accountState no change");
                 }
-
                 //退回业务流程，保存退回原因
                 if("refuse".equals(action)){
                     AccountProcess accountProcess = accountProcessVo.getAccountProcess();
@@ -365,6 +378,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                         accountProcessRepository.save(ap);
                     }
                 }
+                
             }
 
         } catch (Exception e) {
