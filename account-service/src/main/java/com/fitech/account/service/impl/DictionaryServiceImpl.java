@@ -146,6 +146,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 				findeddictionary.setDicDesc(dictionary.getDicDesc());
 				findeddictionary.setDicName(dictionary.getDicName());
 				findeddictionary.setIsEnable(dictionary.getIsEnable());
+				findeddictionary.setParentId(dictionary.getParentId());
 				dictionaryRepository.saveAndFlush(findeddictionary);
 				result.setSuccess(true);
 			}

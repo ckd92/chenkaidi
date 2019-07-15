@@ -58,5 +58,7 @@ public interface DictionaryService {
      * @return
      */
     public GenericResult<Boolean> valiDictionaryNameIsExist(Long id,Dictionary dictionary);
-    
+
+
+
 }

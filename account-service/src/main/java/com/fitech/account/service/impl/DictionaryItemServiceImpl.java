@@ -15,6 +15,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import org.apache.commons.collections.MapUtils;
 import org.hibernate.exception.GenericJDBCException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -183,6 +184,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 			di.setDicItemId(String.valueOf(map.get("DICITEMID")));
 			di.setId(Long.parseLong(String.valueOf(map.get("ID"))));
 			di.setDicItemName(String.valueOf(map.get("DICITEMNAME")));
+			di.setParentId(MapUtils.getString(map,"PARENTID"));
 			list.add(di);
 		}
 		return list;
@@ -269,6 +271,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 				findeddictionaryItem.setDicItemDesc(dictionaryItem.getDicItemDesc());
 				findeddictionaryItem.setDicItemName(dictionaryItem.getDicItemName());
 				findeddictionaryItem.setDicItemId(dictionaryItem.getDicItemId());
+				findeddictionaryItem.setParentId(dictionaryItem.getParentId());
                try{
 				dictionaryItemRepository.saveAndFlush(findeddictionaryItem);
                }catch (JpaSystemException e){
