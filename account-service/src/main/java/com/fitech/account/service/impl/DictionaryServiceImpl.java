@@ -8,6 +8,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import com.fitech.account.dao.DictionaryDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,9 @@ public class DictionaryServiceImpl implements DictionaryService {
 	private AccountFieldDAO accountFieldDAO;
 	@Autowired
 	private DictionaryItemRepository dictionaryItemRepository;
+
+	@Autowired
+	private DictionaryDao dictionaryDao;
 
 	/**
 	 * 查所有字典
@@ -85,6 +89,15 @@ public class DictionaryServiceImpl implements DictionaryService {
 	@Override
 	public GenericResult<Boolean> save(Dictionary dictionary) {
 		GenericResult<Boolean> result = new GenericResult<Boolean>();
+		Dictionary dic =new Dictionary();
+		if(null!= dictionary.getParentId()&&!"".equals(dictionary.getParentId())){
+			dic= dictionaryDao.getNextDicId(Long.valueOf(dictionary.getParentId()));
+		}
+		if( null!=dic){
+			result.setMessage("该父级字典已是["+dic.getDicName()+"]的父级字典，请重新选择父级字典");
+			result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
+			return result;
+		}
 		//判断字典名称、字典编码是否存在
 		if(valiDictionaryNameIsExist(null,dictionary).getRestCode().equals("")){		
 			try{
@@ -137,6 +150,16 @@ public class DictionaryServiceImpl implements DictionaryService {
 	public GenericResult<Boolean> update(Long id,Dictionary dictionary) {
 		GenericResult<Boolean> result= new GenericResult<Boolean>();
 		Dictionary findeddictionary = findOne(id);
+
+		Dictionary dic =new Dictionary();
+		if(null!= dictionary.getParentId()&&!"".equals(dictionary.getParentId())){
+			dic= dictionaryDao.getNextDicId(Long.valueOf(dictionary.getParentId()));
+		}
+		if( null!=dic){
+			result.setMessage("该父级字典已是["+dic.getDicName()+"]的父级字典，请重新选择父级字典");
+			result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
+			return result;
+		}
 		//若此id存在对应字典并且字典名称不重复
 		if(findeddictionary!=null&&valiDictionaryNameIsExist(id, dictionary).getRestCode().equals("")){
 			if(dictionary.getIsEnable().equals("0") && !accountFieldDAO.dicIsChangeable(id)){
@@ -178,7 +201,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		return result;
 
 	}
-	
+
 	private Specification<Dictionary> buildSpecification1(final Dictionary dictionary) {
 		return new Specification<Dictionary> () {
 			@Override
@@ -196,4 +219,11 @@ public class DictionaryServiceImpl implements DictionaryService {
 			}
 		};
 	}
+
+	@Override
+	public Dictionary nextDicId(Long id) {
+		Dictionary dic=dictionaryDao.getNextDicId(id);
+		return dic;
+	}
+
 }

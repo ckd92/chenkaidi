@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fitech.constant.ExceptionCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,6 +52,12 @@ public class DictionaryController {
 		return result;
 	}
 
+	/**
+	 * 根据id查询字典项
+	 * @param id
+	 * @param request
+	 * @return
+	 */
 	@GetMapping("/findDicByid/{id}")
 	public GenericResult<Dictionary> findDicByid(@PathVariable("id") Long id ,HttpServletRequest request){
 		GenericResult<Dictionary> result = new GenericResult<>();
@@ -70,7 +77,7 @@ public class DictionaryController {
 	public GenericResult<Boolean> save(@RequestBody Dictionary dictionary,  HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
-			result = dictionaryService.save(dictionary);					 
+			result = dictionaryService.save(dictionary);
 		}catch (Exception e) {
 			result.setSuccess(false);
 			e.printStackTrace();
@@ -117,4 +124,18 @@ public class DictionaryController {
 		}
 		return result;
 	}
+
+	@GetMapping("/nextDicId/{id}")
+	public GenericResult<Dictionary> nextDicId(@PathVariable("id") Long id){
+		GenericResult<Dictionary> result = new GenericResult<>();
+		try{
+			Dictionary dic = dictionaryService.nextDicId(id);
+			result.setData(dic);
+		}catch (Exception e){
+			result.setSuccess(false);
+			e.printStackTrace();
+		}
+		return result;
+	}
+
 }

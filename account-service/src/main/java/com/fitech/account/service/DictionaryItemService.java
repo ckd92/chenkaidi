@@ -2,6 +2,7 @@ package com.fitech.account.service;
 
 import java.util.List;
 import com.fitech.domain.account.DictionaryItem;
+import com.fitech.dto.DictionaryItemDto;
 import com.fitech.framework.lang.result.GenericResult;
 
 /**
@@ -34,7 +35,12 @@ public interface DictionaryItemService {
 	 * @return
 	 */
 	public List<DictionaryItem> getDictionaryItemByDictionaryId(Long id);
-	
+
+	/**
+	 * 根据字典id查字典项用dto接收
+	 */
+	public List<DictionaryItemDto> getDictionaryItemByDictId(Long id);
+
 	/**
 	 * 根据字典id查询出所有字典项
 	 * @param id
@@ -79,4 +85,7 @@ public interface DictionaryItemService {
 	 * @return
 	 */
 	public void deleteByDictionaryId(Long id);
+
+
+	public List<DictionaryItem> findByParentId(String parentId);
 }

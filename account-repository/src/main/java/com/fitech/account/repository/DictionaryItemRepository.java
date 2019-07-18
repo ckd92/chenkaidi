@@ -14,5 +14,7 @@ public interface DictionaryItemRepository extends JpaRepository<DictionaryItem, 
 	public List<DictionaryItem> findByDictionaryId(Long dictionaryId);
 
 	public DictionaryItem findById(Long id);
+
+	public List<DictionaryItem> findByParentId(String parentId);
 	
 }

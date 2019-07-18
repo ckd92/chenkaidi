@@ -3,6 +3,7 @@ package com.fitech.account.controller;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
+import com.fitech.dto.DictionaryItemDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,10 +51,10 @@ public class DictionaryItemController {
      * @return
      */
     @GetMapping("/dictionaryItems/{id}")
-    public GenericResult<List<DictionaryItem>> getDictionaryItemByDictionaryId(@PathVariable("id") Long id) {
-        GenericResult<List<DictionaryItem>> result = new GenericResult<List<DictionaryItem>>();
+    public GenericResult<List<DictionaryItemDto>> getDictionaryItemByDictionaryId(@PathVariable("id") Long id) {
+        GenericResult<List<DictionaryItemDto>> result = new GenericResult<List<DictionaryItemDto>>();
         try {
-            List<DictionaryItem> list = dictionaryItemService.getDictionaryItemByDictionaryId(id);
+            List<DictionaryItemDto> list = dictionaryItemService.getDictionaryItemByDictId(id);
             result.setData(list);
         } catch (Exception e) {
             result.setSuccess(false);
@@ -162,5 +163,27 @@ public class DictionaryItemController {
         }
         return result;
     }
+
+
+    /**
+     * 根据字典项id查找字典项实体
+     * @param parentId
+     * @param request
+     * @return
+     */
+    @GetMapping("/findDictionaryItemByParentId/{parentId}")
+    public GenericResult<List<DictionaryItem>> findByParentId(@PathVariable("parentId") String parentId, HttpServletRequest request) {
+        GenericResult<List<DictionaryItem>> result = new GenericResult<>();
+        try {
+            List<DictionaryItem> list = dictionaryItemService.findByParentId(parentId);
+            result.setData(list);
+        } catch (Exception e) {
+            result.setSuccess(false);
+            e.printStackTrace();
+        } finally {
+        }
+        return result;
+    }
+
 
 }

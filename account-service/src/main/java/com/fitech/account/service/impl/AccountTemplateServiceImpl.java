@@ -284,8 +284,8 @@ public class AccountTemplateServiceImpl implements AccountTemplateService {
     	}
     	Collection<AccountField> acFields = acTemplate.getAccountFields();
     	//2.判断字段是否被配置权限，如果没有配置，则可以删除，如果被配置则不能删除
-    	if (acFields != null && acFields.size() > 0){   		
-	    	for(AccountField accountField: acFields){    		
+    	if (acFields != null && acFields.size() > 0){
+	    	for(AccountField accountField: acFields){
 	    		if(!accountFieldDAO.isDeleteAble(accountField.getId())){
 	    			return "字段权限与角色关联";
 	    		}
