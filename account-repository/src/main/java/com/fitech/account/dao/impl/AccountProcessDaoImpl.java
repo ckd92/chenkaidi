@@ -11,6 +11,7 @@ import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.util.StringUtil;
 import com.fitech.vo.account.AccountProcessVo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -108,6 +109,11 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
 		tempMap.put("validatestatus", vo.getValidateStatus());
 		tempMap.put("proc_inst_id_", vo.getProcessId());
 		tempMap.put("accountState", vo.getReortStatus());
+        String orgIds=vo.getOrgIds();
+        if(StringUtils.isNotEmpty(orgIds)){
+            orgIds="'"+orgIds.replaceAll(",","','")+"'";
+            tempMap.put("orgIds",orgIds);
+        }
 		if (!StringUtil.isEmpty(vo.getReortStatus())) {
         	String accountState = "";
         	if(vo.getReortStatus().equals("待补录")){
