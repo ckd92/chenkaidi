@@ -81,6 +81,11 @@
 		<if test=" institutionName != null and institutionName != '' ">
 			and it.institutionName like concat(concat('%',#{institutionName,jdbcType=VARCHAR}),'%')
 		</if>
+
+		<if test=" orgIds != null and orgIds != '' ">
+			and it.id in (${orgIds} )
+		</if>
+
 		<if test=" @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != null and @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != '' ">
 			and lr.validatestatus = #{validatestatus}
 		</if>

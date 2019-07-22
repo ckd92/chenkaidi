@@ -4,10 +4,24 @@
 
 <mapper namespace="dictionary">
 	<select id="getDictionaryItemByDictionaryId" parameterType="long" resultType="map">
-       select id,DICITEMDESC,DICITEMID,DICITEMNAME from DictionaryItem where DICTIONARY_ID = #{_parameter}
+       select id,DICITEMDESC,DICITEMID,DICITEMNAME,PARENTID from DictionaryItem where DICTIONARY_ID = #{_parameter}
        order by id desc
     </select>
-    
+
+    <select id="getDictionaryItemByDictId" parameterType="long" resultType="com.fitech.dto.DictionaryItemDto">
+        SELECT
+        d.ID,
+        d.DICITEMDESC,
+        d.DICITEMID,
+        d.DICITEMNAME,
+        d.PARENTID,
+        t.DICNAME
+        FROM
+        DictionaryItem d
+        LEFT JOIN TZDICTIONARY t on t.ID=d.DICTIONARY_ID
+        where d.DICTIONARY_ID = #{_parameter}
+        order by id desc
+    </select>
 	<select id="getDictionaryItemByDicItemName" parameterType="map" resultType="map">
 	
        select id,DICITEMDESC,DICITEMID,DICITEMNAME from DictionaryItem where DICTIONARY_ID = #{id}
@@ -23,5 +37,8 @@
             where ac.dicId = #{dicId}
         )a
     </select>
-	
+
+    <select id="getNextDicId" parameterType="long" resultType="com.fitech.domain.account.Dictionary">
+        SELECT * FROM TZDICTIONARY where PARENTID=#{id}
+    </select>
 </mapper>

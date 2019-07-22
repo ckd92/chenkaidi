@@ -15,6 +15,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import com.fitech.dto.DictionaryItemDto;
+import org.apache.commons.collections.MapUtils;
 import org.hibernate.exception.GenericJDBCException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -170,7 +172,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	 * 根据字典id查询字典项
 	 */
 	public List<DictionaryItem> getDictionaryItemByDictionaryId(Long id){
-		
+
 		List<Map<String,Object>> tempList = dictionaryDao.getDictionaryItemByDictionaryId(id);
 		List<DictionaryItem> list = new ArrayList<DictionaryItem>();
 		Dictionary dictionary = new Dictionary();
@@ -183,9 +185,16 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 			di.setDicItemId(String.valueOf(map.get("DICITEMID")));
 			di.setId(Long.parseLong(String.valueOf(map.get("ID"))));
 			di.setDicItemName(String.valueOf(map.get("DICITEMNAME")));
+			di.setParentId(MapUtils.getString(map,"PARENTID"));
 			list.add(di);
 		}
 		return list;
+	}
+
+	@Override
+	public List<DictionaryItemDto> getDictionaryItemByDictId(Long id) {
+		List<DictionaryItemDto> tempList = dictionaryDao.getDictionaryItemByDictId(id);
+		return tempList;
 	}
 
 	/**
@@ -269,6 +278,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 				findeddictionaryItem.setDicItemDesc(dictionaryItem.getDicItemDesc());
 				findeddictionaryItem.setDicItemName(dictionaryItem.getDicItemName());
 				findeddictionaryItem.setDicItemId(dictionaryItem.getDicItemId());
+				findeddictionaryItem.setParentId(dictionaryItem.getParentId());
                try{
 				dictionaryItemRepository.saveAndFlush(findeddictionaryItem);
                }catch (JpaSystemException e){
@@ -328,5 +338,16 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 	public void deleteByDictionaryId(Long id){
 		List<DictionaryItem> list = getDictionaryItemByDictionaryId(id);
 		dictionaryItemRepository.delete(list);
+	}
+
+/*	@Override
+	public List<DictionaryItem> findByParentId(Long parentId) {
+
+		return (List<DictionaryItem>) dictionaryItemRepository.findByParentId(parentId);
+	}*/
+
+	@Override
+	public List<DictionaryItem> findByParentId(String parentId) {
+		return dictionaryItemRepository.findByParentId(parentId);
 	}
 }

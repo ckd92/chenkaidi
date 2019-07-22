@@ -40,7 +40,7 @@ public interface DictionaryService {
    
     /**
      * 删除字典
-     * @param idList
+     * @param
      * @return
      */
     public GenericResult<Boolean> delete(Long id);
@@ -54,9 +54,16 @@ public interface DictionaryService {
     
     /**
      * 验证字典名称是否存在
-     * @param idList
+     * @param
      * @return
      */
     public GenericResult<Boolean> valiDictionaryNameIsExist(Long id,Dictionary dictionary);
-    
+
+    /**
+     * 递归搜索
+     * @param id
+     * @return
+     */
+    public Dictionary nextDicId(Long id);
+
 }
