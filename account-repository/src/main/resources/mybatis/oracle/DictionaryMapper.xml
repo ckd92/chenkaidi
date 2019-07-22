@@ -36,5 +36,5 @@
     <select id="getNextDicId" parameterType="long" resultType="com.fitech.domain.account.Dictionary">
       SELECT * FROM TZDICTIONARY where PARENTID=#{id}
     </select>
-
 </mapper>
+

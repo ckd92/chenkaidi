@@ -15,6 +15,7 @@ import com.fitech.account.service.AccountProcessService;
 import com.fitech.account.service.AccountReportService;
 import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.Account;
+import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.page.Page;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.framework.security.util.TokenUtils;
@@ -135,6 +136,11 @@ public class AccountProcessController {
             //获取token
             Long userId = TokenUtils.getLoginId(request);
             result = accountProcessService.submitProcess(accountProcessVoList,action,userId);
+        }catch (AppException e){
+            e.printStackTrace();
+            result.setSuccess(false);
+            result.setMessage(e.getMessage());
+            result.fail(ExceptionCode.SYSTEM_ERROR, "任务提交异常！");
         }catch (Exception e){
             e.printStackTrace();
             result.setSuccess(false);
