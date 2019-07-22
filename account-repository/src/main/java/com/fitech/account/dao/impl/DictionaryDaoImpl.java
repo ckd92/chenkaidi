@@ -39,4 +39,4 @@ public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 	}
 
 }
-		HashMap<String,String> map =new HashMap<String,String>();
+	
