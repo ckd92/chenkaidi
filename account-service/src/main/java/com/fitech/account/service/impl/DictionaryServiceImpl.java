@@ -94,9 +94,11 @@ public class DictionaryServiceImpl implements DictionaryService {
 			dic= dictionaryDao.getNextDicId(Long.valueOf(dictionary.getParentId()));
 		}
 		if( null!=dic){
-			result.setMessage("该父级字典已是["+dic.getDicName()+"]的父级字典，请重新选择父级字典");
-			result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
-			return result;
+			if(null!=dic.getId()){
+				result.setMessage("该父级字典已是["+dic.getDicName()+"]的父级字典，请重新选择父级字典");
+				result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
+				return result;
+			}
 		}
 		//判断字典名称、字典编码是否存在
 		if(valiDictionaryNameIsExist(null,dictionary).getRestCode().equals("")){		
@@ -150,15 +152,24 @@ public class DictionaryServiceImpl implements DictionaryService {
 	public GenericResult<Boolean> update(Long id,Dictionary dictionary) {
 		GenericResult<Boolean> result= new GenericResult<Boolean>();
 		Dictionary findeddictionary = findOne(id);
-
 		Dictionary dic =new Dictionary();
+
 		if(null!= dictionary.getParentId()&&!"".equals(dictionary.getParentId())){
+			if(String.valueOf(dictionary.getId()).equals(dictionary.getParentId())){
+				result.setMessage("自己不能作为自己的父级字典");
+				result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
+				return result;
+			}
 			dic= dictionaryDao.getNextDicId(Long.valueOf(dictionary.getParentId()));
 		}
-		if( null!=dic){
-			result.setMessage("该父级字典已是["+dic.getDicName()+"]的父级字典，请重新选择父级字典");
-			result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
-			return result;
+		if( null!=dic && null!=dic.getId()){
+			if(!id.equals(dic.getId())){
+				result.setMessage("该父级字典已是["+dic.getDicName()+"]的父级字典，请重新选择父级字典");
+				result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
+				return result;
+			}
+
+
 		}
 		//若此id存在对应字典并且字典名称不重复
 		if(findeddictionary!=null&&valiDictionaryNameIsExist(id, dictionary).getRestCode().equals("")){
