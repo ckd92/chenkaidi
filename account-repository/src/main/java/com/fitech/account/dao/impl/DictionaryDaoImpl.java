@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.fitech.account.dao.DictionaryDao;
 import com.fitech.domain.account.Dictionary;
+import com.fitech.dto.DictionaryDto;
 import com.fitech.dto.DictionaryItemDto;
 import com.fitech.framework.core.dao.Dao;
 import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
@@ -36,6 +37,11 @@ public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 	@Override
 	public Dictionary getNextDicId(Long Id) {
 		return super.selectOne("dictionary.getNextDicId",Id);
+	}
+
+	@Override
+	public List<DictionaryDto> getAllDic() {
+		return super.selectList("dictionary.getAllDic");
 	}
 
 }

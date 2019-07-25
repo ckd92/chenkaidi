@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import com.fitech.constant.ExceptionCode;
+import com.fitech.dto.DictionaryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,10 +28,10 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("/dictionarys")
-	public GenericResult<List<Dictionary>> findAll(@RequestBody Dictionary dictionary,HttpServletRequest request) {
-		GenericResult<List<Dictionary>> result = new GenericResult<>();
+	public GenericResult<List<DictionaryDto>> findAll(@RequestBody Dictionary dictionary, HttpServletRequest request) {
+		GenericResult<List<DictionaryDto>> result = new GenericResult<>();
 		try {
-			List<Dictionary> collection = dictionaryService.findDictionary(dictionary);
+			List<DictionaryDto> collection = dictionaryService.findDictionary(dictionary);
 			result.setData(collection);
 		} catch (Exception e) {
 			result.setSuccess(false);

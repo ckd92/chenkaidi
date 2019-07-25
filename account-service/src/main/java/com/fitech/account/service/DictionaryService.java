@@ -5,6 +5,7 @@ package com.fitech.account.service;
 import java.util.List;
 
 import com.fitech.domain.account.Dictionary;
+import com.fitech.dto.DictionaryDto;
 import com.fitech.framework.lang.result.GenericResult;
 
 
@@ -23,7 +24,7 @@ public interface DictionaryService {
      * @param dictionary
      * @return
      */
-    public List<Dictionary> findDictionary(Dictionary dictionary);
+    public List<DictionaryDto> findDictionary(Dictionary dictionary);
     /**
      * 根据id查询单个字典
      * @param id

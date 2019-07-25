@@ -9,6 +9,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import com.fitech.account.dao.DictionaryDao;
+import com.fitech.dto.DictionaryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -62,9 +63,9 @@ public class DictionaryServiceImpl implements DictionaryService {
 	 * 动态条件查询
 	 */
 	@Override
-	public List<Dictionary> findDictionary(Dictionary dictionary) {
+	public List<DictionaryDto> findDictionary(Dictionary dictionary) {
 		try{
-			return dictionaryRepository.findAll();
+			return dictionaryDao.getAllDic();
 		}catch(Exception e){
 			e.printStackTrace();
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());

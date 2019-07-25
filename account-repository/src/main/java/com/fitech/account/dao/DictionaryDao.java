@@ -1,6 +1,7 @@
 package com.fitech.account.dao;
 
 import com.fitech.domain.account.Dictionary;
+import com.fitech.dto.DictionaryDto;
 import com.fitech.dto.DictionaryItemDto;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public interface DictionaryDao {
 	public List<Map<String,Object>> getDictionaryItemByDicItemName(Long id,String dicItemName);
 
 	public Dictionary getNextDicId(Long Id);
+
+	public List<DictionaryDto> getAllDic();
 }

@@ -41,4 +41,18 @@
     <select id="getNextDicId" parameterType="long" resultType="com.fitech.domain.account.Dictionary">
         SELECT * FROM TZDICTIONARY where PARENTID=#{id}
     </select>
+
+
+    <select id="getAllDic" resultType="DictionaryDto">
+        SELECT
+            A.ID,
+            A.DICDESC,
+            A.DICNAME,
+            A.ISENABLE,
+            A.PARENTID,
+            B.DICNAME AS PARENTNAME
+        FROM
+            TZDICTIONARY A
+        left  JOIN TZDICTIONARY B ON  B.ID=A.PARENTID
+    </select>
 </mapper>
