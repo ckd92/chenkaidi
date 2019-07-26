@@ -180,7 +180,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		}
 		//若此id存在对应字典并且字典名称不重复
 		if(findeddictionary!=null&&valiDictionaryNameIsExist(id, dictionary).getRestCode().equals("")){
-			if(dictionary.getIsEnable().equals("0") && accountFieldDAO.dicIsChangeable(id)){
+			if(dictionary.getIsEnable().equals("0") && accountFieldDAO.dicIsChangeable(id) && nextDicId(id) != null){
 				result.setSuccess(false);
 				result.setMessage("该字典被使用，不可禁用！");
 			}else{
