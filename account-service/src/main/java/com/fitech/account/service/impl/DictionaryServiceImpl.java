@@ -9,6 +9,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import com.fitech.account.dao.DictionaryDao;
+import com.fitech.domain.account.DictionaryItem;
 import com.fitech.dto.DictionaryDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -155,7 +156,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 	 * 更新字典
 	 */
 	@Override
-	public GenericResult<Boolean> update(Long id,Dictionary dictionary) {
+	public GenericResult<Boolean> update(Long id,Dictionary dictionary,String flag) {
 		GenericResult<Boolean> result= new GenericResult<Boolean>();
 		Dictionary findeddictionary = findOne(id);
 		Dictionary dic =new Dictionary();
@@ -179,7 +180,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		}
 		//若此id存在对应字典并且字典名称不重复
 		if(findeddictionary!=null&&valiDictionaryNameIsExist(id, dictionary).getRestCode().equals("")){
-			if(dictionary.getIsEnable().equals("0") && !accountFieldDAO.dicIsChangeable(id)){
+			if(dictionary.getIsEnable().equals("0") && accountFieldDAO.dicIsChangeable(id)){
 				result.setSuccess(false);
 				result.setMessage("该字典被使用，不可禁用！");
 			}else{
@@ -188,6 +189,13 @@ public class DictionaryServiceImpl implements DictionaryService {
 				findeddictionary.setIsEnable(dictionary.getIsEnable());
 				findeddictionary.setParentId(dictionary.getParentId());
 				dictionaryRepository.saveAndFlush(findeddictionary);
+				if(flag.equals("1")){
+					List<DictionaryItem> byDictionaryId = dictionaryItemRepository.findByDictionaryId(id);
+					for(DictionaryItem d : byDictionaryId){
+						d.setParentId("");
+					}
+					dictionaryItemRepository.save(byDictionaryId);
+				}
 				result.setSuccess(true);
 			}
 		}else{

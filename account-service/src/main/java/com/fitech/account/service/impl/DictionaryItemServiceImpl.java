@@ -314,6 +314,7 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 			try{
 				DictionaryItem dicItem= dictionaryItemRepository.findOne(id);
 				//判断字典是否已经被使用了
+				System.out.println(findByParentId(String.valueOf(id)).size());
 				if(accountFieldDAO.dicIsChangeable(dicItem.getDictionary().getId()) && findByParentId(String.valueOf(id)).size() == 0){
 					dictionaryItemRepository.delete(id);
 					result.setSuccess(true);

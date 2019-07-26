@@ -110,7 +110,7 @@ public class DictionaryController {
 	public GenericResult<Boolean> update(@PathVariable("id") Long id,@RequestBody Dictionary dictionary,HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
-			result = dictionaryService.update(id,dictionary);					 
+			result = dictionaryService.update(id,dictionary,"-1");
 		}catch (Exception e) {
 			result.setSuccess(false);
 			e.printStackTrace();
@@ -118,6 +118,27 @@ public class DictionaryController {
 		}
 		return result;
 	}
+
+	/**
+	 * 修改字典
+	 * @param id
+	 * @param dictionary
+	 * @param request
+	 * @return
+	 */
+	@PutMapping("/dictionary/{id}/{flag}")
+	public GenericResult<Boolean> update(@PathVariable("id") Long id,@PathVariable("flag")String flag,@RequestBody Dictionary dictionary,HttpServletRequest request){
+		GenericResult<Boolean> result = new GenericResult<>();
+		try {
+			result = dictionaryService.update(id,dictionary,flag);
+		}catch (Exception e) {
+			result.setSuccess(false);
+			e.printStackTrace();
+		} finally {
+		}
+		return result;
+	}
+
 	
 	/**
 	 * 删除字典

@@ -59,7 +59,7 @@ public interface DictionaryService {
      * @param dictionary
      * @return
      */
-    public GenericResult<Boolean> update(Long id,Dictionary dictionary);
+    public GenericResult<Boolean> update(Long id,Dictionary dictionary,String flag);
     
     /**
      * 验证字典名称是否存在

@@ -15,10 +15,12 @@
         d.DICITEMID,
         d.DICITEMNAME,
         d.PARENTID,
-        t.DICNAME
+        t.DICNAME,
+        e.DICITEMNAME as parentName
         FROM
         DictionaryItem d
         LEFT JOIN TZDICTIONARY t on t.ID=d.DICTIONARY_ID
+        LEFT JOIN DictionaryItem e ON d.PARENTID = e.id
         where d.DICTIONARY_ID = #{_parameter}
         order by id desc
     </select>
