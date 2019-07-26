@@ -54,6 +54,18 @@ public class DictionaryController {
 	}
 
 	/**
+	 * 查询所有没有被禁用字典
+	 * @return
+	 */
+	@GetMapping("/dictionarysNoBan")
+	public GenericResult<List<Dictionary>> findAllDictionaryNoBan(){
+		GenericResult<List<Dictionary>> result = new GenericResult<>();
+		List<Dictionary> list = dictionaryService.findDictionaryNoBan("1");
+		result.setData(list);
+		return result;
+	}
+
+	/**
 	 * 根据id查询字典项
 	 * @param id
 	 * @param request

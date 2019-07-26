@@ -25,6 +25,14 @@ public interface DictionaryService {
      * @return
      */
     public List<DictionaryDto> findDictionary(Dictionary dictionary);
+
+    /**
+     * 查询没有被禁用的字典
+     * @param dictionary
+     * @return
+     */
+    public List<Dictionary> findDictionaryNoBan(String isEnable);
+
     /**
      * 根据id查询单个字典
      * @param id

@@ -71,7 +71,12 @@ public class DictionaryServiceImpl implements DictionaryService {
 			throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
 		}
 	}
-	
+
+	@Override
+	public List<Dictionary> findDictionaryNoBan(String isEnable) {
+		return dictionaryRepository.findByIsEnable(isEnable);
+	}
+
 	/**
 	 * 根据id查询单个字典
 	 */
@@ -126,7 +131,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		//判断该id是否存在字典实体
 		if(dictionaryRepository.exists(id)){
 			try{
-				if(accountFieldDAO.dicIsChangeable(id)&&accountFieldDAO.dicIsTemplateUsed(id)){
+				if( nextDicId(id) == null && accountFieldDAO.dicIsChangeable(id)&&accountFieldDAO.dicIsTemplateUsed(id)){
 					dictionaryItemService.deleteByDictionaryId(id);
 					dictionaryRepository.delete(id);
 					result.setSuccess(true);

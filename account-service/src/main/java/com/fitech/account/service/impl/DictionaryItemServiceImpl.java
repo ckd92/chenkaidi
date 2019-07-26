@@ -314,12 +314,12 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 			try{
 				DictionaryItem dicItem= dictionaryItemRepository.findOne(id);
 				//判断字典是否已经被使用了
-				if(accountFieldDAO.dicIsChangeable(dicItem.getDictionary().getId())){
+				if(accountFieldDAO.dicIsChangeable(dicItem.getDictionary().getId()) && findByParentId(String.valueOf(id)).size() == 0){
 					dictionaryItemRepository.delete(id);
 					result.setSuccess(true);
 				}else{
 					result.setSuccess(false);
-					result.setMessage("该字典被使用，字典项不可删除！");
+					result.setMessage("该字典项被使用，字典项不可删除！");
 				}
 			}catch(Exception e){
 				e.printStackTrace();
