@@ -175,9 +175,18 @@ public class DictionaryServiceImpl implements DictionaryService {
 				result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
 				return result;
 			}
-
-
 		}
+
+		if(dictionary.getParentId() != null ){
+			Dictionary findParentId = nextDicId(dictionary.getId());
+			Long parentId = Long.valueOf(dictionary.getParentId());
+			if(findParentId != null && findParentId.getId().equals(parentId)){
+				result.setMessage("该字典为当前字典项的子字典项，无法设置该字典项为父类");
+				result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
+				return result;
+			}
+		}
+
 		//若此id存在对应字典并且字典名称不重复
 		if(findeddictionary!=null&&valiDictionaryNameIsExist(id, dictionary).getRestCode().equals("")){
 			if(dictionary.getIsEnable().equals("0") && accountFieldDAO.dicIsChangeable(id) && nextDicId(id) != null){
@@ -189,6 +198,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 				findeddictionary.setIsEnable(dictionary.getIsEnable());
 				findeddictionary.setParentId(dictionary.getParentId());
 				dictionaryRepository.saveAndFlush(findeddictionary);
+				//1 代表父级字典改变了，清除父级字典项的引用
 				if(flag.equals("1")){
 					List<DictionaryItem> byDictionaryId = dictionaryItemRepository.findByDictionaryId(id);
 					for(DictionaryItem d : byDictionaryId){
