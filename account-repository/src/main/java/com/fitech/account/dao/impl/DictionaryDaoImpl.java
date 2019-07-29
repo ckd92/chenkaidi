@@ -45,4 +45,3 @@ public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 	}
 
 }
-	

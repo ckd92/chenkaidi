@@ -198,6 +198,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
         CallableStatement call;
         String tableName = accountTemplate.getTableName();
         List<Long> selectList = null;
+        Map<Long,List<Map<String, Object>>>  dctionaryItemsMap=new HashMap<>();
         try {
             ju = new JdbcUtil();
             con = ju.getConnection();
@@ -323,7 +324,11 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                             return map;
                         }
                     } else if (item instanceof CodeField) {
-                        List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(item.getDicId()));
+                    	List<Map<String, Object>> list =dctionaryItemsMap.get(Long.parseLong(item.getDicId()));
+                    	if(list==null){
+                    		list=dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(item.getDicId()));
+                    		dctionaryItemsMap.put(Long.parseLong(item.getDicId()), list);
+                    	}
                         Map<String, String> strings = new HashMap<>();
                         for (Map<String, Object> objectMap : list) {
                             strings.put((String) objectMap.get("DICITEMNAME"),(String) objectMap.get("DICITEMID"));
@@ -368,7 +373,11 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
 
                         if (field.getSqlType().equals(SqlTypeEnum.VARCHAR)) {
                         	if(field instanceof CodeField){
-                        		List<Map<String, Object>> list = dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(field.getDicId()));
+                        		List<Map<String, Object>> list =dctionaryItemsMap.get(Long.parseLong(field.getDicId()));
+                            	if(list==null){
+                            		list=dictionaryDao.getDictionaryItemByDictionaryId(Long.parseLong(field.getDicId()));
+                            		dctionaryItemsMap.put(Long.parseLong(field.getDicId()), list);
+                            	}
                                 Map<String, String> strings = new HashMap<>();
                                 for (Map<String, Object> objectMap : list) {
                                     strings.put((String) objectMap.get("DICITEMNAME"),(String) objectMap.get("DICITEMID"));
