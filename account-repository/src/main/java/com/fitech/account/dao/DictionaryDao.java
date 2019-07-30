@@ -17,5 +17,7 @@ public interface DictionaryDao {
 
 	public Dictionary getNextDicId(Long Id);
 
+	public Dictionary getDicByParentOrId(Long Id,Long parentId,String isenable);
+
 	public List<DictionaryDto> getAllDic();
 }

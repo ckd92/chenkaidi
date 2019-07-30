@@ -39,6 +39,11 @@
       SELECT * FROM TZDICTIONARY where PARENTID=#{id}
     </select>
 
+    <select id="getDicId" parameterType="string" resultType="com.fitech.domain.account.Dictionary">
+      SELECT * FROM TZDICTIONARY where ${sql}
+    </select>
+
+
     <select id="getAllDic" resultType="DictionaryDto">
         SELECT
         A.ID,

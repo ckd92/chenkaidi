@@ -40,6 +40,23 @@ public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 	}
 
 	@Override
+	public Dictionary getDicByParentOrId(Long Id,Long parentId,String isenable){
+		Map<String,Object> map = new HashMap<>();
+		String sql = "";
+		if(null != Id) {
+			sql = "id = " + Id;
+		}
+		if(null != parentId){
+			sql = "PARENTID = " + parentId ;
+		}
+		if(null != isenable){
+			sql += " and isenable = '" + isenable + "'";
+		}
+		map.put("sql" ,sql);
+		return super.selectOne("dictionary.getDicId",map);
+	}
+
+	@Override
 	public List<DictionaryDto> getAllDic() {
 		return super.selectList("dictionary.getAllDic");
 	}
