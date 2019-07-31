@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="accountTemplateMapper">
+
+    <update id="createTemplate" parameterType="Map">
+        CREATE TABLE ${tableName} (
+            ID integer NOT NULL PRIMARY KEY auto_increment,reportId integer NOT NULL,
+            <if test="itemList != null">
+                <foreach collection="itemList" index="index" item="item" open="" separator="" close="">
+                    ${item.itemCode}
+                    <choose>
+                        <when test="item.sqlType != null">
+                            <choose>
+                                <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'VARCHAR'">
+                                    <choose>
+                                        <when test="item.length == null or item.length == ''">
+                                            VARCHAR(255),
+                                        </when>
+                                        <otherwise>
+                                            VARCHAR(${item.length}),
+                                        </otherwise>
+                                    </choose>
+
+                                </when>
+                                <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.itemType) == 'CODELIB'">
+                                    ${item.sqlType}(255),
+                                </when>
+                                <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DOUBLE' 
+                                	or @com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DECIMAL'">
+                                    numeric (${item.length}),
+                                </when>
+                                <otherwise>
+                                    ${item.sqlType},
+                                </otherwise>
+                            </choose>
+                        </when>
+                        <otherwise>
+                            <choose>
+                                <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.itemType) == 'VARCHAR' 
+                                	or @com.fitech.enums.SqlTypeEnum@transferValue(item.itemType) == 'CODELIB'">
+                                    VARCHAR(255),
+                                </when>
+                                <otherwise>
+                                    ${item.itemType, typeHandler=org.apache.ibatis.type.EnumOrdinalTypeHandler},
+                                </otherwise>
+                            </choose>
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </if>
+        syncAble VARCHAR(50),check_status VARCHAR(20))
+    </update>
+
+    <select id="dropTemplateSql1" parameterType="String" resultType="Long">
+        select count(1) from information_schema.tables where  table_name = lower(#{tableName})
+    </select>
+
+    <update id="dropTemplateSql2" parameterType="String">
+        DROP TABLE ${_parameter}
+    </update>
+
+    <select id="isDeleteAble" parameterType="Long" resultType="Long">
+        select count(*)
+          from role_reportpermission t1
+          left join reportpermission t2
+            on t1.reportpermission_id = t2.id
+         where t2.reporttemplateid = #{id} 
+    </select>
+
+    <select id="dataIsExist" parameterType="String" resultType="Long">
+        select count(1) from ${_parameter}
+    </select>
+
+    <select id="getAllDate" parameterType="Map" resultType="Map">
+        select null
+        <if test="selectColumns != null and selectColumns != ''">
+            ${selectColumns}
+        </if>
+        from ${templateCode} where reportid = #{id}  
+    </select>
+
+
+</mapper>

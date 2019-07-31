@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="accProServiceMapper">
+
+	<select id="isMultiInstanceTaskExecOver" parameterType="map" resultType="long">
+       select LONG_ from ACT_RU_VARIABLE where NAME_='nrOfActiveInstances' and PROC_INST_ID_= #{proInstId}
+    </select>
+	<select id="getReceiverIdList" parameterType="map" resultType="long">
+		select distinct  t3.sysuser_id as userId from account t 
+		inner join accountprocess t1 on t.id = t1.account_id
+		inner join act_ru_task t2 on t1.procinsetid = t2.proc_inst_id_ 
+		inner join sysuser_role t3 on t2.assignee_ = t3.roles_id 
+		where 1=1 
+		<if test=" freq != null and freq != '' ">
+			and t.freq = #{freq}
+		</if>
+		<if test=" term != null and term != '' ">
+			and t.term = #{term}
+		</if>
+	</select>
+	
+	<select id="findDoneQuerySqltwo" parameterType="map" resultType="map">
+       select ac.id,it.institutionname,
+       date_format(str_to_date(ac.term, '%Y%m%d'), '%Y-%m-%d') as term,
+       rt.templatename from account ac 
+       INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN ReportTemplate rt ON ac.ACCOUNTTEMPLATE_ID=rt.id 
+       where ac.accountstate=2
+		<if test=" term != null and term != '' ">
+			and date_format(str_to_date(ac.term, '%Y-%m-%d'), '%Y-%m-%d')  = #{term}
+		</if>
+		<if test=" templateName != null and templateName != '' ">
+			and rt.templatename like  concat(concat('%',#{templateName}),'%') 
+		</if>
+		<if test=" institutionname != null and institutionname != '' ">
+			and it.institutionname like concat(concat('%',#{institutionname}),'%')  
+		</if>
+		order by ac.id
+    </select>
+    
+    
+	<select id="findDoneQuerySql" parameterType="map" resultType="map">
+		select ac.id,it.institutionname,
+		date_format(str_to_date(ac.term, '%Y%m%d'), '%Y-%m-%d') as term,
+		ap.templatename from account ac 
+		INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN reporttemplate ap ON ac.ACCOUNTTEMPLATE_ID=ap.id 
+		where ac.accountstate=2
+		<if test=" term != null and term != '' ">
+			and date_format(str_to_date(ac.term, '%Y%m%d'), '%Y-%m-%d') = #{term}
+		</if>
+		<if test=" templateName != null and templateName != '' ">
+			and ap.templatename like concat(concat('%',#{templateName}),'%')
+		</if>
+		<if test=" institutionname != null and institutionname != '' ">
+			and it.institutionname like concat(concat('%',#{institutionname}),'%')
+		</if>
+		order by ac.id
+    </select>
+	<select id="findDoneQuerySqlCount" parameterType="map" resultType="long">
+		select count(*) from (
+			select ac.id,it.institutionname,
+			date_format(str_to_date(ac.term, '%Y%m%d'), '%Y-%m-%d') as term,
+			ap.templatename from account ac 
+			INNER JOIN INSTITUTION it on AC.INSTITUTION_ID=it.id INNER JOIN reporttemplate ap ON ac.ACCOUNTTEMPLATE_ID=ap.id 
+			where ac.accountstate=2
+			<if test=" term != null and term != '' ">
+				and date_format(str_to_date(ac.term, '%Y%m%d'), '%Y-%m-%d')  = #{term}
+			</if>
+			<if test=" templateName != null and templateName != '' ">
+				and ap.templatename like  concat(concat('%',#{templateName}),'%')  
+			</if>
+			<if test=" institutionname != null and institutionname != '' ">
+				and it.institutionname like concat(concat('%',#{institutionname}),'%') 
+			</if>
+			order by ac.id
+		)a 
+    </select>
+	
+	<select id="selectReasonsByReportId" resultType="reasonDto">
+		select *
+		from (select rs.*,
+		su.username,
+		case
+		when rs.reasonDescType = '2' then
+		1
+		else
+		row_number()
+		over(partition by rs.reasonDescType order by rs.time desc)
+		end as rn
+		from REPORTREASON rs
+		left join sysuser su
+		on rs.userid = su.id
+		inner join REPORTREASON_REPORT RR
+		ON rs.id = RR.REPORTREASON_ID
+		and rs.status = 1 
+		inner join report r
+		on RR.REPORTS_ID = r.id
+		and RR.REPORTS_ID = #{lid}
+		)a
+		where rn = 1
+	</select> 
+	
+	
+	<resultMap type="map" id="accountMap">     
+		<id property="LID" column="lid" />
+       <collection property="reportReasons" ofType="reasonDto"  column="lid" javaType="ArrayList"  select="selectReasonsByReportId" />  
+    </resultMap>
+
+	<sql id="accountTodoTaskSql">
+		with authority as
+		(SELECT a.userId,
+		a.roleId,
+		A.reporttemplateid,
+		a.operationtype,
+		group_concat(A.orgs separator '+')as orgs
+		FROM (select t1.id as userId,
+		t3.id as roleId,
+		inst.id as orgId,
+		case
+		when t5.institutelevel = 0 then
+		(
+			SELECT GROUP_CONCAT('[', inst.id, ']' SEPARATOR '')
+			FROM 
+			sysuser t1
+			INNER JOIN institution inst ON t1.org_id = inst.id
+			INNER JOIN sysuser_role t2 ON t1.id = t2.sysuser_id
+			INNER JOIN (
+			SELECT r1.id
+			FROM role r1
+			WHERE r1.subsystem_id =  #{reportSubSystem_id,jdbcType=INTEGER}
+			) t3 ON t2.roles_id = t3.id
+			INNER JOIN role_reportpermission t4 ON t3.id = t4.role_id
+			INNER JOIN reportpermission t5 ON t4.reportpermission_id = t5.id
+			where t1.id = #{sysuser_id,jdbcType=INTEGER}
+		)
+		
+		when t5.institutelevel = 1 then
+		(select
+		group_concat('[' , ss1.ID , ']' separator '')
+		from institution ss1
+		where ss1.parentinstitution_id = inst.id)
+		when t5.institutelevel = 2 then
+		(
+		
+		
+		WITH RECURSIVE re AS(
+		SELECT  inst.id 
+		from sysuser t1
+		INNER JOIN institution inst ON t1.org_id = inst.id
+		INNER JOIN sysuser_role t2 ON t1.id = t2.sysuser_id
+		INNER JOIN (
+		SELECT r1.id
+		FROM role r1
+		WHERE r1.subsystem_id = #{reportSubSystem_id,jdbcType=INTEGER}
+		) t3 ON t2.roles_id = t3.id
+		INNER JOIN role_reportpermission t4 ON t3.id = t4.role_id
+		INNER JOIN reportpermission t5 ON t4.reportpermission_id = t5.id
+		where t1.id = #{sysuser_id,jdbcType=INTEGER}
+		UNION ALL
+		SELECT ss2.ID
+		FROM institution ss2,re
+		WHERE ss2.parentinstitution_id = re.id)
+		SELECT GROUP_CONCAT('[', re.ID, ']' SEPARATOR '')
+		FROM re
+		
+		)
+		end as orgs,
+		t5.reporttemplateid,
+		t5.operationtype
+		from sysuser t1
+		inner join institution inst
+		on t1.org_id = inst.id
+		inner join sysuser_role t2
+		on t1.id = t2.sysuser_id
+		inner join (select r.id from role r where r.subsystem_id = #{reportSubSystem_id,jdbcType=INTEGER}) t3
+		on t2.roles_id = t3.id
+		inner join role_reportpermission t4
+		on t3.id = t4.role_id
+		inner join reportpermission t5
+		on t4.reportpermission_id = t5.id
+		where t1.id = #{sysuser_id,jdbcType=INTEGER}) A
+		GROUP BY a.userId, a.roleId, A.reporttemplateid, A.operationtype),
+		reports as
+		(SELECT LR.id,
+		IT.ID AS INSTITUTIONID,
+		IT.INSTITUTIONNAME,
+		LRT.ID as reportTemplateId,
+		LRT.TEMPLATENAME,
+		LRT.TEMPLATECODE,
+		date_format(str_to_date(LR.TERM, '%Y%m%d'), '%Y-%m-%d') AS term,
+		RF.REPFREQNAME as freq,
+		LR.ACCOUNTSTATE,
+		LR.VALIDATESTATUS
+		FROM ACCOUNT LR
+		INNER JOIN INSTITUTION IT
+		ON IT.ID = LR.INSTITUTION_ID
+		INNER JOIN reporttemplate LRT
+		ON LRT.ID = LR.ACCOUNTTEMPLATE_ID
+		INNER JOIN BUSSYSTEM BS
+		ON BS.ID = LRT.BUSSYSTEM_ID
+		INNER JOIN S_REPFREQ RF
+		ON LRT.REPFREQ_ID = RF.ID
+		WHERE 1 = 1
+		<if test=" templateCode != null and templateCode != '' ">
+			and lrt.templateCode like concat(concat('%',#{templateCode,jdbcType=VARCHAR}),'%')
+		</if>
+		<if test=" templateName != null and templateName != '' ">
+			and lrt.templateName like concat(concat('%',#{templateName,jdbcType=VARCHAR}),'%')
+		</if>
+		<if test=" freq != null and freq != '' ">
+			and lr.freq= #{freq,jdbcType=VARCHAR}
+		</if>
+		<if test=" term != null and term != '' ">
+			and date_format(str_to_date(LR.TERM, '%Y%m%d'), '%Y-%m-%d')=#{term,jdbcType=VARCHAR}
+		</if>
+		<if test=" institutionName != null and institutionName != '' ">
+			and it.institutionName like concat(concat('%',#{institutionName,jdbcType=VARCHAR}),'%')
+		</if>
+		<if test=" @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != null and @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != '' ">
+			and lr.validatestatus = #{validatestatus}
+		</if>
+
+		<if test=" @com.fitech.enums.account.AccountStateEnum@transferValue(accountState) != null and
+					@com.fitech.enums.account.AccountStateEnum@transferValue(accountState) != '' ">
+			and lr.accountState  =  #{accountState}
+		</if>
+		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
+			and bs.reportSubSystem_id = #{reportSubSystem_id,jdbcType=INTEGER}
+		</if>
+		<if test=" institution_id != null and institution_id != '' ">
+			and lr.institution_id = #{institution_id,jdbcType=INTEGER}
+		</if>
+		)
+	</sql>
+
+	<select id="findTodoTaskBySql" parameterType="map" resultMap="accountMap">
+		<include refid="accountTodoTaskSql"/>
+		select t8.id_ as id,t10.institutionId,t10.institutionName,t10.templateCode as templateId,t10.templateName,
+		DATE_FORMAT(STR_TO_DATE(t10.term, '%Y-%m-%d'), '%Y-%m-%d') as term,t8.name_  as processName,t10.validateStatus,
+		t8.id_  as taskId,t9.ACCOUNT_ID,t8.description_ as description,
+        t10.freq,t9.procInsetId,t8.category_  category,t10.accountState,t9.id pid,
+		  t10.id lid,
+        t9.refuseCause
+		from (select t7.proc_inst_id_,
+		t7.assignee_,
+		t7.id_,
+		t7.name_,
+		t7.task_def_key_,
+		t7.description_,
+		t7.CATEGORY_,
+		case
+		when t7.category_ = 'bulu' then
+		1
+		when t7.category_ = 'shenhe' then
+		2
+		end as operationtype
+
+		from act_ru_task t7
+		) t8
+		inner join accountprocess t9
+		on t8.proc_inst_id_ = t9.procinsetid
+		inner join reports t10
+		on t9.account_id = t10.id
+		inner join authority
+		on instr(authority.orgs, concat('[' , concat(t10.INSTITUTIONID, ']') )  ) > 0
+		and authority.reporttemplateid = t10.reporttemplateId
+		and authority.roleId = t8.assignee_
+		and authority.operationtype = t8.operationtype
+		where 1=1
+		<if test=" category_ != null and category_ != '' ">
+			and t8.category_ = #{category_,jdbcType=VARCHAR}
+		</if>
+		<if test=" proc_inst_id_ != null and proc_inst_id_ != '' ">
+			and t8.proc_inst_id_ = #{proc_inst_id_,jdbcType=INTEGER}
+		</if>
+		<if test=" sysuser_id != null and sysuser_id != '' ">
+			and authority.userId = #{sysuser_id,jdbcType=INTEGER}
+		</if>
+		order by term desc,templateid,institutionid
+     </select>
+	<select id="findTodoTaskBySqlCount" parameterType="map" resultType="long">
+		<include refid="accountTodoTaskSql"/>
+		select count(*) from (
+		select t8.id_ as id,t10.institutionId,t10.institutionName,t10.templateCode as templateId,t10.templateName,
+		DATE_FORMAT(STR_TO_DATE(t10.term, '%Y%m%d'), '%Y-%m-%d') as term,t8.name_  as processName,t10.validateStatus,
+		t8.id_  as taskId,t9.ACCOUNT_ID,t8.description_ as description,
+        t10.freq,t9.procInsetId,t8.category_  category,t10.accountState,t9.id pid,
+		  t10.id lid,
+        t9.refuseCause
+		from (select t7.proc_inst_id_,
+		t7.assignee_,
+		t7.id_,
+		t7.name_,
+		t7.task_def_key_,
+		t7.description_,
+		t7.CATEGORY_,
+		case
+		when t7.category_ = 'bulu' then
+		1
+		when t7.category_ = 'shenhe' then
+		2
+		end as operationtype
+
+		from act_ru_task t7
+		) t8
+		inner join accountprocess t9
+		on t8.proc_inst_id_ = t9.procinsetid
+		inner join reports t10
+		on t9.account_id = t10.id
+		inner join authority
+		on instr(authority.orgs, concat('[' , concat(t10.INSTITUTIONID, ']') )  ) > 0
+		and authority.reporttemplateid = t10.reporttemplateId
+		and authority.roleId = t8.assignee_
+		and authority.operationtype = t8.operationtype
+		where 1=1
+		<if test=" category_ != null and category_ != '' ">
+			and t8.category_ = #{category_,jdbcType=VARCHAR}
+		</if>
+		<if test=" proc_inst_id_ != null and proc_inst_id_ != '' ">
+			and t8.proc_inst_id_ = #{proc_inst_id_,jdbcType=INTEGER}
+		</if>
+		<if test=" sysuser_id != null and sysuser_id != '' ">
+			and authority.userId = #{sysuser_id,jdbcType=INTEGER}
+		</if>
+		)a
+     </select>
+     <select id="findDoneTaskBySql" parameterType="map" resultType="map">
+		select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
+		date_format(str_to_date(lr.term, '%Y%m%d'), '%Y-%m-%d') as term,
+		task.name_  AS NAME,
+		lr.validateStatus,task.id_ as taskId,task.end_time_,lr.freq  
+        from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
+        inner join Institution it on it.id=lr.institution_id
+        inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
+        inner join BusSystem bs on bs.id = lrt.busSystem_id
+        inner join ACT_HI_TASKINST task on task.proc_inst_id_=o.procInsetId
+        inner join sysuser_role ur on ur.roles_id=task.ASSIGNEE_
+        where 1=1
+        <if test=" templateCode != null and templateCode != '' ">
+			and lrt.templateCode like concat(concat('%',#{templateCode}),'%')
+		</if> 
+        <if test=" templateName != null and templateName != '' ">
+			and lrt.templateName like concat(concat('%',#{templateName}),'%') 
+		</if>
+        <if test=" freq != null and freq != '' ">
+			and lr.freq= #{freq}
+		</if>
+        <if test=" term != null and term != '' ">
+        	and date_format(str_to_date(lr.term, '%Y%m%d'), '%Y-%m-%d') = #{term,jdbcType=VARCHAR}
+		</if>
+		<if test=" institutionName != null and institutionName != '' ">
+			and it.institutionName like concat(concat('%',#{institutionName}),'%')  
+		</if>
+		<if test=" processId != null and processId != '' ">
+			and task.proc_inst_id_ = #{processId}
+		</if>
+		<if test=" sysuser_id != null and sysuser_id != '' ">
+			and ur.sysuser_id =  #{sysuser_id}  
+		</if>
+		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
+			and bs.reportSubSystem_id =  #{reportSubSystem_id}  
+		</if>
+		<if test=" institution_id != null and institution_id != '' ">
+			and lr.institution_id =  #{institution_id}  
+		</if>
+		and task.end_time_ is not null
+		order by o.id
+     </select>
+     <select id="findDoneTaskBySqlCount" parameterType="map" resultType="long">
+		 select count(*) from (
+		 select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
+		 date_format(str_to_date(lr.term, '%Y%m%d'), '%Y-%m-%d')  as term,task.name_ AS NAME,
+		lr.validateStatus,task.id_ as taskId,task.end_time_,lr.freq  
+        from AccountProcess o inner join Account lr on lr.id=o.ACCOUNT_ID
+        inner join Institution it on it.id=lr.institution_id
+        inner join reporttemplate lrt on lrt.id=lr.ACCOUNTTEMPLATE_ID
+        inner join BusSystem bs on bs.id = lrt.busSystem_id
+        inner join ACT_HI_TASKINST task on task.proc_inst_id_=o.procInsetId
+        inner join sysuser_role ur on cast(ur.roles_id as char )=task.ASSIGNEE_
+		 where 1=1
+		 <if test=" templateCode != null and templateCode != '' ">
+		 	and lrt.templateCode like
+			 concat(concat('%',#{templateCode}),'%')
+		 </if>
+        <if test=
+					" templateName != null and templateName != '' ">
+			and lrt.templateName like concat(concat('%',#{templateName}),'%') 
+		</if>
+        <if test=" freq != null and freq != '' ">
+			and lr.freq= #{freq}
+		</if>
+        <if test=" term != null and term != '' ">
+        	and date_format(str_to_date(lr.term, '%Y%m%d'), '%Y-%m-%d') = #{term,jdbcType=VARCHAR}
+		</if>
+		<if test=" institutionName != null and institutionName != '' ">
+			and it.institutionName like concat(concat('%',#{institutionName}),'%')  
+		</if>
+		<if test=" processId != null and processId != '' ">
+			and task.proc_inst_id_ = #{processId}
+		</if>
+		<if test=" sysuser_id != null and sysuser_id != '' ">
+			and ur.sysuser_id = #{sysuser_id}  
+		</if>
+		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
+			and bs.reportSubSystem_id = #{reportSubSystem_id}
+		</if>
+		<if test=" institution_id != null and institution_id != '' ">
+			and lr.institution_id = #{institution_id}
+		</if>
+		and task.end_time_ is not null
+		)a
+	 </select>
+	
+	<select id="exculteCall"  parameterType="map" resultType="String">
+      call PROC_ACCOUNT('${term}',@a) 
+        <!-- {call PROC_ACCOUNT(#{term,mode=IN,jdbcType=VARCHAR},#{result,mode=OUT,jdbcType=VARCHAR})} -->   
+    </select>  
+	<select id="findReportIdByTemplateId" parameterType="Long" resultType="Long">
+		select a.id
+		  from account a
+		  left join reporttemplate b on a.accounttemplate_id = b.id
+		 where b.id = #{templateId}
+	</select>
+</mapper>
