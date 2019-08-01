@@ -3,6 +3,22 @@
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="accountEditLogMapper">
+	<!-- <resultMap id="accountEditLog" type="com.fitech.domain.account.AccountEditLogItem">
+		<result property="editBeforeValue" column="editBeforeValue" />
+		<result property="editAfterValue" column="editAfterValue" />
+		<result property="fieldName" column="fieldName" />
+		<result property="fieldId" column="fieldId" />
+		
+		<result property="accountEditLog.editUser" column="editUser" />
+		<result property="accountEditLog.editTime" column="editTime" />
+		<result property="accountEditLog.editDate" column="editDate" />
+		<result property="accountEditLog.editBeforeValue" column="institutionId" />
+		<result property="accountEditLog.acccountId" column="acccountId" />
+		<result property="accountEditLog.accountName" column="accountName" />
+		<result property="accountEditLog.institutionId" column="institutionId" />
+		<result property="accountEditLog.institutionName" column="institutionName" />
+		<result property="accountEditLog.term" column="term" />
+	</resultMap> -->
 
 	<!-- 修改痕迹查询 -->
 	<select id="findAccountEditLog" parameterType="com.fitech.domain.account.AccountEditLog" resultType="com.fitech.domain.account.AccountEditLog">
@@ -10,14 +26,14 @@
 	       al.accountName,
 	       al.institutionId,
 	       al.institutionName,
-	       date_format(str_to_date(al.term, '%Y%m%d'), '%Y-%m-%d') as term,
+		date_format(str_to_date(al.term, '%Y%m%d'), '%Y-%m-%d') as term,
 	       al.editUser,
 	       al.editTime,
 	       al.editDate,
 	       ai.editBeforeValue,
 	       ai.editAfterValue,
 	       ai.fieldName,
-	       ai.fieldId 
+	       ai.fieldId
 	  from ACCOUNT_EDITlOG al, ACCOUNT_EDITlOGITEM ai
 	 	where al.id = ai.accounteditlog_id
 		<if test="accountName != null and accountName != ''">
@@ -51,45 +67,51 @@
 		<if test="editUser != null and editUser != ''">
 			and al.editUser like '%${editUser}%'
 		</if>
+	 	order by al.editTime DESC
 	</select>
 	
 	
 	<select id="findAccountEditLogTJ" parameterType="com.fitech.domain.account.AccountEditLog" resultType="com.fitech.domain.account.AccountEditLog">
-		select t.editUser,
-		   date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d') as editDate,
-	       t.accountName,
-	       date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d') as term,
-	       t.institutionName,
-	       nvl(sum(t.editLineNum) ,0) as editLineNum  
-	  from ACCOUNT_EDITlOG t
-		 where 1 = 1
-			<if test="accountName != null and accountName != ''">
-				and t.accountName like'%${accountName}%'
-			</if>
-			<if test="institutionName != null and institutionName != ''">
-				and t.institutionName like'%${institutionName}%'
-			</if>
-			<if test="term != null and term != ''">
-				and date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d')=#{term}
-			</if>
-			<if test="editUser != null and editUser != ''">
-				and t.editUser like '%${editUser}%'
-			</if>
-			<if test="editDate != null and editDate != ''">
-				and date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d')=#{editDate}
-			</if>
-			group by t.editUser, t.editDate, t.accountName, t.term, t.institutionName
-			<if test="editLineNum != null and editLineNum != ''">
-				having sum(t.editLineNum) = #{editLineNum}
-			</if>
-			<if test="editLineNum == 0 or editLineNum == '0'">
-				having sum(t.editLineNum) = #{editLineNum}
-			</if>
-		 order by t.editDate desc,
-				  t.term desc,
-				  t.editUser,
-				  t.accountName,
-				  t.institutionName
+		select IFNULL(s.username, t.editUser) as editUser,
+		date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d') as editDate,
+       t.accountname,
+		date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d') as term,
+       t.institutionname,
+       t.editLineNum
+  from (select t.editUser,
+			   date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d') as editDate,
+               t.accountName,
+		       date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d') as term,
+               t.institutionName,
+               IFNULL(sum(t.editLineNum), 0) as editLineNum
+          from ACCOUNT_EDITlOG t
+         where 1 = 1
+		<if test="accountName != null and accountName != ''">
+			and t.accountName like'%${accountName}%'
+		</if>
+		<if test="institutionName != null and institutionName != ''">
+			and t.institutionName like'%${institutionName}%'
+		</if>
+		<if test="term != null and term != ''">
+			and date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d')=#{term}
+		</if>
+		<if test="editUser != null and editUser != ''">
+			and t.editUser like '%${editUser}%'
+		</if>
+		<if test="editDate != null and editDate != ''">
+			and date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d')=#{editDate}
+		</if>
+	 	group by t.editUser, t.editDate, t.accountName, t.term, t.institutionName
+	 	<if test="editLineNum != null and editLineNum != ''">
+	 		having sum(t.editLineNum) = ${editLineNum}
+	 	</if>
+	 	) t 
+	 	left join sysuser s  on t.editUser = s.loginid 	
+	 order by t.editDate desc,
+	          t.term desc,
+	          t.editUser,
+	          t.accountName,
+	          t.institutionName
 	</select>
 	
 	<select id="findAccountEditLogTJCount" parameterType="com.fitech.domain.account.AccountEditLog" resultType="long">
@@ -115,6 +137,6 @@
 	 	<if test="editLineNum != null and editLineNum != ''">
 	 		having sum(t.editLineNum) = ${editLineNum}
 	 	</if>
-	 )a
+	 ) a
 	</select>
 </mapper>

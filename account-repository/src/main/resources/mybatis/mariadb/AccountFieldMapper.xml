@@ -9,7 +9,7 @@
           from role_fieldpermission t1
           left join fieldpermission t2
             on t1.fieldpermission_id = t2.id
-         where t2.reporttemplate_id = #{id} 
+         where t2.reporttemplate_id = #{id}
     </select>
 
     <select id="dicIsChangeable" parameterType="Long" resultType="Long">
@@ -29,5 +29,17 @@
         )a
 
     </select>
+    
+     <select id="dicIsTemplateUsed" parameterType="Long" resultType="Long">
+             select count(1)
+                    from reportTemplate_accountField ra
+                    where ra.accountFields_id
+                    in (
+                        select af.Id
+                        from accountField af
+                        where af.dicId = #{id}
+                    )
+    </select>
+
 
 </mapper>

@@ -4,15 +4,31 @@
 
 <mapper namespace="dictionary">
 	<select id="getDictionaryItemByDictionaryId" parameterType="long" resultType="map">
-       select id,DICITEMDESC,DICITEMID,DICITEMNAME from DictionaryItem where DICTIONARY_ID = #{id}  
+       select id,DICITEMDESC,DICITEMID,DICITEMNAME,PARENTID from DictionaryItem where DICTIONARY_ID = #{_parameter}
        order by id desc
     </select>
-    
+
+    <select id="getDictionaryItemByDictId" parameterType="long" resultType="com.fitech.dto.DictionaryItemDto">
+        SELECT
+        d.ID,
+        d.DICITEMDESC,
+        d.DICITEMID,
+        d.DICITEMNAME,
+        d.PARENTID,
+        t.DICNAME,
+        e.DICITEMNAME as parentName
+        FROM
+        DictionaryItem d
+        LEFT JOIN TZDICTIONARY t on t.ID=d.DICTIONARY_ID
+        LEFT JOIN DictionaryItem e ON d.PARENTID = e.id
+        where d.DICTIONARY_ID = #{_parameter}
+        order by id desc
+    </select>
 	<select id="getDictionaryItemByDicItemName" parameterType="map" resultType="map">
 	
-       select id,DICITEMDESC,DICITEMID,DICITEMNAME from DictionaryItem where DICTIONARY_ID = #{id}  
+       select id,DICITEMDESC,DICITEMID,DICITEMNAME from DictionaryItem where DICTIONARY_ID = #{id}
        <if test="dicItemName != null and dicItemName != ''">
-       		and dicItemName like '%${dicItemName}%' 
+       		and dicItemName like '%${dicItemName}%'
        </if>
        order by id desc
     </select>
@@ -24,5 +40,25 @@
         )a
     </select>
 
+    <select id="getNextDicId" parameterType="long" resultType="com.fitech.domain.account.Dictionary">
+        SELECT * FROM TZDICTIONARY where PARENTID=#{id}
+    </select>
 
+    <select id="getDicId" parameterType="string" resultType="com.fitech.domain.account.Dictionary">
+      SELECT * FROM TZDICTIONARY where ${sql}
+    </select>
+
+
+    <select id="getAllDic" resultType="DictionaryDto">
+        SELECT
+            A.ID,
+            A.DICDESC,
+            A.DICNAME,
+            A.ISENABLE,
+            A.PARENTID,
+            B.DICNAME AS PARENTNAME
+        FROM
+            TZDICTIONARY A
+        left  JOIN TZDICTIONARY B ON  B.ID=A.PARENTID
+    </select>
 </mapper>
