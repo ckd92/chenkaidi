@@ -76,7 +76,7 @@
 		Institution where FIND_IN_SET(id,queryChildrenInstitutionInfoByUserId(#{userId}))) a
 		where a.ff =
 		(select max(t1.institutelevel) as lev
-		from reportpermission t1
+		from account ac,reportpermission t1
 		right join role_reportpermission t2
 		on t1.id = t2.reportpermission_id
 		where exists (select 1
@@ -138,7 +138,7 @@
 		Institution where FIND_IN_SET(id,queryChildrenInstitutionInfoByUserId(#{userId}))) a
 		where a.ff =
 		(select max(t1.institutelevel) as lev
-		from reportpermission t1
+		from account ac,reportpermission t1
 		right join role_reportpermission t2
 		on t1.id = t2.reportpermission_id
 		where exists (select 1
