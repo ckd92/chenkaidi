@@ -69,7 +69,12 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                     accountSearch.setValue(format);
                 }
             }
-
+        }
+        //编写排序sql，传入mapper
+        if(accountProcessVo.getSort() !=null &&  accountProcessVo.getSort_condition() != null){
+            if( accountProcessVo.getSort().equals("1")  || accountProcessVo.getSort().equals("2")  ){
+                sqlParameterMap.put("orderBySql",accountProcessVo.getSort_condition());
+            }
         }
         sqlParameterMap.put("serachFileds", accountSearchs);
 
