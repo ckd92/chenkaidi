@@ -40,6 +40,9 @@
                     </choose>
                 </if>
             </foreach>
+        <if test="orderBySql != null">
+            ${orderBySql}
+        </if>
     </select>
 
     <select id="findDataByConditionCount" parameterType="Map" resultType="Long">
