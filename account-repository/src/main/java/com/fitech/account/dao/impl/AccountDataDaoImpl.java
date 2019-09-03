@@ -216,6 +216,19 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                 }
             }
         }
+        String orderBySql = "";
+        if(accountProcessVo.getCondition() != null && accountProcessVo.getCondition().size() == 2 ){
+            String sort = accountProcessVo.getCondition().get(0).get("sort");
+            String sort_condition = accountProcessVo.getCondition().get(1).get("sort_condition");
+              if(!sort.equals(" ") &&  !sort_condition.equals(" ") ){
+                if(sort.equals("1")){
+                    orderBySql = " order by " + sort;
+                }else if (sort.equals("2")){
+                    orderBySql =  " order by " +   sort_condition.replaceAll(","," desc ,")  + " desc ";
+                }
+                sqlParameterMap.put("orderBySql", orderBySql);
+            }
+        }
         sqlParameterMap.put("serachFileds", accountSearchs);
 
 //        List<String> list = new ArrayList<>();

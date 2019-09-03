@@ -117,6 +117,9 @@
                     </choose>
                 </if>
             </foreach>
+        <if test="orderBySql != null">
+            ${orderBySql}
+        </if>
     </select>
 
     <select id="findMaxNumDataByCondition" parameterType="Map" resultType="Long">
