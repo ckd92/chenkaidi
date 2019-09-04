@@ -290,7 +290,10 @@
     </select>
 
     <delete id="deleteData" parameterType="Map">
-        delete from ${tableName}
-        where id = ${id}
+        delete from ${tableName} where 1=1
+        <if test="reportId != null and reportId != ''">
+            and reportId = #{reportId}
+        </if>
+
     </delete>
 </mapper>

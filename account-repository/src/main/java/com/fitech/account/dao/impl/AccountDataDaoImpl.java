@@ -222,7 +222,7 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
             String sort_condition = accountProcessVo.getCondition().get(1).get("sort_condition");
               if(!sort.equals(" ") &&  !sort_condition.equals(" ") ){
                 if(sort.equals("1")){
-                    orderBySql = " order by " + sort;
+                    orderBySql = " order by " + sort_condition;
                 }else if (sort.equals("2")){
                     orderBySql =  " order by " +   sort_condition.replaceAll(","," desc ,")  + " desc ";
                 }
@@ -576,6 +576,8 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
     public void deleteAllData(Account account) {
         Map sqlParameterMap = new HashMap();
         sqlParameterMap.put("tableName", account.getAccountTemplate().getTableName());
+        sqlParameterMap.put("reportId", account.getId());
         super.delete("accountDataMapper.deleteAllData", sqlParameterMap);
+
     }
 }
