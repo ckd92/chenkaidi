@@ -283,6 +283,9 @@
 		<if test=" reportSubSystem_id != null and reportSubSystem_id != '' ">
 			and bs.reportSubSystem_id = #{reportSubSystem_id,jdbcType=INTEGER}
 		</if>
+		<if test=" orgIds != null and orgIds != '' ">
+			and lr.institution_id in (${orgIds})
+		</if>
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id,jdbcType=INTEGER}
 		</if>) t10
@@ -395,6 +398,9 @@
 		</if>
 		<if test=" institutionName != null and institutionName != '' ">
 			and it.institutionName like concat(concat('%',#{institutionName,jdbcType=VARCHAR}),'%')
+		</if>
+		<if test=" orgIds != null and orgIds != '' ">
+			and lr.institution_id in (${orgIds})
 		</if>
 		<if test=" @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != null and @com.fitech.enums.ValidateStatusEnum@transferValue(validatestatus) != '' ">
 			and lr.validatestatus = #{validatestatus}

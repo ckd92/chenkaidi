@@ -78,6 +78,7 @@
 		<if test=" term != null and term != '' ">
 			and to_char(to_date(lr.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term,jdbcType=VARCHAR}
 		</if>
+
 		<if test=" institutionName != null and institutionName != '' ">
 			and it.institutionName like concat(concat('%',#{institutionName,jdbcType=VARCHAR}),'%')
 		</if>
