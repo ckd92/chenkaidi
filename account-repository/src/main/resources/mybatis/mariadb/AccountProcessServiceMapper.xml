@@ -284,7 +284,7 @@
 			and bs.reportSubSystem_id = #{reportSubSystem_id,jdbcType=INTEGER}
 		</if>
 		<if test=" orgIds != null and orgIds != '' ">
-			and lr.institution_id in (#{orgIds})
+			and lr.institution_id in (${orgIds})
 		</if>
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id,jdbcType=INTEGER}
@@ -412,7 +412,7 @@
 			and bs.reportSubSystem_id = #{reportSubSystem_id,jdbcType=INTEGER}
 		</if>
 		<if test=" orgIds != null and orgIds != '' ">
-			and lr.institution_id in (#{orgIds})
+			and lr.institution_id in (${orgIds})
 		</if>
 		<if test=" institution_id != null and institution_id != '' ">
 			and lr.institution_id = #{institution_id,jdbcType=INTEGER}
