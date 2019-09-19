@@ -217,83 +217,14 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
             }
         }
         String orderBySql = "";
-        if(accountProcessVo.getCondition() != null && accountProcessVo.getCondition().size() == 2 ){
-            String sort = accountProcessVo.getCondition().get(0).get("sort");
-            String sort_condition = accountProcessVo.getCondition().get(1).get("sort_condition");
-              if(!sort.equals(" ") &&  !sort_condition.equals(" ") ){
-                if(sort.equals("1")){
-                    orderBySql = " order by " + sort;
-                }else if (sort.equals("2")){
-                    orderBySql =  " order by " +   sort_condition.replaceAll(","," desc ,")  + " desc ";
-                }
-                sqlParameterMap.put("orderBySql", orderBySql);
+
+        //编写排序sql，传入mapper
+        if(accountProcessVo.getSort() !=null &&  accountProcessVo.getSort_condition() != null){
+            if( accountProcessVo.getSort().equals("1")  || accountProcessVo.getSort().equals("2")  ){
+                sqlParameterMap.put("orderBySql",accountProcessVo.getSort_condition());
             }
         }
         sqlParameterMap.put("serachFileds", accountSearchs);
-
-//        List<String> list = new ArrayList<>();
-//        //StringBuffer sql = new StringBuffer();
-//        //sql.append("select id,reportId,");
-//        list.add("id");
-//        list.add("reportId");
-//        for (AccountField item : collection) {
-//            if (item.getItemType().equals("DATE")) {
-//                //sql.append("to_date(to_char("+item.getItemCode()+", 'yyyy-MM-dd')"+",'yyyy-mm-dd') as "+item.getItemCode()+""+ ",");
-//                list.add(item.getItemCode());
-//            } else {
-//                //sql.append(item.getItemCode() + ",");
-//                list.add(item.getItemCode());
-//            }
-//        }
-        //sql.deleteCharAt(sql.length() - 1);
-        //sql.append(" from " + accountTemplate.getTableName() + " where reportId=" + account.getId() + "  ");
-        //没有查询条件 查询所有
-
-//        accountTemplate.setAccountFields(null);
-
-//        Collection<AccountField> serachFileds = account.getAccountSearchs();
-
-//        //字段类型
-//        Map<String,List<String>> itemInstanceMap = new HashMap<>();
-//        List<String> integerFieldAndDoubleFieldList = new ArrayList<>();
-//        List<String> codeFieldList = new ArrayList<>();
-//
-//        if (null != serachFileds && !serachFileds.isEmpty()) {
-//            //将itemtype赋值
-//            for (AccountField afl : serachFileds) {
-//                for (AccountField afd : collection) {
-//                    if (afl.getItemCode().equals(afd.getItemCode()) && "DATE".equals(afd.getItemType()) && (!"".equals(afl.getValue()))) {
-//                        afl.setItemType(afd.getItemType());
-//                    }
-//                }
-//            }
-//            //进行循环
-//            for (AccountField item : serachFileds) {
-//                String code = item.getItemCode();
-//                if (item.getValue() != null) {
-//                    //sql.append("and " + code);
-//                    if (item instanceof IntegerField || item instanceof DoubleField) {
-//                        integerFieldAndDoubleFieldList.add(code);
-//                        //sql.append(" = " + item.getValue() + " ");
-//                    } else if (item instanceof CodeField) {
-//                        codeFieldList.add(code);
-//                        //sql.append(" = '" + item.getValue() + "' ");
-//                    } /*else if ("DATE".equals(item.getItemType())) {
-//                        //sql.append(" = to_date('" + item.getValue() + "','yyyy-mm-dd') ");
-//                    } else {
-//                        //sql.append(" like '%" + item.getValue() + "%' ");
-//                    }*/
-//                }
-//            }
-//            itemInstanceMap.put("integerFieldAndDoubleFieldList",integerFieldAndDoubleFieldList);
-//            itemInstanceMap.put("codeFieldList",codeFieldList);
-//        }
-//        sqlParameterMap.put("itemInstanceMap",itemInstanceMap);
-//
-//        accountTemplate.setAccountFields(collection);
-
-//        Map<String, Object> map = new HashMap<>();
-//        Map<String, Object> map1 = new HashMap<>();
         List<Map<String, Object>> resultList = super.selectList("accountDataMapper.downLoadDataByCondition", sqlParameterMap);
         List<AccountLine> lineList = new ArrayList<>();
         for (Map<String, Object> ledgerLineMap : resultList) {
