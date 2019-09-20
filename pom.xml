@@ -20,6 +20,7 @@
         <common-version>1.1.3</common-version>
       <!--  <account-repository>1.1.2</account-repository>
         <account-service>1.1.2</account-service>-->
+        <validate-service>1.1.2</validate-service>
     </properties>
     
     <scm>
@@ -97,7 +98,7 @@
         <dependency>
 			<groupId>com.fitech.validate</groupId>
 			<artifactId>validate-service</artifactId>
-            <version>${common-version}</version>
+            <version>${validate-service}</version>
 		</dependency>
     </dependencies>
     </dependencyManagement>

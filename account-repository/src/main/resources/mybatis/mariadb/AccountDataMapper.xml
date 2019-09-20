@@ -101,29 +101,28 @@
         </foreach>
         from ${tableName}
         where reportId = ${accountId}
-            <foreach collection="serachFileds" index="index" item="item">
-                <if test="item.value != null">
-                    and ${item.itemCode}
-                    <foreach collection="itemInstanceMap.integerFieldAndDoubleFieldList" index="index" item="item">
-                        <if test="item == item.itemCode">
-                            = #{item.value}
-                        </if>
-                    </foreach>
-                    <foreach collection="itemInstanceMap.codeFieldList" index="index" item="item">
-                        <if test="item == item.itemCode">
-                            = #{item.value}
-                        </if>
-                    </foreach>
-                    <choose>
-                        <when test="item.itemType == 'DATA'">
-                            = date_format(#{item.value},'%Y-%m-%d')
-                        </when>
-                        <otherwise>
-                            like '%${item.value}%'
-                        </otherwise>
-                    </choose>
-                </if>
-            </foreach>
+
+        <foreach collection="serachFileds" index="index" item="field">
+            <if test="field.value != null and field.value != ''">
+                and ${field.itemCode}
+                <choose>
+                    <when test="field.itemType == 'DATE'">
+                        = date_format(#{field.value},'%Y-%m-%d')
+                    </when>
+                    <when test="field.itemType == 'CODELIB'">
+                        = #{field.value}
+                    </when>
+                    <when test="item.itemType == 'INTEGER' or item.itemType == 'DOUBLE' or item.itemType == 'NUMBER' or item.itemType == 'DECIMAL'">
+                        = #{field.value}
+                    </when>
+                    <otherwise>
+                        like '%${field.value}%'
+
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+
         <if test="orderBySql != null">
             ${orderBySql}
         </if>
