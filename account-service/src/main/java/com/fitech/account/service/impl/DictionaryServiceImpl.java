@@ -187,14 +187,16 @@ public class DictionaryServiceImpl implements DictionaryService {
 			}
 		}
 
-		if(dictionary.getIsEnable().equals("0") && accountFieldDAO.dicIsChangeable(id) && dictionaryDao.getDicByParentOrId(null,id,"1") != null){
-			result.setSuccess(false);
-			result.setMessage("该字典被使用，不可禁用！");
-			return result;
-		}else if(dictionary.getIsEnable().equals("1") && dictionary.getParentId() !=null && !dictionary.getParentId().equals("")
+		if(dictionary.getIsEnable().equals("0") && dictionaryDao.getDicByParentOrId(null,id,"1") != null
+		 || dictionary.getIsEnable().equals("0") && !accountFieldDAO.dicIsTemplateUsed(id)){
+				result.setSuccess(false);
+				result.setMessage("该字典被使用，不可禁用！");
+				return result;
+		}
+		if(dictionary.getIsEnable().equals("1") && dictionary.getParentId() !=null && !dictionary.getParentId().equals("")
 				&& dictionaryDao.getDicByParentOrId(Long.valueOf(dictionary.getParentId()),null,null).getIsEnable().equals("0")){
 			result.setSuccess(false);
-			result.setMessage("该父类字典被禁用，不可启动！");
+			result.setMessage("该父类字典被禁用，不可启用！");
 			return result;
 		}
 
