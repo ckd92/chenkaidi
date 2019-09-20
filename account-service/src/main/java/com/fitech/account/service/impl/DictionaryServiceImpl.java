@@ -138,7 +138,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 					result.setSuccess(true);
 				}else{
 					result.setSuccess(false);
-					result.setMessage("该字典被使用，不可删除！");
+					result.setMessage("该字典存在下级字典，不可删除！");
 				}
 			}catch(Exception e){
 				e.printStackTrace();
