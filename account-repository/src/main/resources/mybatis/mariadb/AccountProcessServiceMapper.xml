@@ -469,32 +469,24 @@
 		) a
      </select>
 
-
 	<select id="findDoneTaskBySql" parameterType="map" resultType="map">
 		select o.id,it.institutionId,it.institutionName,lrt.templateCode,lrt.templateName,
 		date_format(str_to_date(lr.term, '%Y%m%d'), '%Y-%m-%d') as term,CAST(task.name_ AS CHAR) AS NAME,
 		lr.validateStatus,CAST(task.id_ AS CHAR ) as taskId,task.proc_inst_id_  as processId,task.end_time_,lr.freq ,task.userName as submitter
 		from (
-		SELECT
-		actRuTask.*,
-		IF (
-		@procInstId = actRuTask.proc_inst_id_ ,@rank :=@rank + 1 ,@rank := 1
-		) AS rn,
-		@procInstId := actRuTask.proc_inst_id_ as procInstId
-		FROM
-		(
-		select t.id_ ,
-		t.name_ ,
-		t.end_time_,
+		select t.*
+		from (select t.id_,
 		t.proc_inst_id_,
-		s.userName
-		from 	ACT_HI_TASKINST t left join sysuser s on t.assignee_=cast(s.id as char)
-		where t.delete_reason_ = 'completed' order by t.proc_inst_id_,t.start_time_ desc
-		) actRuTask,
-		(
-		SELECT
-		@procInstId := NULL ,@rank := 0
-		) a
+		t.name_,
+		t.end_time_,
+		t.assignee_,
+		su.username,
+		row_number() over(partition by t.proc_inst_id_ order by t.start_time_ desc) rn
+		from ACT_HI_TASKINST t
+		left join sysuser su
+		on t.assignee_ = su.id
+		where t.delete_reason_ = 'completed') t
+		where t.rn = 1
 		) task
 		inner join AccountProcess o on  task.proc_inst_id_=o.procInsetId
 		inner join Account lr on lr.id=o.ACCOUNT_ID
