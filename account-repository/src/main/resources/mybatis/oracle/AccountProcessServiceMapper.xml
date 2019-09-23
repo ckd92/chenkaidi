@@ -192,7 +192,7 @@
 			and to_char(to_date(ac.term,'yyyy-MM-dd'),'yyyy-MM-dd') = #{term}
 		</if>
 		<if test=" templateName != null and templateName != '' ">
-			and ap.templatename like concat(concat('%',#{templateName}),'%')
+			and ap.templatename = #{templateName}
 		</if>
 		<if test=" institutionname != null and institutionname != '' ">
 			and it.institutionname like concat(concat('%',#{institutionname}),'%')
