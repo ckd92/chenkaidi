@@ -187,7 +187,7 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
                 Account account = new Account();
                 account.setId(Long.valueOf(object.get("LID").toString()));
                 ledgerProcessVo.setAccount(account);
-                List<ReasonDto> reportReasons = (List<ReasonDto>) object.get("reportReasons");
+                List<ReasonDto> reportReasons = (List<ReasonDto>) object.get("REPORTREASONS");
                 ledgerProcessVo.setReportReasons(reportReasons);
                 vos.add(ledgerProcessVo);
             }

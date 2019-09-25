@@ -108,7 +108,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 			}
 		}
 		//判断字典名称、字典编码是否存在
-		if(valiDictionaryNameIsExist(null,dictionary).getRestCode().equals("")){		
+		if(valiDictionaryNameIsExist(null,dictionary).getRestCode().equals("")){
 			try{
 				dictionaryRepository.save(dictionary);
 			}catch(Exception e){
@@ -138,19 +138,19 @@ public class DictionaryServiceImpl implements DictionaryService {
 					result.setSuccess(true);
 				}else{
 					result.setSuccess(false);
-					result.setMessage("该字典被使用，不可删除！");
+					result.setMessage("该字典存在下级字典，不可删除！");
 				}
 			}catch(Exception e){
 				e.printStackTrace();
 				throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
-			}			
+			}
 		}else{
 			result.setSuccess(false);
 			result.setMessage("该字典不存在");
-		}		
+		}
 		return result;
 	}
-	
+
 
 	/**
 	 * 更新字典
@@ -187,33 +187,35 @@ public class DictionaryServiceImpl implements DictionaryService {
 			}
 		}
 
-		if(dictionary.getIsEnable().equals("0") && accountFieldDAO.dicIsChangeable(id) && dictionaryDao.getDicByParentOrId(null,id,"1") != null){
+		if(dictionary.getIsEnable().equals("0") && dictionaryDao.getDicByParentOrId(null,id,"1") != null
+				|| dictionary.getIsEnable().equals("0") && !accountFieldDAO.dicIsTemplateUsed(id)){
 			result.setSuccess(false);
 			result.setMessage("该字典被使用，不可禁用！");
 			return result;
-		}else if(dictionary.getIsEnable().equals("1") && dictionary.getParentId() !=null && !dictionary.getParentId().equals("")
+		}
+		if(dictionary.getIsEnable().equals("1") && dictionary.getParentId() !=null && !dictionary.getParentId().equals("")
 				&& dictionaryDao.getDicByParentOrId(Long.valueOf(dictionary.getParentId()),null,null).getIsEnable().equals("0")){
 			result.setSuccess(false);
-			result.setMessage("该父类字典被禁用，不可启动！");
+			result.setMessage("该父类字典被禁用，不可启用！");
 			return result;
 		}
 
 		//若此id存在对应字典并且字典名称不重复
 		if(findeddictionary!=null&&valiDictionaryNameIsExist(id, dictionary).getRestCode().equals("")){
-				findeddictionary.setDicDesc(dictionary.getDicDesc());
-				findeddictionary.setDicName(dictionary.getDicName());
-				findeddictionary.setIsEnable(dictionary.getIsEnable());
-				findeddictionary.setParentId(dictionary.getParentId());
-				dictionaryRepository.saveAndFlush(findeddictionary);
-				//1 代表父级字典改变了，清除父级字典项的引用
-				if(flag.equals("1")){
-					List<DictionaryItem> byDictionaryId = dictionaryItemRepository.findByDictionaryId(id);
-					for(DictionaryItem d : byDictionaryId){
-						d.setParentId("");
-					}
-					dictionaryItemRepository.save(byDictionaryId);
+			findeddictionary.setDicDesc(dictionary.getDicDesc());
+			findeddictionary.setDicName(dictionary.getDicName());
+			findeddictionary.setIsEnable(dictionary.getIsEnable());
+			findeddictionary.setParentId(dictionary.getParentId());
+			dictionaryRepository.saveAndFlush(findeddictionary);
+			//1 代表父级字典改变了，清除父级字典项的引用
+			if(flag.equals("1")){
+				List<DictionaryItem> byDictionaryId = dictionaryItemRepository.findByDictionaryId(id);
+				for(DictionaryItem d : byDictionaryId){
+					d.setParentId("");
 				}
-				result.setSuccess(true);
+				dictionaryItemRepository.save(byDictionaryId);
+			}
+			result.setSuccess(true);
 		}else{
 			result.fail(ExceptionCode.ONLY_VALIDATION_FALSE);
 		}
