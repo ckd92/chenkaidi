@@ -390,7 +390,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                             
                         } else if (field.getSqlType().equals(SqlTypeEnum.DATE)) {
                             if ("com.mysql.jdbc.Driver".equals(CommonConst.getProperties("jdbc.driverClassName"))){
-                                valueList.add("".equals(tempValue) ? null : "str_to_date('" + tempValue + "','%Y-%m-%d')");
+                                valueList.add("".equals(tempValue) ? null : "DATE_FORMAT('" + tempValue + "','%Y-%m-%d')");
                             }else{
                                 valueList.add("".equals(tempValue) ? null : "to_date('" + tempValue + "','yyyy-mm-dd')");
                             }
