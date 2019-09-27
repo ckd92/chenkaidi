@@ -187,10 +187,9 @@ public class DictionaryServiceImpl implements DictionaryService {
 			}
 		}
 
-		if(dictionary.getIsEnable().equals("0") && dictionaryDao.getDicByParentOrId(null,id,"1") != null
-				|| dictionary.getIsEnable().equals("0") && !accountFieldDAO.dicIsTemplateUsed(id)){
+		if( dictionaryDao.getDicByParentOrId(null,id,"1") != null ||  !accountFieldDAO.dicIsTemplateUsed(id)){
 			result.setSuccess(false);
-			result.setMessage("该字典被使用，不可禁用！");
+			result.setMessage("该字典被使用，不可禁用或修改！");
 			return result;
 		}
 		if(dictionary.getIsEnable().equals("1") && dictionary.getParentId() !=null && !dictionary.getParentId().equals("")
