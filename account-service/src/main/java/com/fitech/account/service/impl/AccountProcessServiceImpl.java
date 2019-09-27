@@ -318,7 +318,7 @@ public class AccountProcessServiceImpl implements AccountProcessService {
                 //对校验结果进行判断
                 if(ac.getValidateStatus()!=ValidateStatusEnum.SUCCESS){              	
                 	result.setRestCode(ExceptionCode.SYSTEM_ERROR);
-                    result.setMessage("commit account ValidateStatus is not sucess !");
+                    result.setMessage("commit account ValidateStatus is not success !");
                     result.setSuccess(false);
                     return result;
                 }
