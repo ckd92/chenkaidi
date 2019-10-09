@@ -203,7 +203,7 @@ public class AccountDataDaoImpl extends DaoMyBatis implements AccountDataDao {
                 java.lang.Object value = accountSearch.getValue();
                 if (value != null){
                     String s = value.toString().replace("Z", " UTC");
-                    SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS Z");
+                    SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
                     Date d = null;//Mon Mar 06 00:00:00 CST 2017
                     try {
                         d = sdf1.parse(s);
