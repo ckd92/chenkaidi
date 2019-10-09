@@ -240,6 +240,16 @@ public class DictionaryItemServiceImpl implements DictionaryItemService {
 		if(accountFieldDAO.dicIsChangeable(dictionaryItem.getDictionary().getId())){
 			//判断字典项名称是否存在
 			if(valiDictionaryItemNameIsExist(null,dictionaryItem)){
+				//判断字典项编号是否存在
+				List<DictionaryItem> list =getDictionaryItemByDictionaryId(dictionaryItem.getDictionary().getId());
+				for(int i=0;i<list.size();i++){
+					if(dictionaryItem.getDicItemId().equals(list.get(i).getDicItemId())){
+						result.setSuccess(false);
+						result.setErrorCode(ExceptionCode.ONLY_VALIDATION_FALSE);
+						result.setMessage("该字典项编号已存在，无法新增！");
+						return result;
+					}
+				}
 				try{
 					dictionaryItemRepository.save(dictionaryItem);
 				}catch (JpaSystemException e){
