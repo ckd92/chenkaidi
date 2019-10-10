@@ -75,13 +75,13 @@
 		select IFNULL(s.username, t.editUser) as editUser,
 		date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d') as editDate,
        t.accountname,
-		date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d') as term,
+		date_format(str_to_date(t.term, '%Y%m%d'), '%Y%m%d') as term,
        t.institutionname,
        t.editLineNum
   from (select t.editUser,
 			   date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d') as editDate,
                t.accountName,
-		       date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d') as term,
+		       date_format(str_to_date(t.term, '%Y%m%d'), '%Y%m%d') as term,
                t.institutionName,
                IFNULL(sum(t.editLineNum), 0) as editLineNum
           from ACCOUNT_EDITlOG t
