@@ -750,6 +750,8 @@ public class AccountServiceImpl implements AccountService {
                                 .findByValidatebatch(validateBatch.getBatchId());
 
                     }
+                    account.setValidateStatus(ValidateStatusEnum.NOTVALIDATE);
+                    accountRepository.save(account);
                     AccountEditLog accountEditLog = new AccountEditLog();
                     accountEditLog.setAccountEditType(AccountEditEnum.INSERT);
                     accountEditLog.setLogSource(LogSourceEnum.OFFLINE);
