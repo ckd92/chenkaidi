@@ -96,6 +96,9 @@
 		<if test=" institutionname != null and institutionname != '' ">
 			and it.institutionname like concat(concat('%',#{institutionname}),'%')
 		</if>
+		<if test=" orgIds != null and orgIds != '' ">
+			and it.id in (${orgIds})
+		</if>
 		order by ac.id
 	</select>
 
@@ -157,6 +160,9 @@
 		</if>
 		<if test=" institutionname != null and institutionname != '' ">
 			and it.institutionname like concat(concat('%',#{institutionname}),'%')
+		</if>
+		<if test=" orgIds != null and orgIds != '' ">
+			and it.id in (${orgIds} )
 		</if>
 		order by ac.id
 		)a
@@ -631,6 +637,13 @@
 		call PROC_ACCOUNT('${term}',@a)
 		<!-- {call PROC_ACCOUNT(#{term,mode=IN,jdbcType=VARCHAR},#{result,mode=OUT,jdbcType=VARCHAR})} -->
 	</select>
+	<select id="exculteCallFreq"  parameterType="map" resultType="String">
+		call PROC_ACCOUNT_FREQ('${term}','${freq}',@a)
+		<!-- {call PROC_ACCOUNT(#{term,mode=IN,jdbcType=VARCHAR},#{result,mode=OUT,jdbcType=VARCHAR})} -->
+	</select>
+	
+	
+	
 
 	<select id="findReportIdByTemplateId" parameterType="Long" resultType="Long">
 		select a.id

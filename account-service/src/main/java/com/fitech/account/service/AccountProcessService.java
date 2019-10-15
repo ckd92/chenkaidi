@@ -63,4 +63,6 @@ public interface AccountProcessService {
 	 * @param term
 	 */
 	public void createAccountTask(String term);
+
+	public void createAccountTask(String term, String freq);
 }

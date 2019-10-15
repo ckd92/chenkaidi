@@ -73,6 +73,11 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
     	tempMap.put("templateName", templateName);
     	tempMap.put("institutionname", institutionname);
     	tempMap.put("userId",String.valueOf(userId));
+    	 String orgIds=vo.getOrgIds();
+         if(StringUtils.isNotEmpty(orgIds)){
+             orgIds="'"+orgIds.replaceAll(",","','")+"'";
+             tempMap.put("orgIds",orgIds);
+         }
         List<Map<String,Object>> result = super.selectByPage("accProServiceMapper.findDoneQuerySqlCount", "accProServiceMapper.findDoneQuerySql", tempMap, page);
     	
         List<AccountProcessVo> vos = new ArrayList<>();
@@ -268,5 +273,19 @@ public class AccountProcessDaoImpl extends DaoMyBatis implements AccountProcessD
 		map.put("term", term);
 		super.selectList("accProServiceMapper.exculteCall",map);
 	}
+
+	@Override
+	public void createAccountTask(String term, String freq) {
+		HashMap<String,String> map =new HashMap<String,String>();
+		map.put("term", term);
+		if(StringUtils.isEmpty(freq)){
+			this.createAccountTask(term);
+		}else{
+		map.put("freq", freq);
+		super.selectList("accProServiceMapper.exculteCallFreq",map);
+		}
+	}
+
+
 
 }

@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,9 +25,12 @@ import com.fitech.enums.system.NoticeSceneEnum;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.report.dao.ReportProcessDao;
+import com.fitech.report.service.ReportProcessService;
 import com.fitech.system.repository.ProcessConfigRepository;
 import com.fitech.system.service.NoticeWaysService;
 import com.fitech.vo.system.NoticeSceneVo;
+
+import oracle.net.aso.a;
 
 
 /**
@@ -45,6 +49,8 @@ public class AccountReportServiceImpl implements AccountReportService {
 	private NoticeWaysService noticeWaysService;
     @Autowired
     private ReportProcessDao reportProcessDao;
+	@Autowired
+	private ReportProcessService reportProcessService;
     
     @Override
     public int startProcess(Account account){
@@ -53,7 +59,7 @@ public class AccountReportServiceImpl implements AccountReportService {
     		//通过流程id和期数查询出生成待办任务第一节点的用户
             List<Long> receiverIdList = new ArrayList<>();
             List<String> receiverPhones = new ArrayList<>();
-            List<Map<String,Object>> receivers = reportProcessDao.getReceiverIdList_bl(account.getTerm(), "");
+            List<Map<String,Object>> receivers = reportProcessDao.getReceiverIdList_bl(account.getTerm(), account.getFreq());
             for (Map<String, Object> map : receivers) {
             	receiverIdList.add(Long.parseLong(String.valueOf(map.get("USERID"))));
             	receiverPhones.add(String.valueOf(map.get("MOBILE")));
@@ -64,9 +70,15 @@ public class AccountReportServiceImpl implements AccountReportService {
     }
     @Transactional
     private int createPorcess(Account account){
-    	accountProcessService.createAccountTask(account.getTerm());
+    	accountProcessService.createAccountTask(account.getTerm(),account.getFreq());
         //根据报文期数获取待开启的报文实例
-        Collection<Account> ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(), SubmitStateEnum.NOTSUBMIT);
+    	Collection<Account> ledgerReportList = null;
+    	if(StringUtils.isEmpty(account.getFreq())){//不带频度
+        ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(), SubmitStateEnum.NOTSUBMIT);
+    	}else{//带频度
+        ledgerReportList = accountRepository.findByTermAndFreqAndSubmitStateType(account.getTerm(), account.getFreq(), SubmitStateEnum.NOTSUBMIT);
+    	}
+
         for (Account report : ledgerReportList) {
             try {
                 //获取报文对应的流程配置信息
@@ -106,5 +118,27 @@ public class AccountReportServiceImpl implements AccountReportService {
     	noticeScene.setUnum(NoticeSceneEnum.ActivitiStart002);
     	noticeSceneVo.setNoticeScene(noticeScene);
     	noticeWaysService.noticeSend(noticeSceneVo);
+	}
+
+	@Override
+	public void batchRepeatReport(Account account) {
+		Collection<Account> ledgerReportList = null;
+		if (StringUtils.isEmpty(account.getFreq())) {// 不带频度
+			ledgerReportList = accountRepository.findByTermAndSubmitStateType(account.getTerm(),
+					SubmitStateEnum.SUCCESS);
+		} else {// 带频度
+			ledgerReportList = accountRepository.findByTermAndFreqAndSubmitStateType(account.getTerm(),
+					account.getFreq(), SubmitStateEnum.SUCCESS);
+		}
+		try {
+			if (null != ledgerReportList && ledgerReportList.size() > 0) {
+				for (Account acc : ledgerReportList) {
+					reportProcessService.reProcess(null, acc.getId(), null);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 }

@@ -1,8 +1,10 @@
 package com.fitech.account.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -208,6 +210,7 @@ public class AccountProcessController {
         	term = TermUtil.getDateByFreqAndTerm(freqName, term, true);
     		Account account = new Account();
             account.setTerm(term);
+            account.setFreq(freqName);
             int count = accountReportService.startProcess(account);
             if(count>0){
             	result.setMessage("补录流程执行成功，并生成了【"+count+"】条代办事项");
@@ -239,6 +242,7 @@ public class AccountProcessController {
         	term = TermUtil.getDateByFreqAndTerm(freqName, term, false);
     		Account account = new Account();
             account.setTerm(term);
+            account.setFreq(freqName);
             int count = accountReportService.startProcess(account);
             if(count>0){
             	result.setMessage("补录流程执行成功，并生成了【"+count+"】条代办事项");
@@ -252,5 +256,35 @@ public class AccountProcessController {
             sysLogService.addOperateLog("开启并指派一个新的任务",request);
         }
         return result;
+    }
+    
+    
+    /**
+     * ETL批量重报接口
+     * @param subKey
+     * @param term
+     * @param etlFreqId
+     * @param type true表示当期，false表示上期
+     * @param response
+     * @param request
+     */
+    @SuppressWarnings("finally")
+	@PostMapping("batchRepeatReport/{term}/{freq}/{type}")
+    public GenericResult<Object> batchRepeatReport(@PathVariable String term,@PathVariable String freq,@PathVariable String type,HttpServletResponse response,HttpServletRequest request){
+    	GenericResult<Object> result = new GenericResult<Object>();
+        try {
+         	String freqName = freqService.findRepFreqByEtlFreqId(freq).getRepFreqName();
+        	term = TermUtil.getDateByFreqAndTerm(freqName, term, type.toLowerCase().equals("true")?true:false); 
+        	Account account = new Account();
+            account.setTerm(term);
+            account.setFreq(freqName);
+            accountReportService.batchRepeatReport(account);
+        }catch (Exception e){
+            e.printStackTrace();
+            result.setSuccess(false);
+        }finally {
+            sysLogService.addOperateLog("数据补录批量重报",request);
+            return result;          
+        }
     }
 }

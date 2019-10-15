@@ -20,6 +20,14 @@ public interface AccountRepository extends JpaRepository<Account,Long>,JpaSpecif
      */
     public Collection<Account> findByTermAndSubmitStateType(String term,SubmitStateEnum submitStateType);
     
+    /**
+     * 根据期数,频度获取待开启的报文实例
+     * @param term
+     * @return
+     */
+    public Collection<Account> findByTermAndFreqAndSubmitStateType(String term,String freq,SubmitStateEnum submitStateType);
+
+    
     public Account findById(Long Id);
 
 }

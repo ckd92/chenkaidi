@@ -45,4 +45,6 @@ public interface AccountProcessDao {
 	 * @param term
 	 */
 	public void createAccountTask(String term);
+
+	public void createAccountTask(String term, String freq);
 }

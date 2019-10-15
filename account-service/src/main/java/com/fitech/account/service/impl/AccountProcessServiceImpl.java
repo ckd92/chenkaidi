@@ -415,4 +415,9 @@ public class AccountProcessServiceImpl implements AccountProcessService {
 	public void createAccountTask(String term) {
 		accountProcessDao.createAccountTask(term);
 	}
+
+	@Override
+	public void createAccountTask(String term, String freq) {
+		accountProcessDao.createAccountTask(term,freq);	
+	}
 }

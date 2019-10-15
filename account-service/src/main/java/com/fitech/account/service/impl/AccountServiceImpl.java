@@ -1,5 +1,6 @@
 package com.fitech.account.service.impl;
 
+import java.io.File;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -690,7 +691,7 @@ public class AccountServiceImpl implements AccountService {
             hList.add(itemCode);
             hList.add(itemDesc);
 
-            ExcelUtils.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"/temp/AccountTemplate/", downRows, downData);
+            ExcelUtils.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+File.separator+"temp"+File.separator+"AccountTemplate"+File.separator, downRows, downData);
             return "temp|AccountTemplate|"+sheetName;
         }
         return null;
@@ -934,7 +935,7 @@ public class AccountServiceImpl implements AccountService {
             }
            // String result = ExcelUtil.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"temp/AccountList/", sheetName);
             
-           String result = ExcelUtils.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+"temp/AccountList/", sheetName,downRows,downData);
+           String result = ExcelUtils.createExcel2007(hList, sheetName, CommonConst.getProperties("basePath")+File.separator+"temp"+File.separator+"AccountList"+File.separator, sheetName,downRows,downData);
             return result;
         } catch (Exception e) {
             e.printStackTrace();

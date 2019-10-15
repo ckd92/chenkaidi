@@ -13,4 +13,10 @@ public interface AccountReportService {
      */
     public int startProcess(Account account);
 
+	/**
+	 * 批量重报
+	 * @param account
+	 */
+	public void batchRepeatReport(Account account);
+
 }
