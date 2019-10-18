@@ -189,13 +189,28 @@ public class DictionaryController {
 	 * @param request
 	 * @return
 	 */
-	@PostMapping("loadDicitemsByExcel/{busSystemId}")
-	public GenericResult<Object> loadDataFromTemplate(@RequestParam(value = "file", required = true) MultipartFile file,@PathVariable("busSystemId")Long busSystemId,
+	@PostMapping("loadDicitemsByExcel")
+	public GenericResult<Object> loadDataFromTemplate(@RequestParam(value = "file", required = true) MultipartFile file,
 													   HttpServletRequest request){
 		GenericResult<Object> result = new GenericResult<>();
 		try {
 			List<AccountDicVo> list = ExcelUtil.addFormExcel2003And2007(file.getInputStream(), file.getOriginalFilename(), new AccountDicVo());
-			result = dictionaryService.batchAdd(busSystemId,list);
+			result = dictionaryService.batchAdd(list);
+		} catch (Exception e){
+			e.printStackTrace();
+			result.setSuccess(false);
+			result.setMessage("载入失败,数据异常！");
+		}
+		return  result;
+	}
+
+	@PostMapping("exportDicByExcel")
+	public GenericResult<Object> loadDataFromTemplate(@RequestParam(value = "file", required = true) MultipartFile file,@PathVariable("busSystemId")Long busSystemId,
+													  HttpServletRequest request){
+		GenericResult<Object> result = new GenericResult<>();
+		try {
+			List<AccountDicVo> list = ExcelUtil.addFormExcel2003And2007(file.getInputStream(), file.getOriginalFilename(), new AccountDicVo());
+//			result = dictionaryService.batchAdd(busSystemId,list);
 		} catch (Exception e){
 			e.printStackTrace();
 			result.setSuccess(false);

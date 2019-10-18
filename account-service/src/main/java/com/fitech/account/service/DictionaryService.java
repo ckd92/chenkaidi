@@ -80,11 +80,10 @@ public interface DictionaryService {
 
     /**
      * 批量载入字典项
-     * @param busSystemId
      * @param list
      * @return
      */
-    public GenericResult<Object> batchAdd(Long busSystemId, Collection<AccountDicVo> list);
+    public GenericResult<Object> batchAdd(Collection<AccountDicVo> list);
 
 
 

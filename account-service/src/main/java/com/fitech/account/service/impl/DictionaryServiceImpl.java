@@ -276,7 +276,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 	}
 
 	@Override
-	public GenericResult<Object> batchAdd(Long busSystemId, Collection<AccountDicVo> list)  {
+	public GenericResult<Object> batchAdd( Collection<AccountDicVo> list)  {
 		GenericResult<Object> result = new GenericResult<>();
 		try {
 			DictionaryItem dictionaryItem = null;
