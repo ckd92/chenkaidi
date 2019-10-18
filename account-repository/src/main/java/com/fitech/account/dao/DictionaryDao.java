@@ -1,8 +1,10 @@
 package com.fitech.account.dao;
 
 import com.fitech.domain.account.Dictionary;
+import com.fitech.domain.account.DictionaryItem;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.dto.DictionaryItemDto;
+import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.List;
 import java.util.Map;
@@ -20,4 +22,8 @@ public interface DictionaryDao {
 	public Dictionary getDicByParentOrId(Long Id,Long parentId,String isenable);
 
 	public List<DictionaryDto> getAllDic();
+
+	public int addDictionary(Dictionary dictionary);
+
+	public int addDictionaryItem(DictionaryItem dictionaryItem);
 }

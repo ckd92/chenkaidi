@@ -2,12 +2,15 @@ package com.fitech.account.service;
 
 
 
+import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 
 import com.fitech.domain.account.Dictionary;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.framework.lang.result.GenericResult;
-
+import com.fitech.vo.account.AccountDicVo;
+import org.apache.poi.ss.usermodel.Sheet;
 
 
 /**
@@ -74,5 +77,15 @@ public interface DictionaryService {
      * @return
      */
     public Dictionary nextDicId(Long id);
+
+    /**
+     * 批量载入字典项
+     * @param busSystemId
+     * @param list
+     * @return
+     */
+    public GenericResult<Object> batchAdd(Long busSystemId, Collection<AccountDicVo> list);
+
+
 
 }

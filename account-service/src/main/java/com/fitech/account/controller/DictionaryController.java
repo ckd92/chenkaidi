@@ -1,17 +1,27 @@
 package com.fitech.account.controller;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fitech.account.service.DictionaryItemService;
 import com.fitech.constant.ExceptionCode;
+import com.fitech.domain.account.DictionaryItem;
 import com.fitech.dto.DictionaryDto;
+import com.fitech.framework.lang.common.AppException;
+import com.fitech.framework.lang.util.ExcelUtil;
+import com.fitech.vo.account.AccountDicVo;
+import com.fitech.vo.ledger.CodeLibVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import com.fitech.account.service.DictionaryService;
 import com.fitech.domain.account.Dictionary;
 import com.fitech.framework.lang.result.GenericResult;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by wangjianwei on 2017/7/28.
@@ -170,6 +180,28 @@ public class DictionaryController {
 			e.printStackTrace();
 		}
 		return result;
+	}
+
+
+	/**
+	 * 数据补录批量上传字典项
+	 * @param file
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("loadDicitemsByExcel/{busSystemId}")
+	public GenericResult<Object> loadDataFromTemplate(@RequestParam(value = "file", required = true) MultipartFile file,@PathVariable("busSystemId")Long busSystemId,
+													   HttpServletRequest request){
+		GenericResult<Object> result = new GenericResult<>();
+		try {
+			List<AccountDicVo> list = ExcelUtil.addFormExcel2003And2007(file.getInputStream(), file.getOriginalFilename(), new AccountDicVo());
+			result = dictionaryService.batchAdd(busSystemId,list);
+		} catch (Exception e){
+			e.printStackTrace();
+			result.setSuccess(false);
+			result.setMessage("载入失败,数据异常！");
+		}
+		return  result;
 	}
 
 }

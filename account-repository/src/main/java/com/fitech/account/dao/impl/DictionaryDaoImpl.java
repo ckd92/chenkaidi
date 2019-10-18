@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.fitech.account.dao.DictionaryDao;
 import com.fitech.domain.account.Dictionary;
+import com.fitech.domain.account.DictionaryItem;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.dto.DictionaryItemDto;
 import com.fitech.framework.core.dao.Dao;
@@ -61,4 +62,26 @@ public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 		return super.selectList("dictionary.getAllDic");
 	}
 
+	@Override
+	public int addDictionary(Dictionary dictionary) {
+		DictionaryDto dictionaryDto = new DictionaryDto();
+		dictionaryDto.setDicDesc(dictionary.getDicDesc());
+		dictionaryDto.setDicName(dictionary.getDicName());
+		dictionaryDto.setId(dictionary.getId());
+		dictionaryDto.setIsEnable(dictionary.getIsEnable());
+		dictionaryDto.setParentId(dictionary.getParentId());
+		return super.insert("dictionary.addDictionary",dictionaryDto);
+	}
+
+	@Override
+	public int addDictionaryItem(DictionaryItem dictionaryItem) {
+		DictionaryItemDto dictionaryItemDto = new DictionaryItemDto();
+		dictionaryItemDto.setId(String.valueOf(dictionaryItem.getId()));
+		dictionaryItemDto.setDicItemId(dictionaryItem.getDicItemId());
+		dictionaryItemDto.setParentId(dictionaryItem.getParentId());
+		dictionaryItemDto.setDicItemDesc(dictionaryItem.getDicItemDesc());
+		dictionaryItemDto.setDicItemName(dictionaryItem.getDicItemName());
+		dictionaryItemDto.setDictionaryId(String.valueOf(dictionaryItem.getDictionary().getId()));
+		return super.insert("dictionary.addDictionaryItem",dictionaryItemDto);
+	}
 }
