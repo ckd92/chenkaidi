@@ -296,7 +296,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 				dictionary.setDicName(accountDicVo.getDicName());
 				dictionary.setId(Long.valueOf(accountDicVo.getDicId()));
 				dictionary.setParentId(accountDicVo.getDicParentId());
-				dictionary.setIsEnable("1");
+				dictionary.setIsEnable(accountDicVo.getDicIsEnabel());
 				dictionary.setDicDesc(accountDicVo.getDicDescription());
 				dictionaryList2.add(dictionary);
 				dictionaryItem = new DictionaryItem();
