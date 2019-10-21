@@ -11,6 +11,7 @@ import com.fitech.dto.DictionaryDto;
 import com.fitech.dto.DictionaryItemDto;
 import com.fitech.framework.core.dao.Dao;
 import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
+import com.fitech.vo.account.AccountDicVo;
 
 @Dao
 public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
@@ -83,5 +84,11 @@ public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 		dictionaryItemDto.setDicItemName(dictionaryItem.getDicItemName());
 		dictionaryItemDto.setDictionaryId(String.valueOf(dictionaryItem.getDictionary().getId()));
 		return super.insert("dictionary.addDictionaryItem",dictionaryItemDto);
+	}
+
+	@Override
+	public List<AccountDicVo> searchDictionary() {
+		List<AccountDicVo> list = super.selectList("dictionary.searchDictionary");
+		return null;
 	}
 }

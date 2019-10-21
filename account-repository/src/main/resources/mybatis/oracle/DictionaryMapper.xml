@@ -69,5 +69,9 @@
        dictionary_id )
         values (#{id},#{dicItemDesc},#{dicItemId},#{dicItemName},#{parentId},#{dictionaryId})
     </select>
+
+    <select id="searchDictionary" resultType="AccountDicVo">
+
+    </select>
 </mapper>
 

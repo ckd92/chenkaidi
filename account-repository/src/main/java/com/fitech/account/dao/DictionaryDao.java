@@ -4,6 +4,7 @@ import com.fitech.domain.account.Dictionary;
 import com.fitech.domain.account.DictionaryItem;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.dto.DictionaryItemDto;
+import com.fitech.vo.account.AccountDicVo;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.List;
@@ -26,4 +27,6 @@ public interface DictionaryDao {
 	public int addDictionary(Dictionary dictionary);
 
 	public int addDictionaryItem(DictionaryItem dictionaryItem);
+
+	public List<AccountDicVo> searchDictionary();
 }

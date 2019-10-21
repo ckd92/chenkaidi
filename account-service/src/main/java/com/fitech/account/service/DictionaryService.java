@@ -85,6 +85,11 @@ public interface DictionaryService {
      */
     public GenericResult<Object> batchAdd(Collection<AccountDicVo> list);
 
+    /**
+     * 查询字典和字典项
+     * @return
+     */
+    public List<List<String>> searchDicAndDicitem();
 
 
 }

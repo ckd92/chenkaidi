@@ -11,6 +11,7 @@ import com.fitech.constant.ExceptionCode;
 import com.fitech.domain.account.DictionaryItem;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.framework.lang.common.AppException;
+import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.vo.account.AccountDicVo;
 import com.fitech.vo.ledger.CodeLibVo;
@@ -199,18 +200,24 @@ public class DictionaryController {
 		} catch (Exception e){
 			e.printStackTrace();
 			result.setSuccess(false);
-			result.setMessage("载入失败,数据异常！");
+			result.setMessage(e.getMessage());
 		}
 		return  result;
 	}
 
+	/**
+	 * 数据补录字典项导出
+	 * @param request
+	 * @return
+	 */
 	@PostMapping("exportDicByExcel")
-	public GenericResult<Object> loadDataFromTemplate(@RequestParam(value = "file", required = true) MultipartFile file,@PathVariable("busSystemId")Long busSystemId,
-													  HttpServletRequest request){
+	public GenericResult<Object> exportDicByExcel(HttpServletRequest request){
 		GenericResult<Object> result = new GenericResult<>();
 		try {
-			List<AccountDicVo> list = ExcelUtil.addFormExcel2003And2007(file.getInputStream(), file.getOriginalFilename(), new AccountDicVo());
-//			result = dictionaryService.batchAdd(busSystemId,list);
+			List<List<String>> list = dictionaryService.searchDicAndDicitem();
+			String sheetName = "BULUDATA-DicData";
+			String filePath = CommonConst.getProperties("basePath") + "sjbl" + sheetName;
+			ExcelUtil.createExcel2007(list,sheetName,filePath,sheetName);
 		} catch (Exception e){
 			e.printStackTrace();
 			result.setSuccess(false);

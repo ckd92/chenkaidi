@@ -454,7 +454,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 				for(Dictionary dic : addDics){
 					if(StringUtil.isNotEmpty(dic.getParentId()) &&
 							dictionaryDao.getNextDicId(Long.valueOf(dic.getParentId())) != null){
-						throw new RuntimeException("excel存在字典的父级字典项在已被使用，该对应字典id为" + dic.getId());
+						throw new AppException(ExceptionCode.SYSTEM_ERROR,"excel存在字典的父级字典项在已被使用，该对应字典id为" + dic.getId());
 					}else{
 						dictionaryDao.addDictionary(dic);
 					}
@@ -464,16 +464,26 @@ public class DictionaryServiceImpl implements DictionaryService {
 					//判断字典项是否在数据库中存在
 					if(StringUtil.isNotEmpty(item2.getParentId()) &&
 							dictionaryItemRepository.findByParentId(item2.getParentId()).size() == 0){
-						throw new RuntimeException("excel中存在字典项的父级字典项在数据库中不存在，该对应字典项id为" + item2.getId());
+						throw new AppException(ExceptionCode.SYSTEM_ERROR,"excel中存在字典项的父级字典项在数据库中不存在，该对应字典项id为" + item2.getId());
 					}else{
 						dictionaryDao.addDictionaryItem(item2);
 					}
 				}
-		}catch (RuntimeException e) {
+		}catch (AppException e) {
 			e.printStackTrace();
-			throw new AppException("载入失败，数据异常",e.getMessage());
+			if(ExceptionCode.SYSTEM_ERROR.equals(e.getErrorCode())){
+				throw new AppException(e.getMessage());
+			}else{
+				throw new AppException("载入失败，数据异常");
+			}
 		}
 		return result;
+	}
+
+	@Override
+	public List<List<String>> searchDicAndDicitem() {
+		dictionaryDao.
+		return null;
 	}
 
 	private GenericResult<Object> valiDictionaryData(Collection<AccountDicVo> list) {
