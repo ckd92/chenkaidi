@@ -472,13 +472,10 @@ public class DictionaryServiceImpl implements DictionaryService {
 						dictionaryDao.addDictionaryItem(item2);
 //					}
 				}
-		}catch (AppException e) {
+				result.setSuccess(true);
+		}catch (RuntimeException e) {
 			e.printStackTrace();
-			if(ExceptionCode.SYSTEM_ERROR.equals(e.getErrorCode())){
-				throw new AppException(e.getMessage());
-			}else{
-				throw new AppException("载入失败，数据异常");
-			}
+			throw new AppException("载入失败，数据异常");
 		}
 		return result;
 	}
