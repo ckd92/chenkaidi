@@ -1,10 +1,10 @@
 package com.fitech.account.service.impl;
 
-import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -12,12 +12,10 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import com.fitech.account.dao.DictionaryDao;
-import com.fitech.domain.account.Account;
 import com.fitech.domain.account.DictionaryItem;
 import com.fitech.dto.DictionaryDto;
-import com.fitech.framework.lang.util.ExcelUtil;
+import com.fitech.framework.lang.annotation.Description;
 import com.fitech.vo.account.AccountDicVo;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -139,14 +137,19 @@ public class DictionaryServiceImpl implements DictionaryService {
 		//判断该id是否存在字典实体
 		if(dictionaryRepository.exists(id)){
 			try{
-				if( nextDicId(id) == null && accountFieldDAO.dicIsChangeable(id)&&accountFieldDAO.dicIsTemplateUsed(id)){
-					dictionaryItemService.deleteByDictionaryId(id);
-					dictionaryRepository.delete(id);
-					result.setSuccess(true);
-				}else{
+				if(nextDicId(id) != null){
 					result.setSuccess(false);
 					result.setMessage("该字典存在下级字典，不可删除！");
+					return result;
 				}
+				if(!accountFieldDAO.dicIsChangeable(id) || !accountFieldDAO.dicIsTemplateUsed(id)){
+					result.setSuccess(false);
+					result.setMessage("该字典存在已生成任务或者被字典引用，不可删除！");
+					return result;
+				}
+				dictionaryItemService.deleteByDictionaryId(id);
+				dictionaryRepository.delete(id);
+				result.setSuccess(true);
 			}catch(Exception e){
 				e.printStackTrace();
 				throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
@@ -452,22 +455,22 @@ public class DictionaryServiceImpl implements DictionaryService {
 			}
 				//循环新增字典
 				for(Dictionary dic : addDics){
-					if(StringUtil.isNotEmpty(dic.getParentId()) &&
-							dictionaryDao.getNextDicId(Long.valueOf(dic.getParentId())) != null){
-						throw new AppException(ExceptionCode.SYSTEM_ERROR,"excel存在字典的父级字典项在已被使用，该对应字典id为" + dic.getId());
-					}else{
+//					if(StringUtil.isNotEmpty(dic.getParentId()) &&
+//							dictionaryDao.getNextDicId(Long.valueOf(dic.getParentId())) != null){
+//						throw new AppException(ExceptionCode.SYSTEM_ERROR,"excel存在字典的父级字典项在已被使用，该对应字典id为" + dic.getId());
+//					}else{
 						dictionaryDao.addDictionary(dic);
-					}
+//					}
 				}
 				//循环新增字典项
 				for(DictionaryItem item2 : addDicitems){
 					//判断字典项是否在数据库中存在
-					if(StringUtil.isNotEmpty(item2.getParentId()) &&
-							dictionaryItemRepository.findByParentId(item2.getParentId()).size() == 0){
-						throw new AppException(ExceptionCode.SYSTEM_ERROR,"excel中存在字典项的父级字典项在数据库中不存在，该对应字典项id为" + item2.getId());
-					}else{
+//					if(StringUtil.isNotEmpty(item2.getParentId()) &&
+//							dictionaryItemRepository.findByParentId(item2.getParentId()).size() == 0){
+//						throw new AppException(ExceptionCode.SYSTEM_ERROR,"excel中存在字典项的父级字典项在数据库中不存在，该对应字典项id为" + item2.getId());
+//					}else{
 						dictionaryDao.addDictionaryItem(item2);
-					}
+//					}
 				}
 		}catch (AppException e) {
 			e.printStackTrace();
@@ -482,10 +485,41 @@ public class DictionaryServiceImpl implements DictionaryService {
 
 	@Override
 	public List<List<String>> searchDicAndDicitem() {
-		dictionaryDao.
-		return null;
+		List<List<String>> list = new ArrayList<>();
+		List<String> fieldNames = new ArrayList<>();
+		List<String> values = null;
+		List<AccountDicVo> dicVoList = dictionaryDao.searchDictionary();
+		try {
+			Class clazz = Class.forName("com.fitech.vo.account.AccountDicVo");
+			Field[] fields = clazz.getDeclaredFields();
+			for(Field field : fields){
+				Description f = field.getAnnotation(Description.class);
+				String annotation = f.value()[0];
+				fieldNames.add(annotation);
+			}
+			list.add(fieldNames);
+			for(AccountDicVo dic : dicVoList){
+				values = new ArrayList<>();
+				clazz = dic.getClass();
+				for(Field field :clazz.getDeclaredFields()){
+						String methodName = "get" + field.getName().substring(0,1).toUpperCase() + field.getName().substring(1);
+						Method method =  clazz.getDeclaredMethod(methodName);
+						Object invoke = method.invoke(dic);
+						values.add(String.valueOf(invoke).equals("null") ? "" : String.valueOf(invoke));
+				}
+				list.add(values);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return list;
 	}
 
+	/**
+	 * 校验导入字典项数据
+	 * @param list
+	 * @return
+	 */
 	private GenericResult<Object> valiDictionaryData(Collection<AccountDicVo> list) {
 		GenericResult<Object> result = new GenericResult<>();
 		List<AccountDicVo> dicVoList = (List<AccountDicVo>)list;
@@ -541,6 +575,5 @@ public class DictionaryServiceImpl implements DictionaryService {
 
 		return result;
 	}
-
 
 }

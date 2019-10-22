@@ -56,11 +56,11 @@
         TZDICTIONARY A
         left  JOIN TZDICTIONARY B ON  B.ID=A.PARENTID
     </select>
-    <select id="addDictionary" resultType="DictionaryDto">
+    <insert id="addDictionary" >
       insert into TZDICTIONARY(id,dicdesc,dicname,isenable,parentid) values (#{Id},#{dicDesc},#{dicName},#{isEnable},#{parentId})
-    </select>
+    </insert>
 
-    <select id="addDictionaryItem" resultType="DictionaryItemDto">
+    <insert id="addDictionaryItem" >
       insert into dictionaryitem(id,
        dicitemdesc,
        dicitemid,
@@ -68,10 +68,23 @@
        parentid,
        dictionary_id )
         values (#{id},#{dicItemDesc},#{dicItemId},#{dicItemName},#{parentId},#{dictionaryId})
-    </select>
+    </insert>
 
     <select id="searchDictionary" resultType="AccountDicVo">
-
+    select t.id as dicId,
+       t.dicname,
+       t.parentid    as dicParentId,
+       t.isenable    as dicIsEnabel,
+       t.dicdesc     as dicDescription,
+       d.id          as itemId,
+       d.dicitemid   as dicItemId,
+       d.dicitemname,
+       d.parentid    as dicItemParentId,
+       d.dicitemdesc as dicItemDescription
+      from TZDICTIONARY t
+     inner join DICTIONARYITEM d
+    on t.id = d.dictionary_id
     </select>
+
 </mapper>
 

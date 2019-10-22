@@ -89,6 +89,6 @@ public class DictionaryDaoImpl extends DaoMyBatis implements DictionaryDao {
 	@Override
 	public List<AccountDicVo> searchDictionary() {
 		List<AccountDicVo> list = super.selectList("dictionary.searchDictionary");
-		return null;
+		return list;
 	}
 }

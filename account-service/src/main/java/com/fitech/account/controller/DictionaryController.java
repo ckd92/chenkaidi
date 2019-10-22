@@ -1,22 +1,19 @@
 package com.fitech.account.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-import com.fitech.account.service.DictionaryItemService;
-import com.fitech.constant.ExceptionCode;
-import com.fitech.domain.account.DictionaryItem;
 import com.fitech.dto.DictionaryDto;
-import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.vo.account.AccountDicVo;
-import com.fitech.vo.ledger.CodeLibVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import com.fitech.account.service.DictionaryService;
@@ -211,13 +208,16 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("exportDicByExcel")
-	public GenericResult<Object> exportDicByExcel(HttpServletRequest request){
+	public GenericResult<Object> exportDicByExcel(HttpServletRequest request, HttpServletResponse response){
 		GenericResult<Object> result = new GenericResult<>();
 		try {
 			List<List<String>> list = dictionaryService.searchDicAndDicitem();
 			String sheetName = "BULUDATA-DicData";
-			String filePath = CommonConst.getProperties("basePath") + "sjbl" + sheetName;
+			String filePath = CommonConst.getProperties("basePath") + "sjbl\\" ;
 			ExcelUtil.createExcel2007(list,sheetName,filePath,sheetName);
+			String fileNameParth = "sjbl|" + sheetName;
+			result.setSuccess(true);
+			result.setMessage(fileNameParth);
 		} catch (Exception e){
 			e.printStackTrace();
 			result.setSuccess(false);
@@ -225,5 +225,6 @@ public class DictionaryController {
 		}
 		return  result;
 	}
+
 
 }
