@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.util.ExcelUtil;
+import com.fitech.framework.lang.util.FileUtil;
 import com.fitech.vo.account.AccountDicVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -215,7 +216,7 @@ public class DictionaryController {
 			String sheetName = "BULUDATA-DicData";
 			String filePath = CommonConst.getProperties("basePath") + "sjbl\\" ;
 			ExcelUtil.createExcel2007(list,sheetName,filePath,sheetName);
-			String fileNameParth = "sjbl|" + sheetName;
+			String fileNameParth = "sjbl|data|" + sheetName;
 			result.setSuccess(true);
 			result.setMessage(fileNameParth);
 		} catch (Exception e){
@@ -226,5 +227,19 @@ public class DictionaryController {
 		return  result;
 	}
 
+    @GetMapping("downloadSjblTemplate")
+    public void downloadTemplate(HttpServletRequest request, HttpServletResponse response){
+        try {
+            String sheetName = "BULUDATA-DicData-template.xlsx";
+            String filePath = "sjbl\\template\\" + sheetName;
+            File file = new File(CommonConst.getProperties("basePath") + filePath);
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            FileUtil.downLoadFile(file,response);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
