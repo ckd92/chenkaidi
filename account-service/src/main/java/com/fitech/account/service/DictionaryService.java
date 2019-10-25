@@ -10,6 +10,8 @@ import com.fitech.domain.account.Dictionary;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.framework.lang.result.GenericResult;
 import com.fitech.vo.account.AccountDicVo;
+import com.fitech.vo.account.AccountFieldVo;
+import com.fitech.vo.account.AccountTemplateVo;
 import org.apache.poi.ss.usermodel.Sheet;
 
 
@@ -86,10 +88,21 @@ public interface DictionaryService {
     public GenericResult<Object> batchAdd(Collection<AccountDicVo> list);
 
     /**
-     * 查询字典和字典项
+     * 获取字典和字典项全部数据
      * @return
      */
-    public List<List<String>> searchDicAndDicitem();
+    public List<List<String>> getDicAndDicitemData();
 
+    /**
+     * 字典和字典项查询是否存在
+     * @return
+     */
+    public String validateDataCheck(List<AccountFieldVo> itemList);
+
+    /**
+     * 批量载入数据补录 表和字段
+     * @return
+     */
+    public GenericResult<Boolean> batchAddTempAndField(String busSystemId,List<AccountTemplateVo> templateList,List<AccountFieldVo> itemList);
 
 }

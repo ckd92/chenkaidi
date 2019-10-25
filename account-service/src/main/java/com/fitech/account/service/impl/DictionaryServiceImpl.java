@@ -12,10 +12,17 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import com.fitech.account.dao.DictionaryDao;
-import com.fitech.domain.account.DictionaryItem;
+import com.fitech.account.service.AccountTemplateService;
+import com.fitech.domain.account.*;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.framework.lang.annotation.Description;
+import com.fitech.report.repository.RepFreqRepository;
+import com.fitech.report.service.RLedgerModelService;
+import com.fitech.system.dao.FieldPermissionDao;
 import com.fitech.vo.account.AccountDicVo;
+import com.fitech.vo.account.AccountFieldVo;
+import com.fitech.vo.account.AccountTemplateVo;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -27,7 +34,6 @@ import com.fitech.account.repository.DictionaryRepository;
 import com.fitech.account.service.DictionaryItemService;
 import com.fitech.account.service.DictionaryService;
 import com.fitech.constant.ExceptionCode;
-import com.fitech.domain.account.Dictionary;
 import com.fitech.framework.core.trace.ServiceTrace;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.result.GenericResult;
@@ -52,6 +58,15 @@ public class DictionaryServiceImpl implements DictionaryService {
 
 	@Autowired
 	private DictionaryDao dictionaryDao;
+	@Autowired(required=false)
+	private RLedgerModelService rLedgerModelService;
+
+	@Autowired
+	private AccountTemplateService accountTemplateService;
+	@Autowired
+	private FieldPermissionDao fieldPermissionDao;
+	@Autowired
+	private RepFreqRepository repFreqRepository;
 
 	/**
 	 * 查所有字典
@@ -481,7 +496,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 	}
 
 	@Override
-	public List<List<String>> searchDicAndDicitem() {
+	public List<List<String>> getDicAndDicitemData() {
 		List<List<String>> list = new ArrayList<>();
 		List<String> fieldNames = new ArrayList<>();
 		List<String> values = null;
@@ -511,6 +526,69 @@ public class DictionaryServiceImpl implements DictionaryService {
 		}
 		return list;
 	}
+
+	@Override
+	public String validateDataCheck(List<AccountFieldVo> itemList) {
+		GenericResult<Boolean> result = new GenericResult<>();
+		for(AccountFieldVo accountFieldVo : itemList){
+			String itemType = accountFieldVo.getFieldType();
+			if("CODELIB".equals(itemType) || "SINGLECODELIB".equals(itemType)){
+				Dictionary dic = new Dictionary();
+				dic.setDicName(accountFieldVo.getDictionaryName());
+				List<Dictionary> all = dictionaryRepository.findAll(buildSpecification1(dic));
+				if(null == all || all.isEmpty()){
+					return "数据字典" + accountFieldVo.getDictionaryName()+"不存在";
+				}
+			}
+		}
+		return null;
+	}
+	@Transactional
+	@Override
+	public GenericResult<Boolean> batchAddTempAndField(String busSystemId, List<AccountTemplateVo> templateList, List<AccountFieldVo> itemList) {
+		GenericResult<Boolean> result = new GenericResult<>();
+		//建表初始化报文权限
+		try{
+			for (AccountTemplateVo vo : templateList) {
+				AccountTemplate accountTemplate = new AccountTemplate();
+				accountTemplate.setTemplateCode(vo.getTemplateCode());
+				accountTemplate.setTableName(vo.getTemplateCode());
+				accountTemplate.setTemplateName(vo.getTemplateName());
+				accountTemplate.setStartDate(vo.getStartDate());
+				accountTemplate.setEndDate(vo.getEndDate());
+				accountTemplate.setRepFreq(repFreqRepository.findByRepFreqName(vo.getTemplatefreq()));
+				AccountField accountField = null;
+				List<AccountField> accountFieldList = new ArrayList<>();
+				for(AccountFieldVo fieldvo : itemList){
+					if(accountTemplate.getTableName().equals(fieldvo.getTablename())){
+						accountField = new AccountField();
+						accountField.setItemCode(fieldvo.getFieldCode());
+						accountField.setItemName(fieldvo.getFieldName());
+						accountField.setItemType(fieldvo.getFieldType());
+						accountField.setLength(fieldvo.getFieldLength());
+						accountField.setPkable(Boolean.valueOf(fieldvo.getPrimaryKey()));
+						accountField.setItemDescription(fieldvo.getDescription());
+						Dictionary dic = new Dictionary();
+						dic.setDicName(fieldvo.getDictionaryName());
+						List<Dictionary> all = dictionaryRepository.findAll(buildSpecification1(dic));
+						accountField.setDicId(String.valueOf(all.get(0).getId()));
+						accountField.setOrderNumber(Integer.valueOf(fieldvo.getOrdernumber()));
+						accountFieldList.add(accountField);
+					}
+				}
+				accountTemplate.setAccountFields(accountFieldList);
+				result = accountTemplateService.save(accountTemplate);
+				if(!result.isSuccess()){
+					return result;
+				}
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+			throw new AppException("批量载入模板失败，数据异常！");
+		}
+		return result;
+	}
+
 
 	/**
 	 * 校验导入字典项数据

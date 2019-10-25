@@ -3,17 +3,18 @@ package com.fitech.account.controller;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fitech.dto.DictionaryDto;
+import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.FileUtil;
 import com.fitech.vo.account.AccountDicVo;
+import com.fitech.vo.account.AccountFieldVo;
+import com.fitech.vo.account.AccountTemplateVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class DictionaryController {
 	@Autowired
 	private DictionaryService dictionaryService;
+
 
 	/**
 	 * 条件分页字典
@@ -212,9 +214,9 @@ public class DictionaryController {
 	public GenericResult<Object> exportDicByExcel(HttpServletRequest request, HttpServletResponse response){
 		GenericResult<Object> result = new GenericResult<>();
 		try {
-			List<List<String>> list = dictionaryService.searchDicAndDicitem();
+			List<List<String>> list = dictionaryService.getDicAndDicitemData();
 			String sheetName = "BULUDATA-DicData";
-			String filePath = CommonConst.getProperties("basePath") + "sjbl\\" ;
+			String filePath = CommonConst.getProperties("basePath") + "sjbl\\data\\" ;
 			ExcelUtil.createExcel2007(list,sheetName,filePath,sheetName);
 			String fileNameParth = "sjbl|data|" + sheetName;
 			result.setSuccess(true);
@@ -227,6 +229,11 @@ public class DictionaryController {
 		return  result;
 	}
 
+	/**
+	 * 系统配置 数据补录模板下载
+	 * @param request
+	 * @param response
+	 */
     @GetMapping("downloadSjblTemplate")
     public void downloadTemplate(HttpServletRequest request, HttpServletResponse response){
         try {
@@ -240,6 +247,44 @@ public class DictionaryController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+	/**
+	 * 批量载入数据补录 模板和字段
+	 * @param templateFile
+	 * @param itemFile
+	 * @param busSystemId
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("/batchSjblInputTemplate/{busSystemId}")
+	public GenericResult<Boolean> batchInputTemplate(
+			@RequestParam(value = "templateFile", required = true) MultipartFile templateFile,
+			@RequestParam(value = "itemFile", required = true) MultipartFile itemFile,
+			@PathVariable("busSystemId") String busSystemId,
+			HttpServletRequest request) {
+		GenericResult<Boolean> result = new GenericResult<Boolean>();
+		try{
+			//报文模板数据
+			List<AccountTemplateVo> templateList = ExcelUtil.addFormExcel2003And2007(templateFile.getInputStream(),templateFile.getOriginalFilename(),new AccountTemplateVo());
+			//报文模板字段数据
+			List<AccountFieldVo> itemList = ExcelUtil.addFormExcel2003And2007(itemFile.getInputStream(),itemFile.getOriginalFilename(), new AccountFieldVo());
+			//判断是否存在字典项，字典项是否已存在
+			String checkResult = dictionaryService.validateDataCheck(itemList);
+			//checkResult 不为null，表示有字典项不存在，checkResult对应该字典项的codeLibKey
+			if( checkResult != null ){
+				result.setSuccess(false);
+				result.setMessage(checkResult);
+			}else{
+				//批量导入
+				result.setSuccess(true);
+				result = dictionaryService.batchAddTempAndField(busSystemId,templateList,itemList);
+			}
+		}catch (Exception e){
+			result.setSuccess(false);
+			result.setMessage(e.getMessage());
+		}
+		return result;
     }
 
 }
