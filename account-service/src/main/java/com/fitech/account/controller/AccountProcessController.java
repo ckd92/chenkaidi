@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fitech.constant.LoggerUtill;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,7 +66,7 @@ public class AccountProcessController {
             e.printStackTrace();
             result.setSuccess(false);
         }finally {
-            sysLogService.addOperateLog("待办任务初始化分页",request);
+            sysLogService.addOperateLogLast("科融统计平台-数据补录-数据处理-待办任务-查询",request,LoggerUtill.LogType.OPERATE);
         }
         return result;
     }
@@ -93,7 +94,7 @@ public class AccountProcessController {
             e.printStackTrace();
             result.setSuccess(false);
         }finally{
-        	sysLogService.addOperateLog("已办任务查看",request);
+        	sysLogService.addOperateLogLast("科融统计平台-数据补录-数据处理-已办任务-查询",request,LoggerUtill.LogType.OPERATE);
         }
         return result;
     }
