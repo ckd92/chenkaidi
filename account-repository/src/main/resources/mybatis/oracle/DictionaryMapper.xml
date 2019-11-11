@@ -70,7 +70,7 @@
         values (#{id},#{dicItemDesc},#{dicItemId},#{dicItemName},#{parentId},#{dictionaryId})
     </insert>
 
-    <select id="searchDictionary" resultType="AccountDicVo">
+    <select id="searchDictionary" resultType="com.fitech.vo.account.AccountDicVo">
     select t.id as dicId,
        t.dicname,
        t.parentid    as dicParentId,
