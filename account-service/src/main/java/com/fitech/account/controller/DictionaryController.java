@@ -238,8 +238,12 @@ public class DictionaryController {
     public void downloadTemplate(HttpServletRequest request, HttpServletResponse response){
         try {
             String sheetName = "BULUDATA-DicData-template.xlsx";
-            String filePath = "sjbl\\template\\" + sheetName;
-            File file = new File(CommonConst.getProperties("basePath") + filePath);
+            String filePathstr = CommonConst.getProperties("template_path") + "sjbl\\template\\" ;
+            File filePath = new File(filePathstr);
+            if(!filePath.exists()){
+            	filePath.mkdirs();
+			}
+            File file = new File(filePathstr + sheetName);
             if(!file.exists()){
                 file.createNewFile();
             }
