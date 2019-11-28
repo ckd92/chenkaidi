@@ -221,7 +221,7 @@ public class DictionaryController {
 				return result;
 			}
 			String sheetName = "BULUDATA-DicData";
-			String filePath = CommonConst.getProperties("basePath") + "sjbl" + File.separator + "data" ;
+			String filePath = CommonConst.getProperties("basePath") + "sjbl" + File.separator + "data" + File.separator ;
 			ExcelUtil.createExcel2007(list,sheetName,filePath,sheetName);
 			String fileNameParth = "sjbl|data|" + sheetName;
 			result.setSuccess(true);
