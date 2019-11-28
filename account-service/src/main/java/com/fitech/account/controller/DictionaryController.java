@@ -215,8 +215,13 @@ public class DictionaryController {
 		GenericResult<Object> result = new GenericResult<>();
 		try {
 			List<List<String>> list = dictionaryService.getDicAndDicitemData();
+			if(list.size() == 1){
+				result.setSuccess(false);
+				result.setMessage("字典为空，无法下载！");
+				return result;
+			}
 			String sheetName = "BULUDATA-DicData";
-			String filePath = CommonConst.getProperties("basePath") + "sjbl\\data\\" ;
+			String filePath = CommonConst.getProperties("basePath") + "sjbl" + File.separator + "data" ;
 			ExcelUtil.createExcel2007(list,sheetName,filePath,sheetName);
 			String fileNameParth = "sjbl|data|" + sheetName;
 			result.setSuccess(true);
@@ -238,7 +243,7 @@ public class DictionaryController {
     public void downloadTemplate(HttpServletRequest request, HttpServletResponse response){
         try {
             String sheetName = "BULUDATA-DicData-template.xlsx";
-            String filePathstr = CommonConst.getProperties("template_path") + "sjbl\\template\\" ;
+            String filePathstr = CommonConst.getProperties("template_path");
             File filePath = new File(filePathstr);
             if(!filePath.exists()){
             	filePath.mkdirs();

@@ -88,7 +88,7 @@
        d.parentid    as dicItemParentId,
        d.dicitemdesc as dicItemDescription
       from TZDICTIONARY t
-     inner join DICTIONARYITEM d
+     left join DICTIONARYITEM d
     on t.id = d.dictionary_id
     </select>
 </mapper>
