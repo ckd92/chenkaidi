@@ -2,6 +2,7 @@ package com.fitech.account.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -242,18 +243,24 @@ public class DictionaryController {
     @GetMapping("downloadSjblTemplate")
     public void downloadTemplate(HttpServletRequest request, HttpServletResponse response){
         try {
-            String sheetName = "BULUDATA-DicData-template.xlsx";
+            String sheetName = "BULUDATA-DicData-template";
             String filePathstr = CommonConst.getProperties("template_path");
             File filePath = new File(filePathstr);
             if(!filePath.exists()){
             	filePath.mkdirs();
 			}
-            File file = new File(filePathstr + sheetName);
+            File file = new File(filePathstr + sheetName + ".xlsx");
             if(!file.exists()){
-                file.createNewFile();
+				List<List<String>> execList = new ArrayList<List<String>>();
+				List<String> fieldList = new ArrayList<String>();
+				List<String> valueList = new ArrayList<String>();
+				fieldList.add("");
+				execList.add(fieldList);
+				execList.add(valueList);
+				ExcelUtil.createExcel2007(execList,sheetName,filePathstr + File.separator,sheetName);
             }
             FileUtil.downLoadFile(file,response);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
