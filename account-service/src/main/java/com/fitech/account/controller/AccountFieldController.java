@@ -4,6 +4,8 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fitech.constant.LoggerUtill;
+import com.fitech.system.annotation.AddOperateLogLast;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,6 +63,7 @@ public class AccountFieldController {
      * @return
      */
     @PostMapping("/accountTemplateField")
+    @AddOperateLogLast(targetURI = "/accountTemplateField", baseContent = "科融统计平台-业务设置-补录模版管理-字段配置-新增字段", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Boolean> save(@RequestBody AccountTemplate accountTemplate,
                                                         HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
@@ -81,6 +84,7 @@ public class AccountFieldController {
      * @return
      */
     @PutMapping("/accountTemplateField")
+    @AddOperateLogLast(targetURI = "/accountTemplateField", baseContent = "科融统计平台-业务设置-补录模版管理-字段配置-模版字段修改", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Boolean> modify(@RequestBody  AccountTemplate accountTemplate,
                                                         HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
@@ -102,6 +106,7 @@ public class AccountFieldController {
      * @return
      */
     @DeleteMapping("/accountTemplateField/{accountTemplateId}/{accountFieldId}")
+    @AddOperateLogLast(targetURI = "/accountTemplateField/", baseContent = "科融统计平台-业务设置-补录模版管理-字段配置-模版字段删除", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Boolean> remove(@PathVariable("accountTemplateId") Long accountTemplateId, 
     		@PathVariable("accountFieldId") Long accountFieldId, HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();

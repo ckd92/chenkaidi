@@ -8,11 +8,13 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fitech.constant.LoggerUtill;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.framework.lang.common.AppException;
 import com.fitech.framework.lang.common.CommonConst;
 import com.fitech.framework.lang.util.ExcelUtil;
 import com.fitech.framework.lang.util.FileUtil;
+import com.fitech.system.annotation.AddOperateLogLast;
 import com.fitech.vo.account.AccountDicVo;
 import com.fitech.vo.account.AccountFieldVo;
 import com.fitech.vo.account.AccountTemplateVo;
@@ -99,6 +101,7 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("/dictionary")
+	@AddOperateLogLast(targetURI = "/dictionary", baseContent = "科融统计平台-业务设置-数据字典管理-新增字典", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<Boolean> save(@RequestBody Dictionary dictionary,  HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -119,6 +122,7 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PutMapping("/dictionary/{id}")
+	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-修改字典", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<Boolean> update(@PathVariable("id") Long id,@RequestBody Dictionary dictionary,HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -139,6 +143,7 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PutMapping("/dictionary/{id}/{flag}")
+	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-修改字典", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<Boolean> update(@PathVariable("id") Long id,@PathVariable("flag")String flag,@RequestBody Dictionary dictionary,HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -159,6 +164,7 @@ public class DictionaryController {
 	 * @return
 	 */
 	@DeleteMapping("/dictionary/{id}")
+	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-删除字典", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<Boolean> delete(@PathVariable("id") Long id,HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -212,6 +218,7 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("exportDicByExcel")
+	@AddOperateLogLast(targetURI = "/exportDicByExcel", baseContent = "科融统计平台-业务设置-数据字典项管理-字典项导出", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<Object> exportDicByExcel(HttpServletRequest request, HttpServletResponse response){
 		GenericResult<Object> result = new GenericResult<>();
 		try {

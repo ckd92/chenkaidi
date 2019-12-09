@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fitech.constant.LoggerUtill;
+import com.fitech.system.annotation.AddOperateLogLast;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,6 +51,7 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccountProcess")
+    @AddOperateLogLast(targetURI = "/accountTask/findPageAccountProcess", baseContent = "科融统计平台-数据处理-待办任务-查询", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<List<AccountProcessVo>> findTodoTask(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
         GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
@@ -66,7 +68,7 @@ public class AccountProcessController {
             e.printStackTrace();
             result.setSuccess(false);
         }finally {
-            sysLogService.addOperateLogLast("科融统计平台-数据补录-数据处理-待办任务-查询",request,LoggerUtill.LogType.OPERATE);
+//            sysLogService.addOperateLogLast("科融统计平台-数据补录-数据处理-待办任务-查询",request,LoggerUtill.LogType.OPERATE);
         }
         return result;
     }
@@ -78,6 +80,7 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findAssignedTask")
+    @AddOperateLogLast(targetURI = "/accountTask/findAssignedTask", baseContent = "科融统计平台-数据处理-已办任务-查询", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<List<AccountProcessVo>> findDoneTask(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
         GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
@@ -94,7 +97,7 @@ public class AccountProcessController {
             e.printStackTrace();
             result.setSuccess(false);
         }finally{
-        	sysLogService.addOperateLogLast("科融统计平台-数据补录-数据处理-已办任务-查询",request,LoggerUtill.LogType.OPERATE);
+//        	sysLogService.addOperateLogLast("科融统计平台-数据补录-数据处理-已办任务-查询",request,LoggerUtill.LogType.OPERATE);
         }
         return result;
     }
@@ -105,6 +108,7 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccounts")
+    @AddOperateLogLast(targetURI = "/accountTask/findPageAccounts", baseContent = "科融统计平台-数据查询-数据查询-查询", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<List<AccountProcessVo>> findCurrentAccounts(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
         GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
@@ -132,6 +136,7 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("submitProcess/{action}")
+    @AddOperateLogLast(targetURI = "/accountTask/submitProcess/", baseContent = "科融统计平台-数据处理-待办任务-台账审核-批量提交审核", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Boolean> submitProcess(@RequestBody List<AccountProcessVo> accountProcessVoList, @PathVariable String action
             , HttpServletRequest request){
         GenericResult<Boolean> result=new GenericResult<>();

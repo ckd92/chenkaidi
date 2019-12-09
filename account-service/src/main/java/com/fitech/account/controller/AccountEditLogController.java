@@ -2,6 +2,8 @@ package com.fitech.account.controller;
 
 import java.util.List;
 
+import com.fitech.constant.LoggerUtill;
+import com.fitech.system.annotation.AddOperateLogLast;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +26,7 @@ public class AccountEditLogController {
 	 * @return
 	 */
 	@PostMapping("/accountEditLogs")
+	@AddOperateLogLast(targetURI = "/accountEditLogs", baseContent = "科融平台-数据查询-修改痕迹-查询", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<List<AccountEditLog>> getEditLogs(@RequestBody AccountEditLog accountEditLog){
 		GenericResult<List<AccountEditLog>> result = new GenericResult<List<AccountEditLog>>();
 		try{

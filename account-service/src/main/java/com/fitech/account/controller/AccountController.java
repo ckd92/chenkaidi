@@ -7,6 +7,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fitech.constant.LoggerUtill;
+import com.fitech.system.annotation.AddOperateLogLast;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,6 +52,7 @@ public class AccountController {
      * @return
      */
     @PostMapping("Account/accountdatas")
+    @AddOperateLogLast(targetURI = "/accountTask/Account/accountdatas", baseContent = "科融统计平台-数据处理-待办任务-查看报表内容", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<AccountProcessVo> findAccountDatas(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<AccountProcessVo> result = new GenericResult<>();
         try {
@@ -77,6 +80,7 @@ public class AccountController {
      * @return
      */
     @GetMapping("Account/{accountId}/AccountLine/{id}")
+    @AddOperateLogLast(targetURI = "/acountTask/Account/accountdatas", baseContent = "科融统计平台-数据处理-待办任务-处理-查询待办处理", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<AccountLine> findAccountDatas(@PathVariable Long accountId, @PathVariable Long id, HttpServletResponse response, HttpServletRequest request) {
         GenericResult<AccountLine> result = new GenericResult<>();
         try {
@@ -97,6 +101,7 @@ public class AccountController {
      * @return
      */
     @PostMapping("Account/accountdatastwo")
+    @AddOperateLogLast(targetURI = "/accountTask/Account/accountdatastwo", baseContent = "科融统计平台-数据处理-待办任务-台账审核-查看明细", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<AccountProcessVo> findAccountDatatwo(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<AccountProcessVo> result = new GenericResult<>();
         try {
@@ -121,6 +126,7 @@ public class AccountController {
      * @return
      */
     @PostMapping("Account/accountdata")
+    @AddOperateLogLast(targetURI = "/accountTask/Account/accountdata", baseContent = "科融统计平台-数据处理-待办任务-处理-新增-保存", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Object> addAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<Object> result = new GenericResult<>();
         try {
@@ -151,6 +157,7 @@ public class AccountController {
      * @return
      */
     @PutMapping("Account/accountdata")
+    @AddOperateLogLast(targetURI = "/accountTask/Account/accountdata", baseContent = "科融统计平台-数据处理-待办任务-处理-修改", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Object> updateAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<Object> result = new GenericResult<>();
         try {
@@ -178,6 +185,7 @@ public class AccountController {
      * @return
      */
     @PutMapping("Account/accountdatas")
+    @AddOperateLogLast(targetURI = "/accountTask/Account/accountdatas", baseContent = "科融统计平台-数据处理-待办任务-处理-批量数据补录", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Object> updateBatchAccountData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<Object> result = new GenericResult<>();
         try {
@@ -206,6 +214,7 @@ public class AccountController {
      * @return
      */
     @DeleteMapping("Account/{accountId}/AccountLine/{id}")
+    @AddOperateLogLast(targetURI = "accountTask/Account//AccountLine/", baseContent = "科融统计平台-数据处理-待办任务-处理-删除", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Boolean> deleteAccountData(@PathVariable Long accountId, @PathVariable Long id, HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
@@ -238,6 +247,7 @@ public class AccountController {
      * @return
      */
     @GetMapping("CreateTemplate/{accountId}")
+    @AddOperateLogLast(targetURI = "/accountTask/CreateTemplate/", baseContent = "科融统计平台-数据处理-待办任务-处理-模版下载", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Object> createTemplate(@PathVariable Long accountId, HttpServletResponse response, HttpServletRequest request) {
         try {
             GenericResult<Object> obj = new GenericResult<Object>();
@@ -284,6 +294,7 @@ public class AccountController {
      * @return
      */
     @PostMapping("Account/downloaddatas")
+    @AddOperateLogLast(targetURI = "/accountTask/Account/downloaddatas", baseContent = "科融统计平台-数据处理-待办任务-导出", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<AccountProcessVo> createData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<AccountProcessVo> result = new GenericResult<>();
         try {
@@ -337,6 +348,7 @@ public class AccountController {
      * @return
      */
     @PostMapping("Account/validateAll")
+    @AddOperateLogLast(targetURI = "/accountTask/Account/validateAll", baseContent = "科融统计平台-数据处理-待办任务-处理-全表校验", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Object> validateAll(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<Object> result = new GenericResult<>();
         try {
@@ -357,6 +369,7 @@ public class AccountController {
      * @return
      */
     @GetMapping("Account/validatePL")
+    @AddOperateLogLast(targetURI = "/accountTask/Account/validatePL", baseContent = "科融统计平台-数据处理-待办任务-台账审核-批量校验", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Object> validatePl(@RequestParam("idList") List<Long> idList, HttpServletRequest request) {
         GenericResult<Object> result = new GenericResult<>();
         try {
@@ -377,6 +390,7 @@ public class AccountController {
      * @param request
      */
     @PostMapping("/BatchDelete")
+    @AddOperateLogLast(targetURI = "/accountTask/BatchDelete", baseContent = "科融统计平台-数据处理-待办任务-处理-批量删除", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<Object> batchDeleteAccountData(@RequestBody List<AccountProcessVo> list, HttpServletRequest request) {
         GenericResult<Object> genericResult = new GenericResult<>();
         List<Object> arrayList = new ArrayList<>();
