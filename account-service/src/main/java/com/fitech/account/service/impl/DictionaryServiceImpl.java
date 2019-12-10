@@ -2,9 +2,7 @@ package com.fitech.account.service.impl;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -14,6 +12,7 @@ import javax.persistence.criteria.Root;
 import com.fitech.account.dao.DictionaryDao;
 import com.fitech.account.service.AccountTemplateService;
 import com.fitech.domain.account.*;
+import com.fitech.domain.account.Dictionary;
 import com.fitech.dto.DictionaryDto;
 import com.fitech.framework.lang.annotation.Description;
 import com.fitech.report.repository.RepFreqRepository;
@@ -317,7 +316,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 				dictionary.setIsEnable(accountDicVo.getDicIsEnabel());
 				dictionary.setDicDesc(accountDicVo.getDicDescription());
 				dictionaryList2.add(dictionary);
-				if(null != accountDicVo.getDicItemId() && !"".equals(accountDicVo.getDicItemId())) {
+				if(StringUtil.isNotEmpty(accountDicVo.getItemId())) {
 					dictionaryItem = new DictionaryItem();
 					dictionaryItem.setDictionary(dictionary);
 					dictionaryItem.setId(Long.valueOf(accountDicVo.getItemId()));
@@ -328,155 +327,113 @@ public class DictionaryServiceImpl implements DictionaryService {
 					ItemsList2.add(dictionaryItem);
 				}
 			}
-			//单属性 去重
-			List<String> strs = new ArrayList<>();
-			//分别存放半属性的字典和字典项对象，用于后面去重
-			List<Dictionary> dictionaryList = new ArrayList<>();
-			List<DictionaryItem> ItemList = new ArrayList<>();
-			//分别存放去重后的字典集合和字典项集合
-			List<Dictionary> lastDictionaryList = new ArrayList<>();
-			List<DictionaryItem> lastItemList = new ArrayList<>();
-			for(AccountDicVo accountDicVo : dicVoList){
-				dictionary = new Dictionary();
-				dictionary.setDicName(accountDicVo.getDicName());
-				dictionary.setId(Long.valueOf(accountDicVo.getDicId()));
-				dictionaryList.add(dictionary);
-				if(null != accountDicVo.getDicItemId() && !"".equals(accountDicVo.getDicItemId())){
-					dictionaryItem = new DictionaryItem();
-					dictionaryItem.setDictionary(dictionary);
-					dictionaryItem.setDicItemName(accountDicVo.getDicItemName());
-					dictionaryItem.setDicItemId(accountDicVo.getDicItemId());
-					ItemList.add(dictionaryItem);
-				}
-			}
-			//对字典去重 字典id和字典名称去重  去除多余属性干扰
-			for(Dictionary dic :dictionaryList){
-				if(!lastDictionaryList.contains(dic)){
-					lastDictionaryList.add(dic);
-				}
+
+			//去重之后的字典集合
+			Set<Dictionary> dictinarySet = new HashSet();
+			for(Dictionary dic : dictionaryList2){
+				dictinarySet.add(dic);
 			}
 			//对去过一次重的字典检查是否有字典名 重复
-			for(Dictionary dic : lastDictionaryList){
-				if(strs.contains(dic.getDicName())){
-					result.setSuccess(false);
-					result.setMessage("excel中存在字典名称重复，该重复字典名称为" + dic.getDicName());
-					return result;
-				}else{
-					strs.add(dic.getDicName());
+			for(Dictionary dic : dictinarySet){
+				//表内去重
+				for(Dictionary dic2 : dictionaryList2) {
+					if(!dic.equals(dic2)){
+						if(dic2.getDicName().equals(dic.getDicName())){
+							result.setSuccess(false);
+							result.setMessage("excel中存在字典名称重复，该重复字典名称为" + dic.getDicName());
+							return result;
+						}
+						if(!dic2.getDicName().equals(dic.getDicName()) && dic.getId().equals(dic2.getId())){
+							result.setSuccess(false);
+							result.setMessage("excel中存在字典Id重复，该重复字典Id为" + dic.getId());
+							return result;
+						}
+					}
 				}
-			}
-			//判断字典是否在数据库中重复
-			for(Dictionary dic : lastDictionaryList) {
+				//数据库查重
 				if (dictionaryRepository.findAll(buildSpecification1(dic)).size() > 0) {
 					result.setSuccess(false);
-					result.setMessage("存在字典名称在数据库中重复，该重复字典名称为" + dic.getDicName());
+					result.setMessage("excel中存在字典名称在数据库中重复，该重复字典名称为" + dic.getDicName());
+					return result;
+				}
+				if(dictionaryRepository.findDictionaryById(dic.getId()) != null){
+					result.setSuccess(false);
+					result.setMessage("excel中存在字典Id在数据库中重复，该重复字典Id为" + dic.getId());
+					return result;
+				}
+
+			}
+
+			/**字典项**/
+			//字典项查重
+			Set<DictionaryItem> itemSet = new HashSet<>();
+			int OrignSize = 0;
+			int nowSize = 0;
+			for(DictionaryItem item : ItemsList2) {
+				OrignSize = itemSet.size();
+				itemSet.add(item);
+				nowSize = itemSet.size() > OrignSize ? nowSize++ : OrignSize;
+				if(OrignSize != 0 && nowSize != 0 && OrignSize == nowSize){
+					result.setSuccess(false);
+					result.setMessage(" excel中存在某一字典下有多个重复的字典项数据，该字典id为" + item.getDictionary().getId());
 					return result;
 				}
 			}
-			//最终去重之后的字典集合
-			List<Dictionary> addDics = new ArrayList<>();
-			for(Dictionary dic : lastDictionaryList){
-				for(Dictionary dic2 : dictionaryList2){
-					if(dic.getDicName().equals(dic2.getDicName())){
-						addDics.add(dic2);
-						break;
+
+			for (DictionaryItem item : ItemsList2) {
+				for (DictionaryItem item2 : ItemsList2) {
+					if (!item.equals(item2)){
+						//excel中同一个字典下 查重是否有相同的字典项编号和名称
+						if(item.getDictionary().getId().equals(item2.getDictionary().getId())){
+							if (item.getDicItemId().equals(item2.getDicItemId())) {
+								result.setSuccess(false);
+								result.setMessage(" excel中存在某一字典下有多个重复的字典项编号，该字典id为" + item.getDictionary().getId());
+								return result;
+							}
+							if (item.getDicItemName().equals(item2.getDicItemName())) {
+								result.setSuccess(false);
+								result.setMessage(" excel中存在某一字典下有多个重复的字典项名称，该字典id为" + item.getDictionary().getId());
+								return result;
+							}
+						}
+						//excel中的字典项id是否有重复
+						if (item.getId().equals(item2.getId())) {
+							result.setSuccess(false);
+							result.setMessage(" excel中存在某一字典下有多个重复的字典项Id，该字典项id为" + item.getDictionary().getId());
+							return result;
+						}
 					}
 				}
-			}
-			//判断字典的父级字典是否有重复数据
-			strs.clear();
-			for(Dictionary dic: addDics){
-				if(StringUtil.isNotEmpty(dic.getParentId())){
-					if(strs.contains(dic.getParentId())){
-						result.setSuccess(false);
-						result.setMessage("excel中存在字典的父级字典数据重复，该字典为id为" + dic.getId());
-						return  result;
-					}else{
-						strs.add(dic.getParentId());
-					}
+				//数据库查重id是否重复
+				if(dictionaryItemRepository.findById(item.getId()) != null){
+					result.setSuccess(false);
+					result.setMessage("excel中存在字典项Id在数据库中重复，该重复字典项对应的字典Id为" + item.getDictionary().getId());
+					return result;
+				}
+				//数据库查重字典下的字典项的编号和名称是否在数据库中重复
+				if(dictionaryItemRepository.findByDicItemIdAndDictionary(item.getDicItemId(),item.getDictionary()) != null){
+					result.setSuccess(false);
+					result.setMessage("excel中存在某一字典的字典项编号在数据库中重复，该对应的字典Id和字典项编号为" + item.getDictionary().getId() + "," + item.getDicItemId());
+					return result;
+				}
+				if(dictionaryItemRepository.findByDicItemNameAndDictionary(item.getDicItemName(),item.getDictionary()) != null){
+					result.setSuccess(false);
+					result.setMessage("excel中存在某一字典的字典项名称在数据库中重复，该对应的字典Id和字典项名称为"  + item.getDictionary().getId() + "," + item.getDicItemName());
+					return result;
 				}
 			}
 
 			//循环新增字典
-			for(Dictionary dic : addDics){
+			for(Dictionary dic : dictinarySet){
 				dictionaryDao.addDictionary(dic);
 			}
 
-
-			/**字典项**/
-			//字典项查重  去除多余属性干扰
-			if(ItemList.size() > 0){
-				for(DictionaryItem item :ItemList){
-					if(lastItemList.contains(item)){
-						result.setSuccess(false);
-						result.setMessage(" excel中存在某一字典下有多个重复的字典项数据，该字典id为" + item.getDictionary().getId());
-						return result;
-					}else{
-						lastItemList.add(item);
-					}
-				}
-				//字典项去重过后，对excel中同一个字典下，判断是否有重复的字典项名称
-				List<DictionaryItem> dicItemIdsAndNames = new ArrayList<>();
-				List<DictionaryItem> lastDicItemIdsAndNames = new ArrayList<>();
-				for(DictionaryItem item :lastItemList){
-					dictionary = new Dictionary();
-					dictionary.setId(item.getDictionary().getId());
-					dictionary.setDicName(item.getDictionary().getDicName());
-					dictionaryItem = new DictionaryItem();
-					dictionaryItem.setDictionary(dictionary);
-					dictionaryItem.setDicItemId(item.getDicItemId());
-					dicItemIdsAndNames.add(dictionaryItem);
-				}
-				for(DictionaryItem dic : dicItemIdsAndNames){
-					if(lastDicItemIdsAndNames.contains(dic)){
-						result.setSuccess(false);
-						result.setMessage(" excel中存在某一字典下有多个重复的字典项编号，该字典id为" + dic.getDictionary().getId());
-						return result;
-					}else{
-						lastDicItemIdsAndNames.add(dic);
-					}
-				}
-				//excel中同一个字典下，判断是否有重复的字典项名称
-				dicItemIdsAndNames.clear();
-				lastDicItemIdsAndNames.clear();
-				for(DictionaryItem item :lastItemList){
-					dictionary = new Dictionary();
-					dictionary.setId(item.getDictionary().getId());
-					dictionary.setDicName(item.getDictionary().getDicName());
-					dictionaryItem = new DictionaryItem();
-					dictionaryItem.setDictionary(dictionary);
-					dictionaryItem.setDicItemName(item.getDicItemName());
-					dicItemIdsAndNames.add(dictionaryItem);
-				}
-				for(DictionaryItem dic : dicItemIdsAndNames){
-					if(lastDicItemIdsAndNames.contains(dic)){
-						result.setSuccess(false);
-						result.setMessage(" excel中存在某一字典下有多个重复的字典项名称，该字典项id为" + dic.getDictionary().getId());
-						return result;
-					}else{
-						lastDicItemIdsAndNames.add(dic);
-					}
-				}
-
-				//最终去重之后的字典项集合
-				List<DictionaryItem> addDicitems = new ArrayList<>();
-				for(DictionaryItem item : lastItemList){
-					for(DictionaryItem item2 : ItemsList2){
-						if(item.getDicItemName().equals(item2.getDicItemName()) && item.getDicItemName().equals(item2.getDicItemName()) &&
-								item.getDictionary().getId().equals(item2.getDictionary().getId())){
-							addDicitems.add(item2);
-							break;
-						}
-					}
-				}
-
-				//循环新增字典项
-				for(DictionaryItem item2 : addDicitems){
-					dictionaryDao.addDictionaryItem(item2);
-				}
+			//循环新增字典项
+			for(DictionaryItem item2 : ItemsList2){
+				dictionaryDao.addDictionaryItem(item2);
 			}
 				result.setSuccess(true);
-		}catch (RuntimeException e) {
+		}catch (Exception e) {
 			e.printStackTrace();
 			throw new AppException("载入失败，数据异常");
 		}
@@ -590,21 +547,35 @@ public class DictionaryServiceImpl implements DictionaryService {
 		List<AccountDicVo> dicVoList = (List<AccountDicVo>)list;
 		//存放去重的数据
 		List<AccountDicVo> unRepeatList = new ArrayList<>();
-		List<String> unRepeatDicId = new ArrayList<>();
 		for (AccountDicVo accountDicVo : dicVoList) {
+			//查询字典id是否为空和字典项父级id是否等于其自身
 			if(!StringUtil.isNotEmpty(accountDicVo.getDicId())){
 				result.setSuccess(false);
-				result.setMessage("字典id存在空值");
+				result.setMessage("excel中字典id存在空值");
 				return result;
 			}else if(accountDicVo.getDicId().equals(accountDicVo.getDicParentId())){
 				result.setSuccess(false);
 				result.setMessage("excel中存在字典的父级字典等于字典id,该字典id为" + accountDicVo.getDicId());
 				return result;
 			}
+			//查询字典名称是否为空
 			if(!StringUtil.isNotEmpty(accountDicVo.getDicName() )){
 				result.setSuccess(false);
-				result.setMessage("字典名称存在空值");
+				result.setMessage("excel中字典名称存在空值");
 				return result;
+			}
+			//如果字典项id不为空，则字典编号和字典名称不能为空
+			if(StringUtil.isNotEmpty(accountDicVo.getItemId())){
+				if(!StringUtil.isNotEmpty(accountDicVo.getDicItemId())){
+					result.setSuccess(false);
+					result.setMessage("excel中存在字典项id不为空，字典项编号为空");
+					return result;
+				}
+				if(!StringUtil.isNotEmpty(accountDicVo.getDicItemName())){
+					result.setSuccess(false);
+					result.setMessage("excel中存在字典项id不为空，字典项名称为空");
+					return result;
+				}
 			}
 		}
 		for(AccountDicVo accountDicVo : dicVoList){
