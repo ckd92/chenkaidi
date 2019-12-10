@@ -101,7 +101,7 @@ public class AccountController {
      * @return
      */
     @PostMapping("Account/accountdatastwo")
-    @AddOperateLogLast(targetURI = "/accountTask/Account/accountdatastwo", baseContent = "科融统计平台-数据处理-待办任务-台账审核-查看明细", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/accountTask/Account/accountdatastwo", baseContent = "科融统计平台-数据明细查询", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<AccountProcessVo> findAccountDatatwo(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<AccountProcessVo> result = new GenericResult<>();
         try {
@@ -294,7 +294,7 @@ public class AccountController {
      * @return
      */
     @PostMapping("Account/downloaddatas")
-    @AddOperateLogLast(targetURI = "/accountTask/Account/downloaddatas", baseContent = "科融统计平台-数据处理-待办任务-导出", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/accountTask/Account/downloaddatas", baseContent = "科融统计平台-数据明细-下载导出", logType = LoggerUtill.LogType.OPERATE)
     public GenericResult<AccountProcessVo> createData(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request) {
         GenericResult<AccountProcessVo> result = new GenericResult<>();
         try {

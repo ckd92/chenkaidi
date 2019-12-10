@@ -49,6 +49,7 @@ public class AccountEditLogController {
 	 * @return
 	 */
 	@PostMapping("/accountEditLogsTJ")
+	@AddOperateLogLast(targetURI = "/accountEditLogsTJ", baseContent = "科融统计平台-数据查询-工作任务统计-查询", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<List<AccountEditLog>> getEditLogsTJ(@RequestBody AccountEditLog accountEditLog){
 		GenericResult<List<AccountEditLog>> result = new GenericResult<List<AccountEditLog>>();
 		try{

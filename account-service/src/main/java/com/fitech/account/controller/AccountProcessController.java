@@ -7,7 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fitech.constant.LoggerUtill;
+import com.fitech.system.annotation.AddCustomLog;
 import com.fitech.system.annotation.AddOperateLogLast;
+import com.fitech.system.annotation.MarkLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,7 +53,13 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccountProcess")
-    @AddOperateLogLast(targetURI = "/accountTask/findPageAccountProcess", baseContent = "科融统计平台-数据处理-待办任务-查询", logType = LoggerUtill.LogType.OPERATE)
+//    @AddOperateLogLast(targetURI = "/accountTask/findPageAccountProcess", baseContent = "科融统计平台-数据处理-待办任务-查询", logType = LoggerUtill.LogType.OPERATE)
+//    @AddCustomLog(targetURI = "/accountTask/findPageAccountProcess", logType = LoggerUtill.LogType.OPERATE)
+    @AddCustomLog(targetURI = "/accountTask/findPageAccountProcess", logType = LoggerUtill.LogType.OPERATE, includeCustomItems = {
+            @AddCustomLog.CustomItem(category = "bulu", baseContent = "科融统计平台-数据处理-待办任务-台账补录-待办查询"),
+            @AddCustomLog.CustomItem(category = "shenhe", baseContent = "科融统计平台-数据处理-待办任务-台账审核-待办查询")
+    })
+    @MarkLog
     public GenericResult<List<AccountProcessVo>> findTodoTask(@RequestBody AccountProcessVo accountProcessVo, HttpServletRequest request){
         GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
@@ -136,7 +144,14 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("submitProcess/{action}")
-    @AddOperateLogLast(targetURI = "/accountTask/submitProcess/", baseContent = "科融统计平台-数据处理-待办任务-台账审核-批量提交审核", logType = LoggerUtill.LogType.OPERATE)
+//    @AddOperateLogLast(targetURI = "/accountTask/submitProcess/", baseContent = "科融统计平台-数据处理-待办任务-台账审核-批量提交审核", logType = LoggerUtill.LogType.OPERATE)
+    @AddCustomLog(targetURI = "/accountTask/submitProcess/", logType = LoggerUtill.LogType.OPERATE, includeCustomItems = {
+            @AddCustomLog.CustomItem(category = "bulu", action = "commit", baseContent = "科融统计平台-数据处理-待办任务-台账补录-提交审核"),
+            @AddCustomLog.CustomItem(category = "shenhe", action = "refuse", baseContent = "科融统计平台-数据处理-待办任务-台账审核-退回"),
+            @AddCustomLog.CustomItem(category = "shenhe", action = "commit", baseContent = "科融统计平台-数据处理-待办任务-台账审核-提交审核"),
+            @AddCustomLog.CustomItem(category = "shenhe", action = "approval", baseContent = "科融统计平台-数据处理-待办任务-台账审核-审核通过")
+    })
+    @MarkLog
     public GenericResult<Boolean> submitProcess(@RequestBody List<AccountProcessVo> accountProcessVoList, @PathVariable String action
             , HttpServletRequest request){
         GenericResult<Boolean> result=new GenericResult<>();
@@ -267,9 +282,7 @@ public class AccountProcessController {
     
     /**
      * ETL批量重报接口
-     * @param subKey
      * @param term
-     * @param etlFreqId
      * @param type true表示当期，false表示上期
      * @param response
      * @param request

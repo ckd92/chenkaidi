@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.fitech.constant.LoggerUtill;
+import com.fitech.system.annotation.AddOperateLogLast;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -84,6 +86,7 @@ public class AccountsController {
 	 * @return
 	 */
 	@PostMapping("/getrwtjbycondition")
+	@AddOperateLogLast(targetURI = "/getrwtjbycondition", baseContent = "科融统计平台-数据查询-任务统计-查询", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<List> getrwtjByCondition(@RequestBody Account account,  HttpServletRequest request){
 		GenericResult<List> result = new GenericResult<List>();
 		Long userId = TokenUtils.getLoginId(request);
