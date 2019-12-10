@@ -13,4 +13,6 @@ public interface DictionaryRepository extends JpaRepository<Dictionary,Long>,Jpa
 	
      List<Dictionary> findByIsEnable(String isEnable);
 
+     Dictionary findDictionaryById(Long id);
+
 }
