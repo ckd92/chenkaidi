@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.fitech.framework.core.dao.mybatis.DaoMyBatis;
+import com.fitech.framework.lang.common.CommonConst;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -117,7 +118,13 @@ public class AccountTemplateDAOImpl extends DaoMyBatis implements AccountTemplat
     }
 
     private void dropTemplate(String tableName){
-        long count = super.selectOne("accountTemplateMapper.dropTemplateSql1",tableName);
+        Map<String,Object> map = new HashMap<>();
+        map.put("tableName",tableName);
+        String schema = CommonConst.getProperties("schema");
+        if(schema != null){
+            map.put("schema",schema);
+        }
+        long count = super.selectOne("accountTemplateMapper.dropTemplateSql1",map);
         if(count > 0 ){
             super.update("accountTemplateMapper.dropTemplateSql2",tableName);
         }
