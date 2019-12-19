@@ -55,7 +55,7 @@
     <select id="dropTemplateSql1" parameterType="map" resultType="Long">
         select count(1) from information_schema.TABLES where table_name = #{tableName}
         <if test="schema != null and schema !=''">
-            and TABLE_SCHEMA = #{SCHEMA}
+            and TABLE_SCHEMA = #{schema}
         </if>
     </select>
 
