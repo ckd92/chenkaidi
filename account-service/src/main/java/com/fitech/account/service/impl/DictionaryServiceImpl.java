@@ -518,9 +518,9 @@ public class DictionaryServiceImpl implements DictionaryService {
 							dic.setDicName(fieldvo.getDictionaryName());
 							List<Dictionary> all = dictionaryRepository.findAll(buildSpecification1(dic));
 							accountField.setDicId(String.valueOf(all.get(0).getId()));
-							accountField.setOrderNumber(Integer.valueOf(fieldvo.getOrdernumber()));
-							accountFieldList.add(accountField);
 						}
+						accountField.setOrderNumber(Integer.valueOf(fieldvo.getOrdernumber()));
+						accountFieldList.add(accountField);
 					}
 				}
 				accountTemplate.setAccountFields(accountFieldList);
