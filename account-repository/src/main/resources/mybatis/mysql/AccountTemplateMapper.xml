@@ -28,7 +28,7 @@
                                 </when>
                                 <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DOUBLE' 
                                 	or @com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DECIMAL'">
-                                    NUMERIC(18,4),
+                                    NUMERIC(${item.length}),
                                 </when>
                                 <otherwise>
                                     ${item.sqlType},

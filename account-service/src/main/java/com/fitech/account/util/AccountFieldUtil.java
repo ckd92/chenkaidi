@@ -56,6 +56,7 @@ public class AccountFieldUtil {
             doubleLedgerItem.setOrderNumber(ledgerItem.getOrderNumber());
             doubleLedgerItem.setTemplateId(ledgerItem.getTemplateId());
             doubleLedgerItem.setItemDescription(ledgerItem.getItemDescription()==null?"":ledgerItem.getItemDescription());
+            doubleLedgerItem.setLength(ledgerItem.getLength());
             return doubleLedgerItem;
 
         } else if ("INTEGER".equals(ledgerItem.getItemType())) {
@@ -128,6 +129,8 @@ public class AccountFieldUtil {
             decimalLedgerItem.setOrderNumber(ledgerItem.getOrderNumber());
             decimalLedgerItem.setTemplateId(ledgerItem.getTemplateId());
             decimalLedgerItem.setItemDescription(ledgerItem.getItemDescription()==null?"":ledgerItem.getItemDescription());
+            decimalLedgerItem.setLength(ledgerItem.getLength());
+
             return decimalLedgerItem;
 
         }else {
