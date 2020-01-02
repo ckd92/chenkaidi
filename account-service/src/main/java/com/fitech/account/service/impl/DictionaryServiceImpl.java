@@ -292,6 +292,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 		return dic;
 	}
 
+	@Transactional
 	@Override
 	public GenericResult<Object> batchAdd( Collection<AccountDicVo> list)  {
 		GenericResult<Object> result = new GenericResult<>();
