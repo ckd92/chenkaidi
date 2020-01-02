@@ -529,7 +529,7 @@
 		where t1.id = #{sysuser_id,jdbcType=INTEGER}
 		and t5.operationtype = #{operationType}
 		) A
-		GROUP BY a.userId,A.reporttemplateid) authority  ON authority.reporttemplateid = lrt.id AND instr(authority.orgs, '['||it.id||']') > 0
+		GROUP BY a.userId,A.reporttemplateid) authority  ON authority.reporttemplateid = lrt.id AND instr(authority.orgs, it.id) > 0
 		inner join BusSystem bs on bs.id = lrt.busSystem_id  and bs.reportsubsystem_id=#{reportSubSystem_id}
 		where 1=1 and  task.rn=1
 		<if test=" templateCode != null and templateCode != '' ">
