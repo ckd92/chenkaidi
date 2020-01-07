@@ -385,7 +385,7 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                                 valueList.add("'" + strings.get(tempValue) + "'");
                                 
                             }else{
-                            	valueList.add("'" + tempValue + "'");
+                            	valueList.add("\"" + tempValue + "\"");
                             }
                             
                         } else if (field.getSqlType().equals(SqlTypeEnum.DATE)) {
