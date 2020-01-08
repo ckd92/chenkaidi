@@ -441,6 +441,20 @@ public class AccountController {
         }
         return result;
     }
+
+    @PostMapping("/downLoadBusPackage/{busSystemId}")
+    public GenericResult<Object> downLoadBusPackage(@PathVariable("busSystemId") String busSystemId) {
+        GenericResult<Object> result = new GenericResult<Object>();
+        try {
+            String msg = accountService.downLoadBusPackage(busSystemId);
+            result.setMessage(msg);
+        } catch (Exception e) {
+            result.setSuccess(false);
+            e.printStackTrace();
+        }
+        return result;
+    }
+
 }
 
 
