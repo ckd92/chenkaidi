@@ -113,7 +113,27 @@ public class DictionaryController {
 		}
 		return result;
 	}
-	
+
+	/**
+	 * 全部删除字典和字典项
+	 * @param request
+	 * @return
+	 */
+	@GetMapping("/deleteAllDictionary")
+	@AddOperateLogLast(targetURI = "/deleteAllDictionary", baseContent = "科融统计平台-业务设置-数据字典管理-刪除字典项", logType = LoggerUtill.LogType.OPERATE)
+	public GenericResult<Boolean> deleteAllDictionary(HttpServletRequest request){
+		GenericResult<Boolean> result = new GenericResult<>();
+		try {
+			result = dictionaryService.deleteAll();
+		}catch (Exception e) {
+			result.setSuccess(false);
+			e.printStackTrace();
+		} finally {
+		}
+		return result;
+	}
+
+
 	/**
 	 * 修改字典
 	 * @param id
@@ -168,7 +188,7 @@ public class DictionaryController {
 	public GenericResult<Boolean> delete(@PathVariable("id") Long id,HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
-			result = dictionaryService.delete(id);		 
+			result = dictionaryService.delete(id);
 		}catch (Exception e) {
 			result.setSuccess(false);
 			e.printStackTrace();

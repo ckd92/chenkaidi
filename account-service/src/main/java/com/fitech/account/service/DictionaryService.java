@@ -53,12 +53,19 @@ public interface DictionaryService {
     public GenericResult<Boolean> save(Dictionary dictionary);
    
     /**
+     * 删除全部字典
+     * @param
+     * @return
+     */
+    public GenericResult<Boolean> deleteAll();
+
+    /**
      * 删除字典
      * @param
      * @return
      */
     public GenericResult<Boolean> delete(Long id);
-       
+
     /**
      * 更新字典
      * @param dictionary

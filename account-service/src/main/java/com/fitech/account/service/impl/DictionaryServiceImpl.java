@@ -141,6 +141,30 @@ public class DictionaryServiceImpl implements DictionaryService {
 		return result;
 	}
 
+	@Transactional
+	@Override
+	public GenericResult<Boolean> deleteAll() {
+		GenericResult<Boolean> result = new GenericResult<>();
+		List<Dictionary> all = dictionaryRepository.findAll();
+		for (Dictionary dictionary : all) {
+			Long id = dictionary.getId();
+			try {
+				if (!accountFieldDAO.dicIsChangeable(id) || !accountFieldDAO.dicIsTemplateUsed(id)) {
+					result.setMessage("存在字典已生成任务或者被字典引用的不可删除！");
+				}else{
+					dictionaryItemService.deleteByDictionaryId(id);
+					dictionaryRepository.delete(id);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				result.setSuccess(false);
+				throw new AppException(ExceptionCode.SYSTEM_ERROR, e.toString());
+			}
+		}
+		result.setSuccess(true);
+		return result;
+	}
+
 
 	/**
 	 * 根据id删除字典
