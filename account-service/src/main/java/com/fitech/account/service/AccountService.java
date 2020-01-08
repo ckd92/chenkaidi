@@ -64,6 +64,13 @@ public interface AccountService {
     public GenericResult<Boolean> deleteAllAccountData(Long reportId);
 
     /**
+     * 补录制度包导出
+     * @param busSystemId
+     * @return
+     */
+    public String downLoadBusPackage(String busSystemId);
+
+    /**
      * 生成台账模板
      * @param accountId
      * @param userId
