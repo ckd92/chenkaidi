@@ -19,6 +19,8 @@ import java.util.Map;
 
 import com.fitech.account.dao.DictionaryDao;
 import com.fitech.account.repository.AccountTemplateRepository;
+import com.fitech.account.repository.DictionaryRepository;
+import com.fitech.domain.account.*;
 import com.fitech.framework.lang.annotation.Description;
 import com.fitech.vo.account.AccountDicVo;
 import org.apache.commons.collections.map.HashedMap;
@@ -41,12 +43,6 @@ import com.fitech.account.service.AccountEditLogService;
 import com.fitech.account.service.AccountService;
 import com.fitech.account.util.ExcelUtils;
 import com.fitech.constant.ExceptionCode;
-import com.fitech.domain.account.Account;
-import com.fitech.domain.account.AccountEditLog;
-import com.fitech.domain.account.AccountField;
-import com.fitech.domain.account.AccountLine;
-import com.fitech.domain.account.AccountTemplate;
-import com.fitech.domain.account.DictionaryItem;
 import com.fitech.domain.system.FieldPermission;
 import com.fitech.domain.system.Role;
 import com.fitech.domain.system.User;
@@ -92,6 +88,8 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private AccountDatasDao accountDatasDao;
 
+    @Autowired
+    private DictionaryRepository dictionaryRepository;
     @Autowired
     private AccountEditLogService accountEditLogService;
     @Autowired
@@ -697,11 +695,117 @@ public class AccountServiceImpl implements AccountService {
     }
     public void createFieldExcel(String templateFile, List<AccountTemplate> accountTemplates){
         try {
-//            OutputStream os = new FileOutputStream(templateFile + File.separator + "Field.xlsx");
-//            XSSFWorkbook workbook = new XSSFWorkbook();
-//            Sheet sheet = workbook.createSheet("字段");
-//            Row row = null;
-//            Cell cell = null;
+            OutputStream os = new FileOutputStream(templateFile + File.separator + "Field.xlsx");
+            XSSFWorkbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("字段");
+            Row row = null;
+            Cell cell = null;
+            //设置表头
+            row = sheet.createRow(0);
+            cell = row.createCell(0);
+            cell.setCellValue("表名");
+            cell = row.createCell(1);
+            cell.setCellValue("字段码");
+            cell = row.createCell(2);
+            cell.setCellValue("字段名称");
+            cell = row.createCell(3);
+            cell.setCellValue("字段类型");
+            cell = row.createCell(4);
+            cell.setCellValue("字段长度");
+            cell = row.createCell(5);
+            cell.setCellValue("主键");
+            cell = row.createCell(6);
+            cell.setCellValue("字段描述");
+            cell = row.createCell(7);
+            cell.setCellValue("数据字典");
+            cell = row.createCell(8);
+            cell.setCellValue("显示序号");
+            int indexROW=1;
+            for(int index=1;index<=accountTemplates.size();index++){
+                AccountTemplate accountTemplate=accountTemplates.get(index-1);
+                Collection<AccountField> fields= accountTemplate.getAccountFields();
+
+                List<AccountField> fieldList = new ArrayList<>();
+                for (AccountField code : fields) {
+                    fieldList.add(code);
+                }
+
+                for(int i=0;i<fieldList.size();i++){
+                    AccountField field=fieldList.get(i);
+                    row = sheet.createRow(indexROW);
+                    for (int j = 0; j < 9; j++) {
+                        cell = row.createCell(j);
+                        switch (j) {
+                            case 0:
+                                if (null != accountTemplate.getTemplateName()) {
+                                    cell.setCellValue(accountTemplate.getTemplateName());
+                                } else {
+                                    cell.setCellValue("");
+                                }
+                                break;
+                            case 1:
+                                if (null != field.getItemCode()) {
+                                    cell.setCellValue(field.getItemCode());
+                                } else {
+                                    cell.setCellValue("");
+                                }
+                                break;
+                            case 2:
+                                if (null != field.getItemName()) {
+                                    cell.setCellValue(field.getItemName());
+                                } else {
+                                    cell.setCellValue("");
+                                }
+                                break;
+                            case 3:
+                                if (null != field.getSqlType()) {
+                                    cell.setCellValue(field.getItemType());
+                                } else {
+                                    cell.setCellValue("");
+                                }
+                                break;
+                            case 4:
+                                if (null != field.getLength()) {
+                                    cell.setCellValue(field.getLength());
+                                } else {
+                                    cell.setCellValue("");
+                                }
+                                break;
+                            case 5:
+                                cell.setCellValue(field.isPkable());
+                                break;
+                            case 6:
+                                //字段描述
+                                cell.setCellValue(field.getItemDescription());
+                                break;
+                            case 7:
+                                if (null != field.getItemType()){
+                                    if("CODELIB".equals(field.getItemType())){
+                                        Dictionary dictionary= dictionaryRepository.findDictionaryById(Long.parseLong(field.getDicId()));
+                                        cell.setCellValue(dictionary.getDicName());
+                                    }else {
+                                        cell.setCellValue("");
+                                    }
+                                } else {
+                                    cell.setCellValue("");
+                                }
+                                break;
+                            case 8:
+                                if (null != String.valueOf(field.getOrderNumber())) {
+                                    cell.setCellValue(String.valueOf(field.getOrderNumber()));
+                                } else {
+                                    cell.setCellValue("");
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                     }
+                indexROW++;
+                }
+            }
+            workbook.write(os);
+            os.close();
         }catch (Exception e){
             e.printStackTrace();
         }
