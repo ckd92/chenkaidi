@@ -68,6 +68,9 @@ import com.fitech.validate.service.ValidateAnalyzeResultService;
 import com.fitech.validate.service.ValidateResultService;
 import com.fitech.vo.account.AccountProcessVo;
 
+import static com.fitech.framework.lang.util.FileUtil.deleteFile;
+import static com.fitech.system.util.FileUtil.zip;
+
 /**
  * Created by wangxw on 2017/8/17.
  */
@@ -619,7 +622,17 @@ public class AccountServiceImpl implements AccountService {
         this.createTemplateExcel(basePath,accountTemplates);
         //生成字段表
         this.createFieldExcel(basePath,accountTemplates);
-        return null;
+        String tempFilePathDel = CommonConst.getProperties("basePath") + File.separator + "tempFile";
+        //生成zip文件
+        SimpleDateFormat df = new SimpleDateFormat("yyyMMdd");//生成当前系统日期
+        String term = df.format(new Date());
+
+        String fileName = CommonConst.getProperties("basePath") + term + ".zip";
+        zip(tempFilePathDel, fileName, true);
+        //删除临时目录
+        deleteFile(CommonConst.getProperties("basePath") + File.separator + "tempFile");
+
+        return term;
     }
 
     public void createTemplateExcel(String templateFile, List<AccountTemplate> accountTemplates){
