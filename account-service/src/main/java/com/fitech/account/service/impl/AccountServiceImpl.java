@@ -751,7 +751,7 @@ public class AccountServiceImpl implements AccountService {
                         switch (j) {
                             case 0:
                                 if (null != accountTemplate.getTemplateName()) {
-                                    cell.setCellValue(accountTemplate.getTemplateName());
+                                    cell.setCellValue(accountTemplate.getTableName());
                                 } else {
                                     cell.setCellValue("");
                                 }
