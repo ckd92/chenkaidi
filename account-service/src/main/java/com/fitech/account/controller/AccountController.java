@@ -8,7 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.fitech.constant.LoggerUtill;
+import com.fitech.domain.system.SubSystem;
 import com.fitech.system.annotation.AddOperateLogLast;
+import com.fitech.system.service.SubSystemService;
 import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,6 +45,8 @@ import com.fitech.vo.account.AccountProcessVo;
 public class AccountController {
     @Autowired
     private AccountService accountService;
+    @Autowired
+    private SubSystemService subSystemService;
 
     /**
      * 台账代办任务处理  - (数据列权限,列表和新增)
@@ -455,6 +459,25 @@ public class AccountController {
         return result;
     }
 
+    /**
+     * 查询是否开启审核修改
+     */
+    @GetMapping("/selectIsOpenShxg/{bussystem}")
+    public GenericResult<Object> selectIsOpenShxg(@PathVariable("bussystem") String bussystem){
+        GenericResult<Object> result = new GenericResult<>();
+        try {
+            SubSystem subSystemBySubKey = subSystemService.findSubSystemBySubKey(bussystem);
+            if(subSystemBySubKey != null && subSystemBySubKey.getReviewRevise().equals("1")){
+                result.setSuccess(true);
+            }else{
+                result.setSuccess(false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setSuccess(false);
+        }
+        return result;
+    }
 }
 
 
