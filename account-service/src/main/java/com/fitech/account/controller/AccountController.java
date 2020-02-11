@@ -458,26 +458,6 @@ public class AccountController {
         }
         return result;
     }
-
-    /**
-     * 查询是否开启审核修改
-     */
-    @GetMapping("/selectIsOpenShxg/{bussystem}")
-    public GenericResult<Object> selectIsOpenShxg(@PathVariable("bussystem") String bussystem){
-        GenericResult<Object> result = new GenericResult<>();
-        try {
-            SubSystem subSystemBySubKey = subSystemService.findSubSystemBySubKey(bussystem);
-            if(subSystemBySubKey != null && subSystemBySubKey.getReviewRevise().equals("1")){
-                result.setSuccess(true);
-            }else{
-                result.setSuccess(false);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            result.setSuccess(false);
-        }
-        return result;
-    }
 }
 
 
