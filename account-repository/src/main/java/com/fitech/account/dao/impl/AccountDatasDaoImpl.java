@@ -385,7 +385,11 @@ public class AccountDatasDaoImpl extends DaoMyBatis implements AccountDatasDao {
                                 valueList.add("'" + strings.get(tempValue) + "'");
                                 
                             }else{
-                            	valueList.add("\"" + tempValue + "\"");
+                        	    if("oracle.jdbc.driver.OracleDriver".equals(CommonConst.getProperties("jdbc.driverClassName"))){
+                                    valueList.add("'" + tempValue + "'");
+                                }else{
+                                    valueList.add("\"" + tempValue + "\"");
+                                }
                             }
                             
                         } else if (field.getSqlType().equals(SqlTypeEnum.DATE)) {
