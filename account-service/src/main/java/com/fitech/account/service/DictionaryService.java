@@ -60,6 +60,14 @@ public interface DictionaryService {
     public GenericResult<Boolean> deleteAll();
 
     /**
+     * 批量删除字典
+     * @param
+     * @return
+     */
+    public GenericResult<Boolean> Pldelete( Long[] ids);
+
+
+    /**
      * 删除字典
      * @param
      * @return

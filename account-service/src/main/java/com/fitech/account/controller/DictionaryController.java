@@ -3,6 +3,8 @@ package com.fitech.account.controller;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -118,13 +120,32 @@ public class DictionaryController {
 	 * 全部删除字典和字典项
 	 * @param request
 	 * @return
-	 */
+			 */
 	@GetMapping("/deleteAllDictionary")
 	@AddOperateLogLast(targetURI = "/deleteAllDictionary", baseContent = "科融统计平台-业务设置-数据字典管理-刪除字典项", logType = LoggerUtill.LogType.OPERATE)
 	public GenericResult<Boolean> deleteAllDictionary(HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
 			result = dictionaryService.deleteAll();
+		}catch (Exception e) {
+			result.setSuccess(false);
+			e.printStackTrace();
+		} finally {
+		}
+		return result;
+	}
+
+	/**
+	 * 批量删除字典和字典项
+	 * @param request
+	 * @return
+	 */
+	@PostMapping("dictonary/PlDelDictionary")
+	@AddOperateLogLast(targetURI = "dictonary/PlDelDictionary", baseContent = "科融统计平台-业务设置-数据字典管理-批量刪除字典项", logType = LoggerUtill.LogType.OPERATE)
+	public GenericResult<Boolean> PlDelDictionary(HttpServletRequest request, @RequestBody Long[] ids){
+		GenericResult<Boolean> result = new GenericResult<>();
+		try {
+			result = dictionaryService.Pldelete(ids);
 		}catch (Exception e) {
 			result.setSuccess(false);
 			e.printStackTrace();
