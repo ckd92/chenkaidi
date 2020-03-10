@@ -26,7 +26,8 @@ public class AccountEditLogController {
 	 * @return
 	 */
 	@PostMapping("/accountEditLogs")
-	@AddOperateLogLast(targetURI = "/accountEditLogs", baseContent = "科融平台-数据查询-修改痕迹-查询", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/accountEditLogs", baseContent = "科融平台-数据查询-修改痕迹-查询",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.SELECT)
 	public GenericResult<List<AccountEditLog>> getEditLogs(@RequestBody AccountEditLog accountEditLog){
 		GenericResult<List<AccountEditLog>> result = new GenericResult<List<AccountEditLog>>();
 		try{
@@ -49,7 +50,8 @@ public class AccountEditLogController {
 	 * @return
 	 */
 	@PostMapping("/accountEditLogsTJ")
-	@AddOperateLogLast(targetURI = "/accountEditLogsTJ", baseContent = "科融统计平台-数据查询-工作任务统计-查询", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/accountEditLogsTJ", baseContent = "科融统计平台-数据查询-工作任务统计-查询",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.SELECT)
 	public GenericResult<List<AccountEditLog>> getEditLogsTJ(@RequestBody AccountEditLog accountEditLog){
 		GenericResult<List<AccountEditLog>> result = new GenericResult<List<AccountEditLog>>();
 		try{

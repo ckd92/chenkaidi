@@ -111,7 +111,8 @@ public class DictionaryItemController {
      * @return
      */
     @PostMapping("/dictionaryItem")
-    @AddOperateLogLast(targetURI = "/dictionaryItem", baseContent = "科融统计平台-业务设置-数据字典管理-字典项管理-新增字典项", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/dictionaryItem", baseContent = "科融统计平台-业务设置-数据字典管理-字典项管理-新增字典项",
+            logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.ADD)
     public GenericResult<Boolean> save(@RequestBody DictionaryItem dictionaryItem, HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
@@ -136,7 +137,8 @@ public class DictionaryItemController {
      * @return
      */
     @PutMapping("/dictionaryItem/{id}")
-    @AddOperateLogLast(targetURI = "/dictionaryItem/", baseContent = "科融统计平台-业务设置-数据字典管理-字典项管理-修改字典项", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/dictionaryItem/", baseContent = "科融统计平台-业务设置-数据字典管理-字典项管理-修改字典项",
+            logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.UPDATE)
     public GenericResult<Boolean> update(@PathVariable("id") Long id, @RequestBody DictionaryItem dictionaryItem, HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
@@ -156,7 +158,8 @@ public class DictionaryItemController {
      * @return
      */
     @DeleteMapping("/dictionaryItem/{id}")
-    @AddOperateLogLast(targetURI = "/dictionaryItem/", baseContent = "科融统计平台-业务设置-数据字典管理-字典项管理-删除字典项", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/dictionaryItem/", baseContent = "科融统计平台-业务设置-数据字典管理-字典项管理-删除字典项",
+            logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.DELETE)
     public GenericResult<Boolean> delete(@PathVariable("id") Long id, HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {

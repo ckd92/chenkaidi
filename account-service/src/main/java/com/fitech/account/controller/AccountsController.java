@@ -86,7 +86,8 @@ public class AccountsController {
 	 * @return
 	 */
 	@PostMapping("/getrwtjbycondition")
-	@AddOperateLogLast(targetURI = "/getrwtjbycondition", baseContent = "科融统计平台-数据查询-任务统计-查询", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/getrwtjbycondition", baseContent = "科融统计平台-数据查询-任务统计-查询",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.SELECT)
 	public GenericResult<List> getrwtjByCondition(@RequestBody Account account,  HttpServletRequest request){
 		GenericResult<List> result = new GenericResult<List>();
 		Long userId = TokenUtils.getLoginId(request);

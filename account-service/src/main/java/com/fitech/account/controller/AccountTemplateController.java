@@ -69,7 +69,8 @@ public class AccountTemplateController {
      * @return
      */
     @PostMapping("/accountTemplate")
-    @AddOperateLogLast(targetURI = "/accountTemplate", baseContent = "科融统计平台-业务设置-补录模版管理-创建", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/accountTemplate", baseContent = "科融统计平台-业务设置-补录模版管理-创建",
+            logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.ADD)
     public GenericResult<Boolean> save(@RequestBody AccountTemplate accountTemplate,HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
@@ -88,7 +89,8 @@ public class AccountTemplateController {
      * @return
      */
     @PutMapping("/accountTemplate")
-    @AddOperateLogLast(targetURI = "/accountTemplate", baseContent = "科融统计平台-业务设置-补录模版管理-修改", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/accountTemplate", baseContent = "科融统计平台-业务设置-补录模版管理-修改",
+            logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.UPDATE)
     public GenericResult<Boolean> modity(@RequestBody AccountTemplate accountTemplate,HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {
@@ -107,7 +109,8 @@ public class AccountTemplateController {
      * @return
      */
     @DeleteMapping("/accountTemplates")
-    @AddOperateLogLast(targetURI = "/accountTemplates", baseContent = "科融统计平台-业务设置-补录模版管理-删除", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/accountTemplates", baseContent = "科融统计平台-业务设置-补录模版管理-删除",
+            logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.DELETE)
     public GenericResult<Boolean> remove(@RequestParam("idList") List<Long> idList,HttpServletRequest request) {
         GenericResult<Boolean> result = new GenericResult<>();
         try {

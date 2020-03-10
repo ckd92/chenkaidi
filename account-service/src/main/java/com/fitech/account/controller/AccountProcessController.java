@@ -53,9 +53,8 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccountProcess")
-//    @AddOperateLogLast(targetURI = "/accountTask/findPageAccountProcess", baseContent = "科融统计平台-数据处理-待办任务-查询", logType = LoggerUtill.LogType.OPERATE)
-//    @AddCustomLog(targetURI = "/accountTask/findPageAccountProcess", logType = LoggerUtill.LogType.OPERATE)
-    @AddCustomLog(targetURI = "/accountTask/findPageAccountProcess", logType = LoggerUtill.LogType.OPERATE, includeCustomItems = {
+    @AddCustomLog(targetURI = "/accountTask/findPageAccountProcess", logType = LoggerUtill.LogType.OPERATE, logCategory = LoggerUtill.LogCategory.SELECT,
+            includeCustomItems = {
             @AddCustomLog.CustomItem(category = "bulu", baseContent = "科融统计平台-数据处理-待办任务-台账补录-待办查询"),
             @AddCustomLog.CustomItem(category = "shenhe", baseContent = "科融统计平台-数据处理-待办任务-台账审核-待办查询")
     })
@@ -88,7 +87,8 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findAssignedTask")
-    @AddOperateLogLast(targetURI = "/accountTask/findAssignedTask", baseContent = "科融统计平台-数据处理-已办任务-查询", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/accountTask/findAssignedTask", baseContent = "科融统计平台-数据处理-已办任务-查询",
+            logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.SELECT)
     public GenericResult<List<AccountProcessVo>> findDoneTask(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
         GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
@@ -116,7 +116,8 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("findPageAccounts")
-    @AddOperateLogLast(targetURI = "/accountTask/findPageAccounts", baseContent = "科融统计平台-数据查询-数据查询-查询", logType = LoggerUtill.LogType.OPERATE)
+    @AddOperateLogLast(targetURI = "/accountTask/findPageAccounts", baseContent = "科融统计平台-数据查询-数据查询-查询",
+            logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.SELECT)
     public GenericResult<List<AccountProcessVo>> findCurrentAccounts(@RequestBody AccountProcessVo accountProcessVo,HttpServletRequest request){
         GenericResult<List<AccountProcessVo>> result = new GenericResult<>();
         try {
@@ -144,8 +145,8 @@ public class AccountProcessController {
      * @return
      */
     @PostMapping("submitProcess/{action}")
-//    @AddOperateLogLast(targetURI = "/accountTask/submitProcess/", baseContent = "科融统计平台-数据处理-待办任务-台账审核-批量提交审核", logType = LoggerUtill.LogType.OPERATE)
-    @AddCustomLog(targetURI = "/accountTask/submitProcess/", logType = LoggerUtill.LogType.OPERATE, includeCustomItems = {
+    @AddCustomLog(targetURI = "/accountTask/submitProcess/", logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.UPDATE,
+            includeCustomItems = {
             @AddCustomLog.CustomItem(category = "bulu", action = "commit", baseContent = "科融统计平台-数据处理-待办任务-台账补录-提交审核"),
             @AddCustomLog.CustomItem(category = "shenhe", action = "refuse", baseContent = "科融统计平台-数据处理-待办任务-台账审核-退回"),
             @AddCustomLog.CustomItem(category = "shenhe", action = "commit", baseContent = "科融统计平台-数据处理-待办任务-台账审核-提交审核"),

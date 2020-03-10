@@ -103,7 +103,8 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("/dictionary")
-	@AddOperateLogLast(targetURI = "/dictionary", baseContent = "科融统计平台-业务设置-数据字典管理-新增字典", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/dictionary", baseContent = "科融统计平台-业务设置-数据字典管理-新增字典",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.ADD)
 	public GenericResult<Boolean> save(@RequestBody Dictionary dictionary,  HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -122,7 +123,8 @@ public class DictionaryController {
 	 * @return
 			 */
 	@GetMapping("/deleteAllDictionary")
-	@AddOperateLogLast(targetURI = "/deleteAllDictionary", baseContent = "科融统计平台-业务设置-数据字典管理-刪除字典项", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/deleteAllDictionary", baseContent = "科融统计平台-业务设置-数据字典管理-刪除字典项",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.DELETE)
 	public GenericResult<Boolean> deleteAllDictionary(HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -141,7 +143,8 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("dictonary/PlDelDictionary")
-	@AddOperateLogLast(targetURI = "dictonary/PlDelDictionary", baseContent = "科融统计平台-业务设置-数据字典管理-批量刪除字典项", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "dictonary/PlDelDictionary", baseContent = "科融统计平台-业务设置-数据字典管理-批量刪除字典项",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.DELETE)
 	public GenericResult<Boolean> PlDelDictionary(HttpServletRequest request, @RequestBody Long[] ids){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -163,7 +166,8 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PutMapping("/dictionary/{id}")
-	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-修改字典", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-修改字典",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.UPDATE)
 	public GenericResult<Boolean> update(@PathVariable("id") Long id,@RequestBody Dictionary dictionary,HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -184,7 +188,8 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PutMapping("/dictionary/{id}/{flag}")
-	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-修改字典", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-修改字典",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.UPDATE)
 	public GenericResult<Boolean> update(@PathVariable("id") Long id,@PathVariable("flag")String flag,@RequestBody Dictionary dictionary,HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -205,7 +210,8 @@ public class DictionaryController {
 	 * @return
 	 */
 	@DeleteMapping("/dictionary/{id}")
-	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-删除字典", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/dictionary/", baseContent = "科融统计平台-业务设置-数据字典管理-删除字典",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.DELETE)
 	public GenericResult<Boolean> delete(@PathVariable("id") Long id,HttpServletRequest request){
 		GenericResult<Boolean> result = new GenericResult<>();
 		try {
@@ -239,6 +245,8 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("loadDicitemsByExcel")
+	@AddOperateLogLast(targetURI = "/loadDicitemsByExcel", baseContent = "科融统计平台-系统配置-制度管理-手工配置-字典项配置-导入",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.ADD)
 	public GenericResult<Object> loadDataFromTemplate(@RequestParam(value = "file", required = true) MultipartFile file,
 													   HttpServletRequest request){
 		GenericResult<Object> result = new GenericResult<>();
@@ -259,7 +267,8 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("exportDicByExcel")
-	@AddOperateLogLast(targetURI = "/exportDicByExcel", baseContent = "科融统计平台-业务设置-数据字典项管理-字典项导出", logType = LoggerUtill.LogType.OPERATE)
+	@AddOperateLogLast(targetURI = "/exportDicByExcel", baseContent = "科融统计平台-数据补录-业务设置-数据字典管理-字典项导出",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.SELECT)
 	public GenericResult<Object> exportDicByExcel(HttpServletRequest request, HttpServletResponse response){
 		GenericResult<Object> result = new GenericResult<>();
 		try {
@@ -289,6 +298,8 @@ public class DictionaryController {
 	 * @param response
 	 */
     @GetMapping("downloadSjblTemplate")
+	@AddOperateLogLast(targetURI = "/downloadSjblTemplate", baseContent = "科融统计平台-系统配置-制度管理-手工配置-字典项配置-模板导出",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.SELECT)
     public void downloadTemplate(HttpServletRequest request, HttpServletResponse response){
         try {
             String sheetName = "BULUDATA-DicData-template";
@@ -322,6 +333,8 @@ public class DictionaryController {
 	 * @return
 	 */
 	@PostMapping("/batchSjblInputTemplate/{busSystemId}")
+	@AddOperateLogLast(targetURI = "/batchSjblInputTemplate/{busSystemId}", baseContent = "科融统计平台-系统配置-制度管理-手工配置-批量载入",
+			logType = LoggerUtill.LogType.OPERATE,logCategory = LoggerUtill.LogCategory.ADD)
 	public GenericResult<Boolean> batchInputTemplate(
 			@RequestParam(value = "templateFile", required = true) MultipartFile templateFile,
 			@RequestParam(value = "itemFile", required = true) MultipartFile itemFile,
