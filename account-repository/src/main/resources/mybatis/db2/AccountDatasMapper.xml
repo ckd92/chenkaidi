@@ -10,11 +10,11 @@
 
     <!-- 批量新增 -->
     <insert id="insert" parameterType="map">
-        insert into ${tablename} (REPORTID,
+        insert into ${tablename} (ID,REPORTID,
         <foreach collection="fields" item="field" separator=",">
             ${field}
         </foreach>
-        ) values (${id},
+        ) values (SEQ_FITECH.NEXTVAL,${id},
         <foreach collection="values" item="value" separator=",">
             <choose>
                 <when test="value != null and value != ''">
@@ -35,10 +35,6 @@
         </foreach>
         from ${tablename} where reportId = ${id}
     </select>
-    <!-- 调用存储过程 -->
-    <select id="proc_loadAccountData"  parameterType="map" statementType="CALLABLE">
-		{call PROC_LOADACCOUNTDATA(#{accountTemplateId,mode=IN,jdbcType=VARCHAR},#{tableName,mode=IN,jdbcType=VARCHAR},#{result,mode=OUT,jdbcType=VARCHAR})}
-	</select>
 
     <select id="findDataIdByReportId" parameterType="map" resultType="Long">
         select id from ${tableName} where reportId = ${reportId}

@@ -5,7 +5,7 @@
 
     <update id="createTemplate" parameterType="Map">
         CREATE TABLE ${tableName} (
-            ID integer NOT NULL AUTO_INCREMENT PRIMARY KEY,reportId integer NOT NULL,
+            ID integer NOT NULL PRIMARY KEY,reportId integer NOT NULL,
             <if test="itemList != null">
                 <foreach collection="itemList" index="index" item="item" open="" separator="" close="">
                     ${item.itemCode}
@@ -28,7 +28,7 @@
                                 </when>
                                 <when test="@com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DOUBLE' 
                                 	or @com.fitech.enums.SqlTypeEnum@transferValue(item.sqlType) == 'DECIMAL'">
-                                    NUMERIC(${item.length}),
+                                    Number(${item.length}),
                                 </when>
                                 <otherwise>
                                     ${item.sqlType},
@@ -52,11 +52,8 @@
         syncAble VARCHAR(50),check_status VARCHAR(20))
     </update>
 
-    <select id="dropTemplateSql1" parameterType="map" resultType="Long">
-        select count(1) from information_schema.TABLES where table_name = #{tableName}
-        <if test="schema != null and schema !=''">
-            and TABLE_SCHEMA = #{schema}
-        </if>
+    <select id="dropTemplateSql1" parameterType="String" resultType="Long">
+        select count(1) from user_tables where table_name = #{tableName}
     </select>
 
     <update id="dropTemplateSql2" parameterType="String">

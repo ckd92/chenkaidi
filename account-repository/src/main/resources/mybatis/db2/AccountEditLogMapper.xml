@@ -26,7 +26,7 @@
 	       al.accountName,
 	       al.institutionId,
 	       al.institutionName,
-		date_format(str_to_date(al.term, '%Y%m%d'), '%Y-%m-%d') as term,
+	       to_char(to_date(al.term, 'yyyy-MM-dd'), 'yyyy-MM-dd') as term,
 	       al.editUser,
 	       al.editTime,
 	       al.editDate,
@@ -43,7 +43,7 @@
 			and al.institutionName like'%${institutionName}%'
 		</if>
 		<if test="term != null and term != ''">
-			and date_format(str_to_date(al.term, '%Y%m%d'), '%Y-%m-%d')=#{term}
+			and to_char(to_date(al.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term}
 		</if>
 		<if test="editUser != null and editUser != ''">
 			and al.editUser like '%${editUser}%'
@@ -62,7 +62,7 @@
 			and al.institutionName like'%${institutionName}%'
 		</if>
 		<if test="term != null and term != ''">
-			and date_format(str_to_date(al.term, '%Y%m%d'), '%Y-%m-%d')=#{term}
+			and to_char(to_date(al.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term}
 		</if>
 		<if test="editUser != null and editUser != ''">
 			and al.editUser like '%${editUser}%'
@@ -72,18 +72,18 @@
 	
 	
 	<select id="findAccountEditLogTJ" parameterType="com.fitech.domain.account.AccountEditLog" resultType="com.fitech.domain.account.AccountEditLog">
-		select IFNULL(s.username, t.editUser) as editUser,
-		date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d') as editDate,
+		select nvl(s.username, t.editUser) as editUser,
+       t.editDate,
        t.accountname,
-		date_format(str_to_date(t.term, '%Y%m%d'), '%Y%m%d') as term,
+       t.term,
        t.institutionname,
        t.editLineNum
   from (select t.editUser,
-			   date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d') as editDate,
+               to_char(to_date(t.editDate, 'yyyy-MM-dd'), 'yyyy-MM-dd') as editDate,
                t.accountName,
-		       date_format(str_to_date(t.term, '%Y%m%d'), '%Y%m%d') as term,
+               to_char(to_date(t.term, 'yyyy-MM-dd'), 'yyyy-MM-dd') as term,
                t.institutionName,
-               IFNULL(sum(t.editLineNum), 0) as editLineNum
+               NVL(sum(t.editLineNum), 0) as editLineNum
           from ACCOUNT_EDITlOG t
          where 1 = 1
 		<if test="accountName != null and accountName != ''">
@@ -93,13 +93,13 @@
 			and t.institutionName like'%${institutionName}%'
 		</if>
 		<if test="term != null and term != ''">
-			and date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d')=#{term}
+			and to_char(to_date(t.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term}
 		</if>
 		<if test="editUser != null and editUser != ''">
 			and t.editUser like '%${editUser}%'
 		</if>
 		<if test="editDate != null and editDate != ''">
-			and date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d')=#{editDate}
+			and to_char(to_date(t.editDate,'yyyy-MM-dd'),'yyyy-MM-dd')=#{editDate}
 		</if>
 	 	group by t.editUser, t.editDate, t.accountName, t.term, t.institutionName
 	 	<if test="editLineNum != null and editLineNum != ''">
@@ -125,18 +125,18 @@
 			and t.institutionName like'%${institutionName}%'
 		</if>
 		<if test="term != null and term != ''">
-			and date_format(str_to_date(t.term, '%Y%m%d'), '%Y-%m-%d')=#{term}
+			and to_char(to_date(t.term,'yyyy-MM-dd'),'yyyy-MM-dd')=#{term}
 		</if>
 		<if test="editUser != null and editUser != ''">
 			and t.editUser like '%${editUser}%'
 		</if>
 		<if test="editDate != null and editDate != ''">
-			and date_format(str_to_date(t.editDate, '%Y-%m-%d'), '%Y-%m-%d')=#{editDate}
+			and to_char(to_date(t.editDate,'yyyy-MM-dd'),'yyyy-MM-dd')=#{editDate}
 		</if>
 	 	group by t.editUser, t.editDate, t.accountName, t.term, t.institutionName
 	 	<if test="editLineNum != null and editLineNum != ''">
 	 		having sum(t.editLineNum) = ${editLineNum}
 	 	</if>
-	 ) a
+	 )
 	</select>
 </mapper>
